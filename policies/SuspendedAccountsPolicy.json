@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PreventActionsInSuspendedOU",
+      "Effect": "Deny",
+      "NotAction": [
+        "support:*",
+        "ce:*",
+        "aws-portal:ViewBilling",
+        "budgets:*"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "ArnNotLike": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::*:role/security-audit",
+            "arn:aws:iam::*:role/OrganizationAccountAccessRole",
+            "arn:aws:iam::*:role/stacksets-exec-*",
+            "arn:aws:iam::*:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig"
+          ]
+        }
+      }
+    }
+  ]
+}

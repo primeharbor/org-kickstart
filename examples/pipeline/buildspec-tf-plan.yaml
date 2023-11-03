@@ -1,0 +1,32 @@
+version: 0.2
+
+
+env:
+  exported-variables:
+    - BuildID
+    - BuildTag
+
+phases:
+
+  install:
+    commands:
+      - "curl -s https://releases.hashicorp.com/terraform/1.3.6/terraform_1.3.6_linux_amd64.zip -o terraform.zip"
+      - "unzip terraform.zip -d /usr/local/bin"
+      - "chmod 755 /usr/local/bin/terraform"
+      - "aws s3 cp s3://$BUCKET/$env.tfbackend $env.tfbackend"
+      - "aws s3 cp s3://$BUCKET/config.$env config.$env"
+  pre_build:
+    commands:
+      - "echo env: $env"
+      - "make tf-init"
+
+  build:
+    commands:
+      - "make tf-plan"
+      - "export BuildID=`echo $CODEBUILD_BUILD_ID | cut -d: -f1`"
+      - "export BuildTag=`echo $CODEBUILD_BUILD_ID | cut -d: -f2`"
+
+artifacts:
+  name: TerraformPlan
+  files:
+    - terraform/$env-terraform.tfplan

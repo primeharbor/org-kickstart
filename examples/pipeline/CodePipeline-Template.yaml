@@ -1,0 +1,311 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CI/CD Pipeline for the CFT Environment
+
+Parameters:
+
+  BuildImageName:
+    Type: String
+    Description: Docker image for application build
+    Default: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+
+  pBucketName:
+    Type: String
+    Description: Name of the Pipeline & Terraform Artifact Bucket
+
+  pInitialSubscriberEmail:
+    Description: Add this initial email to the alerts
+    Type: String
+    Default: NONE
+
+  pGitHubRepo:
+    Description: Full name of GithubRepo in the form of orgname/reponame
+    Type: String
+
+  pGitHubBranch:
+    Description: Branch on which this codepipeline will trigger
+    Type: String
+
+  pConnectionName:
+    Description: Name of the CodeStar Connection to the GitHub Org and Repo
+    Type: String
+
+  pOrganizationName:
+    Description: Name of the Organization to configure
+    Type: String
+
+Conditions:
+  cEMailSubscription: !Not [!Equals [ !Ref pInitialSubscriberEmail, "NONE"]]
+
+Resources:
+
+  PipelineBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref pBucketName
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+        - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True  # This rule also prohibits Cross-Account bucket access
+      VersioningConfiguration:
+          Status: Enabled
+
+  CodeStarConnection:
+    Type: AWS::CodeStarConnections::Connection
+    Properties:
+      ConnectionName: !Ref pConnectionName
+      ProviderType: GitHub
+
+  PipelineNotificationsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub ${AWS::StackName}-pipeline-notifications
+      Subscription:
+      - !If
+        - cEMailSubscription
+        - Endpoint: !Ref 'pInitialSubscriberEmail'
+          Protocol: email
+        - AWS::NoValue
+
+  PipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-pipeline-service-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+                - codebuild.amazonaws.com
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: UseGitHubConnection
+                Resource: !Ref CodeStarConnection
+                Effect: Allow
+                Action:
+                  - codestar-connections:UseConnection
+              - Sid: CodeBuildPermissions
+                Resource: '*'
+                Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - sns:Publish
+              - Sid: CloudWatchLogs
+                Resource: '*'
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+              - Sid: AccessPipelineBucket
+                Effect: Allow
+                Action:
+                  - s3:Get*
+                  - s3:ListBucket
+                Resource:
+                 - !Sub arn:aws:s3:::${PipelineBucket}
+              - Sid: AccessPipelineBucketObjects
+                Effect: Allow
+                Action:
+                  - s3:PutObject*
+                  - s3:GetObject*
+                Resource:
+                  - !Sub arn:aws:s3:::${PipelineBucket}/*
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt PipelineServiceRole.Arn
+      Name: !Sub ${AWS::StackName}
+      ArtifactStores:
+        - Region: !Ref AWS::Region
+          ArtifactStore:
+            Type: S3
+            Location: !Sub ${PipelineBucket}
+      Stages:
+        - Name: source
+          Actions:
+            - Name: GitHub
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Provider: CodeStarSourceConnection
+                Owner: AWS
+                Version: '1'
+              Namespace: GitHubSource
+              OutputArtifacts:
+                - Name: GitHubCode
+              Configuration:
+                ConnectionArn: !Ref CodeStarConnection
+                FullRepositoryId: !Ref pGitHubRepo
+                BranchName: !Ref pGitHubBranch
+                OutputArtifactFormat: CODE_ZIP
+                DetectChanges: true
+
+        # https://github.com/aws-samples/aws-cdk-tfsec
+
+        - Name: terraform-plan
+          Actions:
+            - Name: terraform_plan
+              RunOrder: 1
+              Namespace: TfPlan
+              InputArtifacts:
+                - Name: GitHubCode
+              OutputArtifacts:
+                - Name: TerraformPlan
+              ActionTypeId:
+                Category: Build
+                Provider: CodeBuild
+                Owner: AWS
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref TerraformPlanProject
+                EnvironmentVariables: !Sub |
+                  [
+                    {"name": "EXECUTION_ID",    "value": "#{codepipeline.PipelineExecutionId}"},
+                    {"name": "BRANCH",          "value": "#{GitHubSource.BranchName}"},
+                    {"name": "REPO",            "value": "#{GitHubSource.FullRepositoryName}"},
+                    {"name": "COMMIT_ID",       "value": "#{GitHubSource.CommitId}"},
+                    {"name": "BUCKET",          "value": "${PipelineBucket}"},
+                    {"name": "env",             "value": "${pOrganizationName}"}
+                  ]
+
+        - Name: Review-Plan
+          Actions:
+            - Name: review-plan
+              RunOrder: 1
+              ActionTypeId:
+                Category: Approval
+                Provider: Manual
+                Owner: AWS
+                Version: '1'
+              Configuration:
+                NotificationArn: !Ref PipelineNotificationsTopic
+                ExternalEntityLink: !Sub "https://${AWS::Region}.console.aws.amazon.com/codesuite/codebuild/${AWS::AccountId}/projects/#{TfPlan.BuildID}/build/#{TfPlan.BuildID}%3A#{TfPlan.BuildTag}/?region=${AWS::Region}"
+                CustomData: "Review the Terraform Plan"
+
+        - Name: ExecuteTerraform
+          Actions:
+            - Name: terraform-apply
+              RunOrder: 1
+              InputArtifacts:
+                - Name: GitHubCode
+                - Name: TerraformPlan
+              # OutputArtifacts:
+              #   - Name: ExecuteArtifact
+              ActionTypeId:
+                Category: Build
+                Provider: CodeBuild
+                Owner: AWS
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref ExecuteTerraformProject
+                PrimarySource: GitHubCode
+                EnvironmentVariables: !Sub |
+                  [
+                    {"name": "EXECUTION_ID",    "value": "#{codepipeline.PipelineExecutionId}"},
+                    {"name": "BRANCH",          "value": "#{GitHubSource.BranchName}"},
+                    {"name": "REPO",            "value": "#{GitHubSource.FullRepositoryName}"},
+                    {"name": "COMMIT_ID",       "value": "#{GitHubSource.CommitId}"},
+                    {"name": "BUCKET",          "value": "${PipelineBucket}"},
+                    {"name": "env",             "value": "${pOrganizationName}"}
+                  ]
+
+  ProjectServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-codebuild-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: CloudWatchLogs
+                Resource: '*'
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+              - Sid: AccessPipelineBucket
+                Effect: Allow
+                Action:
+                  - s3:Get*
+                  - s3:ListBucket
+                Resource:
+                 - !Sub arn:aws:s3:::${PipelineBucket}
+              - Sid: AccessPipelineBucketObjects
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketVersioning
+                Resource:
+                  - !Sub arn:aws:s3:::${PipelineBucket}/*
+
+  TerraformPlanProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-tf-plan
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec-tf-plan.yaml
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Type: LINUX_CONTAINER
+        Image: !Ref BuildImageName
+      ServiceRole: !GetAtt ProjectServiceRole.Arn
+
+  ExecuteTerraformProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-tf-apply
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec-tf-apply.yaml
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Type: LINUX_CONTAINER
+        Image: !Ref BuildImageName
+      ServiceRole: !GetAtt ProjectServiceRole.Arn
+
+
+Outputs:
+  TemplateVersion:
+    Value: "0.0.1"
+
+  CodeStarConnectionArn:
+    Value: !Ref CodeStarConnection
+
+  PipelineBucketName:
+    Value: !Ref PipelineBucket
