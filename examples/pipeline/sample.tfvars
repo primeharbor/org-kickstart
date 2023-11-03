@@ -14,15 +14,15 @@ organization = {
   accounts = {
     dev = {
       account_name  = "primeharbor-kickstart-dev"
-      account_email = ""aws+kickstart-dev@primeharbor.com"
+      account_email = "aws+kickstart-dev@primeharbor.com"
     }
     it = {
       account_name  = "primeharbor-kickstart-it"
-      account_email = ""aws+kickstart-it@primeharbor.com"
+      account_email = "aws+kickstart-it@primeharbor.com"
     }
     sandbox = {
       account_name  = "primeharbor-kickstart-sandbox"
-      account_email = ""aws+kickstart-sandbox@primeharbor.com"
+      account_email = "aws+kickstart-sandbox@primeharbor.com"
       parent_ou_id  = "ou-yyyy-yyyyyyyy"
     }
   }
