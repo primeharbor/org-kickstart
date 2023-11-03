@@ -16,29 +16,33 @@
 # The Bucket is created in the security account
 #
 resource "aws_s3_bucket" "cloudtrail_bucket" {
+  count    = var.cloudtrail_bucket_name == null ? 0 : 1
   provider = aws.security_account
   bucket   = var.cloudtrail_bucket_name
 }
 
 resource "aws_s3_bucket_versioning" "cloudtrail_bucket" {
+  count    = var.cloudtrail_bucket_name == null ? 0 : 1
   provider = aws.security_account
-  bucket   = aws_s3_bucket.cloudtrail_bucket.id
+  bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_ownership_controls" "cloudtrail_bucket" {
+  count    = var.cloudtrail_bucket_name == null ? 0 : 1
   provider = aws.security_account
-  bucket   = aws_s3_bucket.cloudtrail_bucket.id
+  bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
 }
 
 resource "aws_s3_bucket_public_access_block" "cloudtrail_bucket_bpa" {
+  count    = var.cloudtrail_bucket_name == null ? 0 : 1
   provider = aws.security_account
-  bucket   = aws_s3_bucket.cloudtrail_bucket.id
+  bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
 
   # Modifying these settings prevents Terraform from running.
   block_public_acls       = true
@@ -48,12 +52,14 @@ resource "aws_s3_bucket_public_access_block" "cloudtrail_bucket_bpa" {
 }
 
 resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
+  count    = var.cloudtrail_bucket_name == null ? 0 : 1
   provider = aws.security_account
-  bucket   = aws_s3_bucket.cloudtrail_bucket.id
-  policy   = data.aws_iam_policy_document.cloudtrail_bucket_policy.json
+  bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
+  policy   = data.aws_iam_policy_document.cloudtrail_bucket_policy[0].json
 }
 
 data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
+  count = var.cloudtrail_bucket_name == null ? 0 : 1
   statement {
     sid    = "AWSCloudTrailAclCheck"
     effect = "Allow"
@@ -62,7 +68,7 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
       identifiers = ["cloudtrail.amazonaws.com"]
     }
     actions   = ["s3:GetBucketAcl"]
-    resources = [aws_s3_bucket.cloudtrail_bucket.arn]
+    resources = [aws_s3_bucket.cloudtrail_bucket[0].arn]
   }
 
   statement {
@@ -73,7 +79,7 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
       identifiers = ["cloudtrail.amazonaws.com"]
     }
     actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.cloudtrail_bucket.arn}/*"]
+    resources = ["${aws_s3_bucket.cloudtrail_bucket[0].arn}/*"]
   }
 
   statement {
@@ -88,8 +94,8 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
       "s3:ListBucket"
     ]
     resources = [
-      aws_s3_bucket.cloudtrail_bucket.arn,
-      "${aws_s3_bucket.cloudtrail_bucket.arn}/*"
+      aws_s3_bucket.cloudtrail_bucket[0].arn,
+      "${aws_s3_bucket.cloudtrail_bucket[0].arn}/*"
     ]
 
     condition {
@@ -110,9 +116,9 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
 #
 resource "aws_cloudtrail" "org_cloudtrail" {
   count                         = var.cloudtrail_bucket_name != null ? 1 : 0
-  depends_on                    = [aws_s3_bucket.cloudtrail_bucket]
+  depends_on                    = [aws_s3_bucket.cloudtrail_bucket[0]]
   name                          = "org_cloudtrail"
-  s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
+  s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket[0].id
   include_global_service_events = true
   enable_log_file_validation    = true
   is_multi_region_trail         = true

@@ -40,11 +40,20 @@ variable "admin_group_id" {
 variable "billing_contact" {}
 variable "security_contact" {}
 
+variable "disable_sso_management" {
+  type = bool
+}
 
 resource "aws_organizations_account" "account" {
   name      = var.account_name
   email     = var.account_email
   parent_id = var.parent_ou_id
+  lifecycle {
+    ignore_changes = [
+      tags
+    ]
+  }
+
 }
 
 output "account_id" {

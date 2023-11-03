@@ -44,10 +44,3 @@ resource "aws_organizations_organization" "org" {
   feature_set = "ALL"
 }
 
-# We don't manage the payer via Terraform, but here it is anyway
-resource "aws_organizations_account" "payer" {
-  name      = var.payer_name
-  email     = var.payer_email
-  parent_id = aws_organizations_organizational_unit.governance_ou.id
-}
-

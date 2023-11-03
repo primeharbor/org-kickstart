@@ -86,7 +86,7 @@
         "iam:UpdateAssumeRolePolicy"
       ],
       "Resource": [
-        "arn:aws:iam::*:role/security-audit",
+        "arn:aws:iam::*:role/${audit_role_name}",
         "arn:aws:iam::*:role/OrganizationAccountAccessRole",
         "arn:aws:iam::*:role/stacksets-exec-*",
         "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO*"

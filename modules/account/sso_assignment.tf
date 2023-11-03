@@ -25,6 +25,7 @@ locals {
 }
 
 resource "aws_ssoadmin_account_assignment" "account_group_assignment" {
+  count            = var.disable_sso_management == true ? 0 : 1
   instance_arn       = local.instance_arn
   permission_set_arn = var.admin_permission_set_arn
   principal_id       = var.admin_group_id

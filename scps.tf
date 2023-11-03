@@ -17,13 +17,16 @@ module "scp" {
   source             = "./modules/scp"
   policy_name        = each.value["policy_name"]
   policy_description = each.value["policy_description"]
-  policy_json        = data.local_file.scp_json[each.key].content
-  policy_targets     = lookup(each.value, "policy_targets", [aws_organizations_organization.org.roots[0].id])
+  policy_json        = templatefile(fileexists(each.value["policy_json_file"]) ? each.value["policy_json_file"] : "${path.module}/${each.value["policy_json_file"]}", lookup(each.value, "policy_vars", {}))
+
+
+
+
+  policy_targets = lookup(each.value, "policy_targets", [aws_organizations_organization.org.roots[0].id])
 }
 
-data "local_file" "scp_json" {
-  for_each = var.service_control_policies
-  filename = fileexists(each.value["policy_json_file"]) ? each.value["policy_json_file"] : "${path.module}/${each.value["policy_json_file"]}"
+# data "local_file" "scp_json" {
+#   for_each = var.service_control_policies
+#   filename = fileexists(each.value["policy_json_file"]) ? each.value["policy_json_file"] : "${path.module}/${each.value["policy_json_file"]}"
+# }
 
-
-}

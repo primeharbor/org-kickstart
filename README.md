@@ -3,7 +3,14 @@
 Kickstart and manage your AWS Organization via Terraform via PrimeHarbor's opinionated version of Control Tower
 
 
-## Sample tf-vars file:
+
+
+
+## Setup
+
+You will need to create the new AWS account and enable SSO by hand prior to using org-kickstart
+
+Sample tfvars file:
 ```hcl
 
 organization = {
@@ -106,3 +113,9 @@ tfbackend file:
 bucket="org-kickstart-13456789012"
 key="org-kickstart.tfstate"
 ```
+
+
+
+ ## Prior Art
+ https://github.com/george-richardson/terraform-aws-personal-org
+ https://github.com/chris-qa-org/terraform-aws-organzation-and-sso/tree/main/examples/accounts-and-permission-assignments

@@ -29,8 +29,9 @@ module "security_account" {
   account_name             = var.security_account_name
   account_email            = var.security_account_root_email
   parent_ou_id             = aws_organizations_organizational_unit.governance_ou.id
-  admin_permission_set_arn = aws_ssoadmin_permission_set.admin_permission_set.arn
-  admin_group_id           = aws_identitystore_group.admin_group.group_id
+  disable_sso_management   = var.disable_sso_management
+  admin_permission_set_arn = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
+  admin_group_id           = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
   billing_contact          = var.global_billing_contact
   security_contact         = var.global_security_contact
 }

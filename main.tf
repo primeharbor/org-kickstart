@@ -33,3 +33,18 @@ locals {
   regions          = data.aws_regions.current.names
 }
 
+provider "aws" {
+  alias  = "security_account-us-east-2"
+  region = "us-east-2"
+
+  assume_role {
+    role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags
+  default_tags {
+    tags = {
+      managed_by = "pht-org-kickstart"
+    }
+  }
+}

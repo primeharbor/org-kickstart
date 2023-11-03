@@ -66,5 +66,5 @@ tf-plan-fetch:
 tf-execute: tf-plan tf-apply
 
 clean:
-	rm .terraform .terraform.lock.hcl outputs*.json *.tfplan
+	rm -rf .terraform .terraform.lock.hcl outputs*.json *.tfplan
 

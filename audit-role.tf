@@ -13,6 +13,7 @@
 # limitations under the License.
 
 resource "aws_cloudformation_stack_set" "audit_role" {
+  count            = var.deploy_audit_role == true ? 1 : 0
   provider         = aws.security_account
   name             = "audit-role-stackset"
   permission_model = "SERVICE_MANAGED"
@@ -32,7 +33,7 @@ resource "aws_cloudformation_stack_set" "audit_role" {
 
   parameters = {
     TrustedAccountNumber = module.security_account.account_id
-    RoleName             = "security-audit"
+    RoleName             = var.audit_role_name
   }
 
   auto_deployment {
@@ -50,15 +51,15 @@ resource "aws_cloudformation_stack_set" "audit_role" {
     failure_tolerance_percentage = 0
     max_concurrent_percentage    = 100
   }
-
 }
 
 resource "aws_cloudformation_stack_set_instance" "audit_role" {
+  count          = var.deploy_audit_role == true ? 1 : 0
   provider       = aws.security_account
   region         = "us-east-1"
   call_as        = "DELEGATED_ADMIN"
   retain_stack   = true
-  stack_set_name = aws_cloudformation_stack_set.audit_role.name
+  stack_set_name = aws_cloudformation_stack_set.audit_role[0].name
   deployment_targets {
     organizational_unit_ids = [aws_organizations_organization.org.roots[0].id]
   }
@@ -73,12 +74,13 @@ resource "aws_cloudformation_stack_set_instance" "audit_role" {
 # Delegated Admin Stacksets doesn't deploy to the payer
 #
 resource "aws_cloudformation_stack" "audit_role_payer" {
+  count        = var.deploy_audit_role == true ? 1 : 0
   name         = "audit-role"
   template_url = "https://s3.amazonaws.com/pht-cloudformation/aws-account-automation/AuditRole-Template.yaml"
 
   parameters = {
     TrustedAccountNumber = module.security_account.account_id
-    RoleName             = "security-audit"
+    RoleName             = var.audit_role_name
   }
   capabilities = [
     "CAPABILITY_NAMED_IAM"

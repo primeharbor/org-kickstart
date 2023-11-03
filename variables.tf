@@ -47,6 +47,11 @@ variable "payer_name" {
 #
 # SSO
 #
+variable "disable_sso_management" {
+  description = "Set to true to manage AWS Identity Center outside of org-kickstart"
+  type        = bool
+  default     = false
+}
 variable "session_duration" {
   description = "Default Session Duration"
   type        = string
@@ -56,6 +61,11 @@ variable "admin_permission_set_name" {
   description = "Name of the Permission Set to Create"
   type        = string
   default     = "AdministratorAccess"
+}
+variable "admin_group_name" {
+  description = "Name of the Identity Store Group with all the admin users"
+  type        = string
+  default     = "AllAdmins"
 }
 
 #
@@ -110,3 +120,17 @@ variable "service_control_policies" {
   description = "Map of SCPs to deploy"
 }
 
+#
+# Audit Role
+#
+variable "audit_role_name" {
+  description = "Name of the AuditRole to deploy"
+  default     = "security-audit"
+  type        = string
+}
+
+variable "deploy_audit_role" {
+  description = "Boolean to determine if org-kickstart should manage Audit Role"
+  type        = bool
+  default     = true
+}

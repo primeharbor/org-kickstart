@@ -27,49 +27,65 @@ resource "aws_s3_bucket" "billing_logs" {
   bucket = var.billing_data_bucket_name
 }
 
-# resource "aws_s3_bucket_ownership_controls" "billing_logs" {
-#   count  = var.billing_data_bucket_name != null ? 1 : 0
-#   bucket = aws_s3_bucket.billing_logs[0].id
-#   rule {
-#     object_ownership = "BucketOwnerEnforced"
-#   }
-# }
-
-# resource "aws_s3_bucket_acl" "billing_logs_acl" {
-#   count  = var.billing_data_bucket_name != null ? 1 : 0
-#   bucket = aws_s3_bucket.billing_logs[0].id
-#   acl    = "private"
-# }
-
 data "aws_iam_policy_document" "allow_billing_logging" {
   count = var.billing_data_bucket_name != null ? 1 : 0
   statement {
     effect = "Allow"
-
     principals {
       type        = "AWS"
       identifiers = [data.aws_billing_service_account.main.arn]
     }
-
     actions = [
       "s3:GetBucketAcl",
       "s3:GetBucketPolicy",
     ]
-
     resources = [aws_s3_bucket.billing_logs[0].arn]
   }
 
   statement {
     effect = "Allow"
-
     principals {
       type        = "AWS"
       identifiers = [data.aws_billing_service_account.main.arn]
     }
-
     actions   = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.billing_logs[0].arn}/*"]
   }
+
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["billingreports.amazonaws.com"]
+    }
+    actions = [
+      "s3:GetBucketAcl",
+      "s3:GetBucketPolicy",
+      "s3:PutObject"
+    ]
+    resources = [
+      aws_s3_bucket.billing_logs[0].arn,
+      "${aws_s3_bucket.billing_logs[0].arn}/*"
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [aws_organizations_account.payer.id]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:cur:us-east-1:${aws_organizations_account.payer.id}:definition/*"]
+    }
+
+  }
+
+
+
+
+
+
+
 }
 
 resource "aws_s3_bucket_policy" "allow_billing_logging" {
