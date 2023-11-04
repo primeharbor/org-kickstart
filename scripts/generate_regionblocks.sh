@@ -1,3 +1,13 @@
+#!/bin/bash
+
+INFILE=$1
+
+if [[ ! -f $INFILE ]] ; then
+	echo "Cannot file $INFILE to process"
+	exit 1
+fi
+
+cat <<EOF
 # Copyright 2023 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,24 +22,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-terraform {
-  required_providers {
-    aws = {
-      source                = "hashicorp/aws"
-      version               = ">= 2.7.0"
-      configuration_aliases = [aws.security_account]
-    }
-  }
-}
+# This has to be done 17 times for each region because terraform providers are stupid
 
-# Payer ID
-data "external" "get_caller_identity" {
-  program = ["aws", "sts", "get-caller-identity"]
-}
-data "aws_regions" "current" {}
+EOF
 
-locals {
-  payer_account_id = data.external.get_caller_identity.result.Account
-  regions          = data.aws_regions.current.names
-}
 
+for r in `aws ec2 describe-regions --query Regions[].RegionName --output text` ; do
+	# echo $r
+	sed s/REGION/$r/g $INFILE
+	echo
+done
