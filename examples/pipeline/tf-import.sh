@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2023 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,5 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-bucket="org-kickstart-13456789012"
-key="org-kickstart.tfstate"
+# Simplify importing
+
+if [[ -z $ENV ]] ; then
+	echo "ENV not set. exiting"
+	exit 1
+fi
+
+terraform import -var-file="${ENV}.tfvars" $1 $2
