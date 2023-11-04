@@ -66,18 +66,38 @@ module "organization" {
     aws                  = aws
     aws.security_account = aws.security_account
   }
+  # Organization Names
   organization_name           = var.organization["organization_name"]
   security_account_root_email = var.organization["security_account_root_email"]
   security_account_name       = var.organization["security_account_name"]
   payer_email                 = var.organization["payer_email"]
   payer_name                  = var.organization["payer_name"]
-  session_duration            = var.organization["session_duration"]
-  admin_permission_set_name   = var.organization["admin_permission_set_name"]
-  cloudtrail_bucket_name      = var.organization["cloudtrail_bucket_name"]
-  accounts                    = var.organization["accounts"]
-  service_control_policies    = var.organization["service_control_policies"]
-  global_billing_contact      = var.organization["global_billing_contact"]
-  # global_security_contact = var.organization["global_security_contact"]
+
+  # SSO
+  session_duration          = var.organization["session_duration"]
+  admin_permission_set_name = var.organization["admin_permission_set_name"]
+  admin_group_name          = var.organization["admin_group_name"]
+  disable_sso_management    = true
+
+  # Audit Role
+  deploy_audit_role = false # override managing audit role
+  audit_role_name   = var.organization["audit_role_name"]
+
+  # CloudTrail
+  cloudtrail_bucket_name = var.organization["cloudtrail_bucket_name"]
+
+  # Map Objects
+  accounts                 = var.organization["accounts"]
+  service_control_policies = var.organization["service_control_policies"]
+
+  # Global Alternate Contacts
+  global_billing_contact  = var.organization["global_billing_contact"]
+  global_security_contact = var.organization["global_security_contact"]
+
+  # Security Services Config
+  security_services = var.organization["security_services"]
+
+  # Billing CUR Reports
   billing_data_bucket_name = var.organization["billing_data_bucket_name"]
   cur_report_frequency     = var.organization["cur_report_frequency"]
 }

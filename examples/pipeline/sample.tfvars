@@ -7,9 +7,12 @@ organization = {
   cloudtrail_bucket_name      = "primeharbor-kickstart-cloudtrail"
   billing_data_bucket_name    = "primeharbor-kickstart-cur"
   cur_report_frequency        = "DAILY" # Valid options: DAILY, HOURLY, MONTHLY
-
-  session_duration          = "PT8H"
-  admin_permission_set_name = "AdministratorAccess"
+  session_duration            = "PT8H"
+  admin_permission_set_name   = "AdministratorAccess"
+  admin_group_name            = "AllAdmins"
+  disable_sso_management      = false
+  deploy_audit_role           = true
+  audit_role_name             = "security-audit"
 
   accounts = {
     dev = {
@@ -50,23 +53,33 @@ organization = {
     suspended_ou = {
       policy_name        = "SuspendedAccounts"
       policy_description = "Denies all activity in accounts in the SuspendedOU"
-      policy_json_file   = "policies/SuspendedAccountsPolicy.json"
-      policy_targets     = ["ou-xxxx-xxxxxx"]
+      policy_json_file   = "policies/SuspendedAccountsPolicy.json.tftpl"
+      policy_targets     = ["ou-xxxx-xxxxxxxx"]
+      policy_vars = {
+        audit_role_name = "security-audit"
+      }
     }
     security_controls = {
       policy_name        = "DefaultSecurityControls"
       policy_description = "Base Security Controls for all accounts"
-      policy_json_file   = "policies/SecurityControlsSCP.json"
+      policy_json_file   = "policies/SecurityControlsSCP.json.tftpl"
+      policy_vars = {
+        audit_role_name = "security-audit"
+      }
     }
 
     workload_deny_regions = {
       policy_name        = "DenyRegions"
       policy_description = "Deny access to unapproved default regions"
-      policy_json_file   = "policies/DisableRegionsPolicy.json"
+      policy_json_file   = "policies/DisableRegionsPolicy.json.tftpl"
       policy_targets = [
         "ou-xxxx-xxxxxxxx", # Workloads
         "ou-yyyy-yyyyyyyy"  # Sandbox
       ]
+      policy_vars = {
+        allowed_regions = ["us-east-1", "eu-west-1"]
+        audit_role_name = "security-audit"
+      }
     }
 
     workload_deny_instancetypes = {
@@ -89,5 +102,11 @@ organization = {
       ]
     }
   }
+
+  security_services = {
+    disable_guardduty   = false
+    disable_securityhub = true
+  }
+
 
 }
