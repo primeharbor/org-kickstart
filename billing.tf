@@ -80,12 +80,6 @@ data "aws_iam_policy_document" "allow_billing_logging" {
 
   }
 
-
-
-
-
-
-
 }
 
 resource "aws_s3_bucket_policy" "allow_billing_logging" {
@@ -99,7 +93,7 @@ resource "aws_s3_bucket_policy" "allow_billing_logging" {
 # These recommendations are from Mike Julian @ the Duckbill Group
 #
 resource "aws_cur_report_definition" "cur_report_definition" {
-  count                      = var.cur_report_frequency != "null" ? 1 : 0
+  count                      = var.cur_report_frequency != "NONE" ? 1 : 0
   report_name                = "athena-cur-report"
   time_unit                  = var.cur_report_frequency
   format                     = "Parquet"

@@ -72,7 +72,7 @@ variable "admin_group_name" {
 # CloudTrail
 #
 variable "cloudtrail_bucket_name" {
-  description = "Name of the S3 Bucket to create to store CloudTrail events"
+  description = "Name of the S3 Bucket to create to store CloudTrail events. Set to null to disable cloudtrail management"
   type        = string
   default     = null
 }
@@ -82,6 +82,10 @@ variable "cloudtrail_bucket_name" {
 # Account Index
 #
 variable "accounts" {}
+
+#
+# Account Contacts
+#
 variable "global_billing_contact" {
   description = "Map for the central billing contact to be applied to all accounts"
   default     = null
@@ -96,19 +100,19 @@ variable "global_security_contact" {
 # Billing
 #
 variable "billing_data_bucket_name" {
-  description = "Name of the S3 Bucket for CUR reports"
+  description = "Name of the S3 Bucket for CUR reports. Set to null to disable"
   type        = string
   default     = null
 }
 
 variable "cur_report_frequency" {
-  description = "Frequency CUR reports should be delivered (DAILY, HOURLY, MONTHLY)"
+  description = "Frequency CUR reports should be delivered (DAILY, HOURLY, MONTHLY). Set to NONE to disable"
   type        = string
-  default     = "null"
+  default     = "NONE"
 
   validation {
-    condition     = can(regex("^(DAILY|HOURLY|MONTHLY|null)$", var.cur_report_frequency))
-    error_message = "Valid options: DAILY, HOURLY, MONTHLY"
+    condition     = can(regex("^(DAILY|HOURLY|MONTHLY|NONE)$", var.cur_report_frequency))
+    error_message = "Valid options: DAILY, HOURLY, MONTHLY, NONE"
   }
 
 }
