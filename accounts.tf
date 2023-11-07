@@ -29,5 +29,6 @@ module "accounts" {
   admin_group_id           = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
   billing_contact          = var.global_billing_contact
   security_contact         = var.global_security_contact
+  operations_contact       = var.global_operations_contact
   disable_sso_management   = var.disable_sso_management
 }

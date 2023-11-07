@@ -37,8 +37,15 @@ variable "admin_group_id" {
   type        = string
 }
 
-variable "billing_contact" {}
-variable "security_contact" {}
+variable "billing_contact" {
+  default = null
+}
+variable "security_contact" {
+  default = null
+}
+variable "operations_contact" {
+  default = null
+}
 
 variable "disable_sso_management" {
   type = bool

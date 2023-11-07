@@ -87,11 +87,15 @@ variable "accounts" {}
 # Account Contacts
 #
 variable "global_billing_contact" {
-  description = "Map for the central billing contact to be applied to all accounts"
+  description = "Map for the central billing alternate contact to be applied to all accounts"
   default     = null
 }
 variable "global_security_contact" {
-  description = "Map for the central security contact to be applied to all accounts"
+  description = "Map for the central security alternate contact to be applied to all accounts"
+  default     = null
+}
+variable "global_operations_contact" {
+  description = "Map for the central operations alternate contact to be applied to all accounts"
   default     = null
 }
 
