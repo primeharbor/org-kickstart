@@ -162,3 +162,4 @@ https://github.com/chris-qa-org/terraform-aws-organzation-and-sso/tree/main/exam
 10. Make it work with GitOps & Code Pipeline
 10. Publish to Terraform Registry
 11. More AWS Identity Center customization.
+12. Optional DataTrails & integrate the advanced-event-selectors work I need to do.
