@@ -71,7 +71,7 @@ resource "aws_guardduty_member" "member" {
 
     # We cannot use count here either, so we must add the disable_guardduty flag
     for index, account in data.aws_organizations_organizational_unit_descendant_accounts.accounts.accounts :
-      account.id => account if account.id != var.security_account_id && ! var.disable_guardduty
+    account.id => account if account.id != var.security_account_id && !var.disable_guardduty
   }
 
   lifecycle {

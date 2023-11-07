@@ -67,7 +67,7 @@ module "organization" {
   # Map Objects
   accounts                 = var.organization["accounts"]
   service_control_policies = var.organization["service_control_policies"]
-  organization_units = var.organization["organization_units"]
+  organization_units       = var.organization["organization_units"]
 
   # Global Alternate Contacts
   global_billing_contact  = var.organization["global_billing_contact"]
