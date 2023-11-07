@@ -26,23 +26,14 @@ terraform {
   }
 }
 
-#
-# Create Provider for Management Account
-#
-provider "aws" {
-  region = "us-east-1"
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags
-  default_tags {
-    tags = {
-      managed_by = "pht-org-kickstart"
-    }
-  }
-
-}
 
 module "organization" {
   source = "github.com/primeharbor/org-kickstart"
+
+  tag_set = {
+    managed_by = "pht-org-kickstart"
+    tf_repo    = "FIXME"
+  }
 
   # Organization Names
   organization_name           = var.organization["organization_name"]
@@ -52,33 +43,34 @@ module "organization" {
   payer_name                  = var.organization["payer_name"]
 
   # SSO
-  session_duration          = var.organization["session_duration"]
-  admin_permission_set_name = var.organization["admin_permission_set_name"]
-  admin_group_name          = var.organization["admin_group_name"]
-  disable_sso_management    = true
+  session_duration          = lookup(var.organization, "session_duration", "PT8H")
+  admin_permission_set_name = lookup(var.organization, "admin_permission_set_name", "AdministratorAccess")
+  admin_group_name          = lookup(var.organization, "admin_group_name", "AllAdmins")
+  disable_sso_management    = false
 
   # Audit Role
-  deploy_audit_role = false # override managing audit role
-  audit_role_name   = var.organization["audit_role_name"]
+  deploy_audit_role = true # override managing audit role
+  audit_role_name   = lookup(var.organization, "audit_role_name", "security-audit")
 
   # CloudTrail
-  cloudtrail_bucket_name = var.organization["cloudtrail_bucket_name"]
+  cloudtrail_bucket_name = lookup(var.organization, "cloudtrail_bucket_name", null)
 
   # Map Objects
   accounts                 = var.organization["accounts"]
-  service_control_policies = var.organization["service_control_policies"]
-  organization_units       = var.organization["organization_units"]
+  service_control_policies = lookup(var.organization, "service_control_policies", {})
+  organization_units       = lookup(var.organization, "organization_units", {})
 
   # Global Alternate Contacts
-  global_billing_contact  = var.organization["global_billing_contact"]
-  global_security_contact = var.organization["global_security_contact"]
+  global_billing_contact    = lookup(var.organization, "global_billing_contact", null)
+  global_security_contact   = lookup(var.organization, "global_security_contact", null)
+  global_operations_contact = lookup(var.organization, "global_operations_contact", null)
 
   # Security Services Config
   security_services = var.organization["security_services"]
 
   # Billing CUR Reports
-  billing_data_bucket_name = var.organization["billing_data_bucket_name"]
-  cur_report_frequency     = var.organization["cur_report_frequency"]
+  billing_data_bucket_name = lookup(var.organization, "billing_data_bucket_name", null)
+  cur_report_frequency     = lookup(var.organization, "cur_report_frequency", "NONE")
 }
 
 variable "organization" {}
