@@ -17,13 +17,13 @@
 #
 resource "aws_s3_bucket" "cloudtrail_bucket" {
   count    = var.cloudtrail_bucket_name == null ? 0 : 1
-  provider = aws.security_account
+  provider = aws.security-account-us-east-1
   bucket   = var.cloudtrail_bucket_name
 }
 
 resource "aws_s3_bucket_versioning" "cloudtrail_bucket" {
   count    = var.cloudtrail_bucket_name == null ? 0 : 1
-  provider = aws.security_account
+  provider = aws.security-account-us-east-1
   bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
   versioning_configuration {
     status = "Enabled"
@@ -32,7 +32,7 @@ resource "aws_s3_bucket_versioning" "cloudtrail_bucket" {
 
 resource "aws_s3_bucket_ownership_controls" "cloudtrail_bucket" {
   count    = var.cloudtrail_bucket_name == null ? 0 : 1
-  provider = aws.security_account
+  provider = aws.security-account-us-east-1
   bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
   rule {
     object_ownership = "BucketOwnerEnforced"
@@ -41,7 +41,7 @@ resource "aws_s3_bucket_ownership_controls" "cloudtrail_bucket" {
 
 resource "aws_s3_bucket_public_access_block" "cloudtrail_bucket_bpa" {
   count    = var.cloudtrail_bucket_name == null ? 0 : 1
-  provider = aws.security_account
+  provider = aws.security-account-us-east-1
   bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
 
   # Modifying these settings prevents Terraform from running.
@@ -53,7 +53,7 @@ resource "aws_s3_bucket_public_access_block" "cloudtrail_bucket_bpa" {
 
 resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
   count    = var.cloudtrail_bucket_name == null ? 0 : 1
-  provider = aws.security_account
+  provider = aws.security-account-us-east-1
   bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
   policy   = data.aws_iam_policy_document.cloudtrail_bucket_policy[0].json
 }
