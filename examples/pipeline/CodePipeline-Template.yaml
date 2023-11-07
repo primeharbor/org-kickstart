@@ -47,8 +47,17 @@ Parameters:
     Description: Name of the Organization to configure
     Type: String
 
+  pCreateCodeStarConnection:
+    Type: String
+    Description: Create a new CodeStarConnection, or use an existing one. For an EXISTING connection, pConnectionName should be the Arn of the connection
+    Default: NEW
+    AllowedValues:
+      - NEW
+      - EXISTING
+
 Conditions:
   cEMailSubscription: !Not [!Equals [ !Ref pInitialSubscriberEmail, "NONE"]]
+  cCreateCodeStarConnection: !Equals [ !Ref pCreateCodeStarConnection, "NEW"]
 
 Resources:
 
@@ -74,6 +83,7 @@ Resources:
 
   CodeStarConnection:
     Type: AWS::CodeStarConnections::Connection
+    Condition: cCreateCodeStarConnection
     Properties:
       ConnectionName: !Ref pConnectionName
       ProviderType: GitHub
@@ -108,7 +118,10 @@ Resources:
             Version: '2012-10-17'
             Statement:
               - Sid: UseGitHubConnection
-                Resource: !Ref CodeStarConnection
+                Resource: !If
+                  - cCreateCodeStarConnection
+                  - !Ref CodeStarConnection
+                  - !Ref pConnectionName
                 Effect: Allow
                 Action:
                   - codestar-connections:UseConnection
@@ -165,7 +178,10 @@ Resources:
               OutputArtifacts:
                 - Name: GitHubCode
               Configuration:
-                ConnectionArn: !Ref CodeStarConnection
+                ConnectionArn: !If
+                  - cCreateCodeStarConnection
+                  - !Ref CodeStarConnection
+                  - !Ref pConnectionName
                 FullRepositoryId: !Ref pGitHubRepo
                 BranchName: !Ref pGitHubBranch
                 OutputArtifactFormat: CODE_ZIP
@@ -319,6 +335,7 @@ Outputs:
     Value: "0.0.1"
 
   CodeStarConnectionArn:
+    Condition: cCreateCodeStarConnection
     Value: !Ref CodeStarConnection
 
   PipelineBucketName:
