@@ -41,31 +41,9 @@ provider "aws" {
 
 }
 
-#
-# Create Provider for Security Account
-#
-provider "aws" {
-  alias  = "security_account"
-  region = "us-east-1"
-
-  assume_role {
-    role_arn = "arn:aws:iam::${module.organization.security_account_id}:role/OrganizationAccountAccessRole"
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs#default_tags
-  default_tags {
-    tags = {
-      managed_by = "pht-org-kickstart"
-    }
-  }
-}
-
 module "organization" {
   source = "github.com/primeharbor/org-kickstart"
-  providers = {
-    aws                  = aws
-    aws.security_account = aws.security_account
-  }
+
   # Organization Names
   organization_name           = var.organization["organization_name"]
   security_account_root_email = var.organization["security_account_root_email"]
@@ -89,6 +67,7 @@ module "organization" {
   # Map Objects
   accounts                 = var.organization["accounts"]
   service_control_policies = var.organization["service_control_policies"]
+  organization_units = var.organization["organization_units"]
 
   # Global Alternate Contacts
   global_billing_contact  = var.organization["global_billing_contact"]
