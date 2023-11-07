@@ -17,6 +17,7 @@
 #
 resource "aws_organizations_organization" "org" {
   aws_service_access_principals = [
+    "access-analyzer.amazonaws.com",
     "account.amazonaws.com",
     "backup.amazonaws.com",
     "cloudtrail.amazonaws.com",
@@ -24,13 +25,18 @@ resource "aws_organizations_organization" "org" {
     "config.amazonaws.com",
     "fms.amazonaws.com",
     "guardduty.amazonaws.com",
+    "health.amazonaws.com",
     "inspector2.amazonaws.com",
     "license-management.marketplace.amazonaws.com",
     "license-manager.amazonaws.com",
     "license-manager.member-account.amazonaws.com",
     "macie.amazonaws.com",
+    "malware-protection.guardduty.amazonaws.com",
     "member.org.stacksets.cloudformation.amazonaws.com",
+    "ram.amazonaws.com",
+    "reporting.trustedadvisor.amazonaws.com",
     "securityhub.amazonaws.com",
+    "ssm.amazonaws.com",
     "sso.amazonaws.com",
   ]
 
