@@ -20,6 +20,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -27,6 +30,9 @@ provider "aws" {
   region = "eu-north-1"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 
@@ -36,6 +42,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -43,6 +52,9 @@ provider "aws" {
   region = "eu-west-2"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 
@@ -52,6 +64,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -59,6 +74,9 @@ provider "aws" {
   region = "ap-northeast-3"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 
@@ -68,6 +86,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -75,6 +96,9 @@ provider "aws" {
   region = "ap-northeast-1"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 
@@ -84,6 +108,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -91,6 +118,9 @@ provider "aws" {
   region = "sa-east-1"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 
@@ -100,6 +130,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -107,6 +140,9 @@ provider "aws" {
   region = "ap-southeast-2"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 
@@ -116,6 +152,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -123,6 +162,9 @@ provider "aws" {
   region = "us-east-1"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 
@@ -132,6 +174,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -140,6 +185,9 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -147,6 +195,9 @@ provider "aws" {
   region = "us-west-2"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
   }
 }
 

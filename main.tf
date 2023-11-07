@@ -30,5 +30,16 @@ data "aws_regions" "current" {}
 locals {
   payer_account_id = data.external.get_caller_identity.result.Account
   regions          = data.aws_regions.current.names
+  default_tags     = var.tag_set
 }
 
+#
+# Create Default Provider for Management Account
+#
+provider "aws" {
+  region = "us-east-1"
+  default_tags {
+    tags = local.default_tags
+  }
+
+}

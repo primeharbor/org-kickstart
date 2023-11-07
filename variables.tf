@@ -17,6 +17,11 @@ variable "organization_name" {
   type        = string
 }
 
+variable "tag_set" {
+  description = "Default map of tags to be applied to all resources via all providers"
+  type        = map(any)
+  default     = {}
+}
 
 #
 # Core Accounts
