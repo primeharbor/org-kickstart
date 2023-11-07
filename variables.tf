@@ -143,9 +143,15 @@ locals {
 
 
 #
-# SCPs
+# SCPs & OUs
 variable "service_control_policies" {
   description = "Map of SCPs to deploy"
+  default     = {}
+}
+
+variable "organization_units" {
+  description = "Map of OUs to deploy"
+  default     = {}
 }
 
 #
