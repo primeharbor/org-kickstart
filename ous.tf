@@ -39,3 +39,23 @@ resource "aws_organizations_organizational_unit" "suspended_ou" {
   name      = "Suspended"
   parent_id = aws_organizations_organization.org.roots[0].id
 }
+
+# Fetch the list of AWS Organizational Units
+data "aws_organizations_organizational_units" "all_ous" {
+  parent_id = aws_organizations_organization.org.roots[0].id
+}
+
+# Create a map to look up OU IDs by name. Thanks ChatGPT for almost getting there with what I needed.
+locals {
+  ou_name_to_id = {
+    for ou in data.aws_organizations_organizational_units.all_ous.children :
+    ou.name => ou.id
+  }
+}
+
+# Accounts you're going to close or have closed go here.
+resource "aws_organizations_organizational_unit" "custom_ous" {
+  for_each  = var.organization_units
+  name      = each.value["name"]
+  parent_id = each.value["is_child_of_root"] ? aws_organizations_organization.org.roots[0].id : local.ou_name_to_id[each.value["parent_id"]]
+}

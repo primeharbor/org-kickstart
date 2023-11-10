@@ -31,3 +31,13 @@ resource "aws_account_alternate_contact" "security" {
   email_address          = var.security_contact["email_address"]
   phone_number           = var.security_contact["phone_number"]
 }
+
+resource "aws_account_alternate_contact" "operations" {
+  count                  = var.operations_contact != null ? 1 : 0
+  alternate_contact_type = "OPERATIONS"
+  account_id             = aws_organizations_account.account.id
+  name                   = var.operations_contact["name"]
+  title                  = var.operations_contact["title"]
+  email_address          = var.operations_contact["email_address"]
+  phone_number           = var.operations_contact["phone_number"]
+}

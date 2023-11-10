@@ -34,6 +34,9 @@ variable "policy_json" {
   type        = string
 }
 
+variable "ou_name_to_id" {}
+variable "root_ou" {}
+
 resource "aws_organizations_policy" "scp" {
   name        = var.policy_name
   type        = "SERVICE_CONTROL_POLICY"
@@ -44,5 +47,6 @@ resource "aws_organizations_policy" "scp" {
 resource "aws_organizations_policy_attachment" "scp_attachment" {
   count     = length(var.policy_targets)
   policy_id = aws_organizations_policy.scp.id
-  target_id = var.policy_targets[count.index]
+  target_id = var.policy_targets[count.index] == "Root" ? var.root_ou : var.ou_name_to_id[var.policy_targets[count.index]]
 }
+
