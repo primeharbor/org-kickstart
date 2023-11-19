@@ -1,16 +1,7 @@
-# Copyright 2023 Chris Farris <chris@primeharbor.com>
+# Copyright 2022 - Chris Farris (chrisf@primeharbor.com) - All Rights Reserved
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# NOTE: This code artifact is NOT licensed under an OpenSource license. You have access to it via an existing
+# arrangement for training purposes only, but it may not be distributed further without violating Copyright Law.
 
 ifndef env
 $(error env is not set)
@@ -33,6 +24,7 @@ tf-init:
 tf-plan:
 	terraform plan -out=$(env)-terraform.tfplan -no-color -var-file="$(env).tfvars"
 
+
 tf-apply:
 	terraform apply $(env)-terraform.tfplan
 	@rm $(env)-terraform.tfplan
@@ -40,10 +32,13 @@ tf-apply:
 	@aws s3 cp output-$(env).json s3://$(bucket)/output-$(env).json
 
 tf-destroy:
-	terraform destroy --auto-approve
+	terraform destroy --auto-approve -var-file="$(env).tfvars"
+
+tf-plan-destroy:
+	terraform plan --destroy -var-file="$(env).tfvars" -out=$(env)-terraform.tfplan
 
 tf-refresh:
-	terraform apply -refresh-only
+	terraform apply -refresh-only -var-file="$(env).tfvars"
 
 tf-force:
 	terraform apply -auto-approve
@@ -64,6 +59,9 @@ tf-plan-fetch:
 	@aws s3 rm s3://$(bucket)/$(env)-terraform.tfplan
 
 tf-execute: tf-plan tf-apply
+
+download-state:
+	@aws s3 cp s3://$(bucket)/$(key) $(env).tfstate
 
 clean:
 	rm -rf .terraform .terraform.lock.hcl outputs*.json *.tfplan

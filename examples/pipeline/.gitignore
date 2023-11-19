@@ -1,10 +1,13 @@
 
+# Scrap files
+add_to_tfvars.txt
+import_accounts.sh
 
 *.tfplan
 
 # Local .terraform directories
 .terraform
-.terraform.lock.hcl
+# .terraform.lock.hcl
 
 # .tfstate files
 *.tfstate

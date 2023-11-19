@@ -26,14 +26,17 @@ terraform {
   }
 }
 
+locals {
+  default_tags = {
+    managed_by = "org-kickstart"
+    tf_repo    = "CHANGEME"
+  }
+}
 
 module "organization" {
   source = "github.com/primeharbor/org-kickstart"
 
-  tag_set = {
-    managed_by = "pht-org-kickstart"
-    tf_repo    = "FIXME"
-  }
+  tag_set = local.default_tags
 
   # Organization Names
   organization_name           = var.organization["organization_name"]
@@ -64,9 +67,6 @@ module "organization" {
   global_billing_contact    = lookup(var.organization, "global_billing_contact", null)
   global_security_contact   = lookup(var.organization, "global_security_contact", null)
   global_operations_contact = lookup(var.organization, "global_operations_contact", null)
-
-  # Security Services Config
-  security_services = var.organization["security_services"]
 
   # Billing CUR Reports
   billing_data_bucket_name = lookup(var.organization, "billing_data_bucket_name", null)
