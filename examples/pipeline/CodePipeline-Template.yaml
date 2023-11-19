@@ -97,7 +97,7 @@ Resources:
         - cEMailSubscription
         - Endpoint: !Ref 'pInitialSubscriberEmail'
           Protocol: email
-        - AWS::NoValue
+        - !Ref AWS::NoValue
 
   PipelineServiceRole:
     Type: AWS::IAM::Role
