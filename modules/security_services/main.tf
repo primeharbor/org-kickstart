@@ -24,17 +24,28 @@ terraform {
 
 variable "security_account_id" {}
 
-variable "disable_guardduty" {
-  default = false
+#
+# Security Service flags
+variable "security_services" {
+  description = "explictly disable or not manage a security service"
+  default = {
+    disable_guardduty   = "false"
+    disable_macie       = "false"
+    disable_inspector   = "false"
+    disable_securityhub = "false"
+  }
 }
-variable "disable_macie" {
-  default = false
-}
-variable "disable_inspector" {
-  default = false
-}
-variable "disable_securityhub" {
-  default = false
+
+locals {
+  security_services = merge(
+    tomap({
+      disable_guardduty   = "false"
+      disable_macie       = "false"
+      disable_inspector   = "false"
+      disable_securityhub = "false"
+    }),
+    var.security_services,
+  )
 }
 
 

@@ -127,31 +127,6 @@ variable "cur_report_frequency" {
 }
 
 #
-# Security Service flags
-variable "security_services" {
-  description = "explictly disable or not manage a security service"
-  default = {
-    disable_guardduty   = "false"
-    disable_macie       = "false"
-    disable_inspector   = "false"
-    disable_securityhub = "false"
-  }
-}
-
-locals {
-  security_services = merge(
-    tomap({
-      disable_guardduty   = "false"
-      disable_macie       = "false"
-      disable_inspector   = "false"
-      disable_securityhub = "false"
-    }),
-    var.security_services,
-  )
-}
-
-
-#
 # SCPs & OUs
 variable "service_control_policies" {
   description = "Map of SCPs to deploy"
