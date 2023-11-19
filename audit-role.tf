@@ -14,7 +14,7 @@
 
 resource "aws_cloudformation_stack_set" "audit_role" {
   count            = var.deploy_audit_role == true ? 1 : 0
-  provider         = aws.security-account-us-east-1
+  provider         = aws.security-account
   name             = "audit-role-stackset"
   permission_model = "SERVICE_MANAGED"
   call_as          = "DELEGATED_ADMIN"
@@ -55,7 +55,7 @@ resource "aws_cloudformation_stack_set" "audit_role" {
 
 resource "aws_cloudformation_stack_set_instance" "audit_role" {
   count          = var.deploy_audit_role == true ? 1 : 0
-  provider       = aws.security-account-us-east-1
+  provider       = aws.security-account
   region         = "us-east-1"
   call_as        = "DELEGATED_ADMIN"
   retain_stack   = true

@@ -43,3 +43,14 @@ provider "aws" {
   }
 
 }
+
+provider "aws" {
+  alias  = "security-account"
+  region = "us-east-1"
+  assume_role {
+    role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+  }
+  default_tags {
+    tags = local.default_tags
+  }
+}
