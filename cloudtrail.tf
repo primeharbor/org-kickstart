@@ -112,6 +112,50 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
 }
 
 #
+# S3 Object Notification to SNS
+#
+data "aws_iam_policy_document" "cloudtrail_s3_notification_topic" {
+  count = var.cloudtrail_bucket_name == null ? 0 : 1
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+    }
+
+    actions   = ["SNS:Publish"]
+    resources = ["arn:aws:sns:*:*:cloudtrail-s3-event-notification-topic"]
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = [aws_s3_bucket.cloudtrail_bucket[0].arn]
+    }
+  }
+}
+
+resource "aws_sns_topic" "cloudtrail_s3_notification_topic" {
+  count    = var.cloudtrail_bucket_name == null ? 0 : 1
+  provider = aws.security-account
+  name     = "cloudtrail-s3-event-notification-topic"
+  policy   = data.aws_iam_policy_document.cloudtrail_s3_notification_topic[0].json
+}
+
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  count    = var.cloudtrail_bucket_name == null ? 0 : 1
+  provider = aws.security-account
+  bucket   = aws_s3_bucket.cloudtrail_bucket[0].id
+
+  topic {
+    topic_arn     = aws_sns_topic.cloudtrail_s3_notification_topic[0].arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_suffix = ".json.gz"
+    filter_prefix = "AWSLogs/"
+  }
+}
+
+#
 # And the Trail is created in the Management Account
 #
 resource "aws_cloudtrail" "org_cloudtrail" {
@@ -123,4 +167,8 @@ resource "aws_cloudtrail" "org_cloudtrail" {
   enable_log_file_validation    = true
   is_multi_region_trail         = true
   is_organization_trail         = true
+}
+
+output "cloudtrail_s3_notification_topic" {
+  value = aws_sns_topic.cloudtrail_s3_notification_topic[0].arn
 }
