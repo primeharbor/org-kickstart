@@ -54,7 +54,7 @@ resource "aws_account_alternate_contact" "security" {
 
 resource "aws_account_alternate_contact" "operations" {
   count                  = var.global_operations_contact != null ? 1 : 0
-  alternate_contact_type = "SECURITY"
+  alternate_contact_type = "OPERATIONS"
   name                   = var.global_operations_contact["name"]
   title                  = var.global_operations_contact["title"]
   email_address          = var.global_operations_contact["email_address"]
