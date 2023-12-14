@@ -170,5 +170,5 @@ resource "aws_cloudtrail" "org_cloudtrail" {
 }
 
 output "cloudtrail_s3_notification_topic" {
-  value = aws_sns_topic.cloudtrail_s3_notification_topic[0].arn
+  value = var.cloudtrail_bucket_name != null ? aws_sns_topic.cloudtrail_s3_notification_topic[0].arn : null
 }
