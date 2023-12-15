@@ -17,6 +17,8 @@
 PAYER_PROFILE=$1
 SECURITY_PROFILE=$2
 
+OUTFILE=import_guardduty.tf
+
 if [[ -z $SECURITY_PROFILE ]] ; then
   echo "Usage: $0 <PAYER_PROFILE> <SECURITY_PROFILE>"
   exit 1
@@ -31,7 +33,7 @@ REGIONS=`aws ec2 describe-regions  | jq -r '.Regions[].RegionName'`
 for REGION in $REGIONS ; do 
     PAYER_DETECTOR=`aws guardduty list-detectors --query DetectorIds[0] --output text --region $REGION --profile $PAYER_PROFILE`
     SECURITY_DETECTOR=`aws guardduty list-detectors --query DetectorIds[0] --output text --region $REGION --profile $SECURITY_PROFILE`
-    cat <<EOF
+    cat <<EOF > $OUTFILE
 import {
   to = module.security-services-$REGION.aws_guardduty_detector.payer_detector[0]
   id = "$PAYER_DETECTOR"
@@ -55,7 +57,7 @@ EOF
         continue  # Cannot add the security account as a member of itself
       fi
 
-    cat <<EOF
+    cat <<EOF >> $OUTFILE
 import { 
     to = module.security-services-$REGION.aws_guardduty_member.member["$a"]
     id = "$SECURITY_DETECTOR:$a"
