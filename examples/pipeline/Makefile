@@ -21,9 +21,11 @@ update: tf-init tf-execute
 tf-init:
 	terraform init -backend-config=$(env).tfbackend -reconfigure
 
+tf-update:
+	terraform get -update
+
 tf-plan:
 	terraform plan -out=$(env)-terraform.tfplan -no-color -var-file="$(env).tfvars"
-
 
 tf-apply:
 	terraform apply $(env)-terraform.tfplan
