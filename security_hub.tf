@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# In order to configure Delegated Admin, the Detector must exist in the payer
 resource "aws_securityhub_account" "payer_account" {
-  count                     = local.security_services["disable_securityhub"] ? 0 : 1
-  provider                  = aws.payer_account
+  count = local.security_services["disable_securityhub"] ? 0 : 1
+  #   provider                  = aws.payer_account
   enable_default_standards  = false
   control_finding_generator = "SECURITY_CONTROL"
   auto_enable_controls      = false
@@ -25,22 +24,30 @@ resource "aws_securityhub_account" "payer_account" {
 # Otherwise, AWS will create the hub with incorrect defaults
 resource "aws_securityhub_account" "security_account" {
   count                     = local.security_services["disable_securityhub"] ? 0 : 1
-  provider                  = aws.security_account
+  provider                  = aws.security-account
   enable_default_standards  = false
   control_finding_generator = "SECURITY_CONTROL"
   auto_enable_controls      = false
 }
 
+resource "aws_organizations_delegated_administrator" "securityhub" {
+  account_id        = module.security_account.account_id
+  service_principal = "securityhub.amazonaws.com"
+  depends_on = [
+    aws_securityhub_account.payer_account,
+    aws_securityhub_account.security_account
+  ]
+}
 
 # Once both hubs are created, we can delegate admin to the security account
 resource "aws_securityhub_organization_admin_account" "delegated_admin" {
-  count            = local.security_services["disable_securityhub"] ? 0 : 1
-  provider         = aws.payer_account
-  depends_on       = [
+  count = local.security_services["disable_securityhub"] ? 0 : 1
+  #   provider         = aws.payer_account
+  depends_on = [
     aws_securityhub_account.payer_account,
     aws_securityhub_account.security_account
-    ]
-  admin_account_id = var.security_account_id
+  ]
+  admin_account_id = module.security_account.account_id
 }
 
 # Once the delegation is complete, we create the organization config.
@@ -50,19 +57,7 @@ resource "aws_securityhub_organization_configuration" "security_account" {
     aws_securityhub_organization_admin_account.delegated_admin
   ]
   count                 = local.security_services["disable_securityhub"] ? 0 : 1
-  provider              = aws.security_account
+  provider              = aws.security-account
   auto_enable           = true
   auto_enable_standards = "NONE"
 }
-
-# This is a Placeholder for configuring aggregation - At this time TF doesn't
-# support centralized config, so the last step must be done via clickops.
-# resource "aws_securityhub_finding_aggregator" "aggregator" {
-#   provider     = aws.security_account
-#   count        = var.security_hub_aggregation_region ? 1 : 0
-#   linking_mode = "ALL_REGIONS"
-#   depends_on = [
-#     aws_securityhub_organization_configuration.security_account,
-#     aws_securityhub_organization_admin_account.delegated_admin
-#   ]
-# }

@@ -27,10 +27,31 @@ data "external" "get_caller_identity" {
 }
 data "aws_regions" "current" {}
 
+#
+# Security Service flags
+variable "security_services" {
+  description = "explictly disable or not manage a security service"
+  default = {
+    disable_guardduty   = "false"
+    disable_macie       = "false"
+    disable_inspector   = "false"
+    disable_securityhub = "false"
+  }
+}
+
 locals {
   payer_account_id = data.external.get_caller_identity.result.Account
   regions          = data.aws_regions.current.names
   default_tags     = var.tag_set
+  security_services = merge(
+    tomap({
+      disable_guardduty   = "false"
+      disable_macie       = "false"
+      disable_inspector   = "false"
+      disable_securityhub = "false"
+    }),
+    var.security_services
+  )
 }
 
 #
