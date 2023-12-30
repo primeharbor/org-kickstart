@@ -31,6 +31,7 @@ resource "aws_securityhub_account" "security_account" {
 }
 
 resource "aws_organizations_delegated_administrator" "securityhub" {
+  count             = local.security_services["disable_securityhub"] ? 0 : 1
   account_id        = module.security_account.account_id
   service_principal = "securityhub.amazonaws.com"
   depends_on = [
