@@ -167,8 +167,63 @@ resource "aws_cloudtrail" "org_cloudtrail" {
   enable_log_file_validation    = true
   is_multi_region_trail         = true
   is_organization_trail         = true
+  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_to_cloudwatch[0].arn
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:*"
+}
+
+#
+# CloudWatch Log Group
+#
+resource "aws_cloudwatch_log_group" "cloudtrail" {
+  name              = var.cloudtrail_loggroup_name
+  count             = var.cloudtrail_loggroup_name != null ? 1 : 0
+  retention_in_days = 365
+}
+
+resource "aws_iam_role" "cloudtrail_to_cloudwatch" {
+  count = var.cloudtrail_loggroup_name != null ? 1 : 0
+  name  = "cloudtrail_to_cloudwatch"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  inline_policy {
+    name = "cloudtrail_to_cloudwatch"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ]
+          Effect   = "Allow"
+          Sid      = "AWSCloudTrailCreateLogStream"
+          Resource = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:log-stream:*"
+        },
+      ]
+    })
+  }
+
 }
 
 output "cloudtrail_s3_notification_topic" {
   value = var.cloudtrail_bucket_name != null ? aws_sns_topic.cloudtrail_s3_notification_topic[0].arn : null
+}
+
+output "cloudtrail_cloudwatch_log_group" {
+  value = var.cloudtrail_loggroup_name != null ? aws_cloudwatch_log_group.cloudtrail[0].arn : null
 }

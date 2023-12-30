@@ -19,6 +19,7 @@ organization = {
   security_account_name       = "primeharbor-kickstart-security"
   security_account_root_email = "aws+kickstart-security@primeharbor.com"
   cloudtrail_bucket_name      = "primeharbor-kickstart-cloudtrail"
+  cloudtrail_loggroup_name    = "CloudTrail/DefaultLogGroup"
   billing_data_bucket_name    = "primeharbor-kickstart-cur"
   cur_report_frequency        = "DAILY" # Valid options: DAILY, HOURLY, MONTHLY
   session_duration            = "PT8H"

@@ -81,7 +81,11 @@ variable "cloudtrail_bucket_name" {
   type        = string
   default     = null
 }
-
+variable "cloudtrail_loggroup_name" {
+  description = "Name of the CloudWatch Log Group in the payer account where CloudTrail will send its events"
+  type        = string
+  default     = null
+}
 
 #
 # Account Index

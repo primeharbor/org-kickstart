@@ -37,7 +37,7 @@ module "organization" {
 
   # Use the latest
   source = "github.com/primeharbor/org-kickstart"
-  
+
   # Pin to a specific release
   # source = "github.com/primeharbor/org-kickstart?ref=v0.0.1"
 
@@ -62,6 +62,7 @@ module "organization" {
 
   # CloudTrail
   cloudtrail_bucket_name = lookup(var.organization, "cloudtrail_bucket_name", null)
+  cloudtrail_loggroup_name = lookup(var.organization, "cloudtrail_loggroup_name", null)
 
   # Map Objects
   accounts                 = var.organization["accounts"]
