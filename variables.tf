@@ -92,6 +92,15 @@ variable "cloudtrail_loggroup_name" {
 #
 variable "accounts" {}
 
+variable "account_configurator" {
+  default = null
+}
+variable "backend_bucket" {}
+
+variable "billing_alerts" {
+  default = null
+}
+
 #
 # Account Contacts
 #

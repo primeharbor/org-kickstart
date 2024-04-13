@@ -205,8 +205,8 @@ This can be used with an existing org. See [IMPORTING](IMPORTING.md) for more on
 
 ## Future work
 1. Got the GuardDuty per-region stuff working for payer/security account. Now do the other services.
-2. Integrate the https://github.com/primeharbor/pht-account-configurator Stack
-3. Billing Alarms are critical.
+2. ~Integrate the https://github.com/primeharbor/pht-account-configurator Stack~
+3. ~Billing Alarms are critical.~
 4. ~Global Operational Contact.~
 5. Global Account Contact.
 6. ~Setup arbitrary OUs, beyond the basic AWS recommended ones.~

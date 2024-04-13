@@ -41,7 +41,8 @@ module "organization" {
   # Pin to a specific release
   # source = "github.com/primeharbor/org-kickstart?ref=v0.0.1"
 
-  tag_set = local.default_tags
+  tag_set        = local.default_tags
+  backend_bucket = var.backend_bucket
 
   # Organization Names
   organization_name           = var.organization["organization_name"]
@@ -68,6 +69,8 @@ module "organization" {
   accounts                 = lookup(var.organization, "accounts", {})
   service_control_policies = lookup(var.organization, "service_control_policies", {})
   organization_units       = lookup(var.organization, "organization_units", {})
+  account_configurator     = lookup(var.organization, "account_configurator", null)
+  billing_alerts           = lookup(var.organization, "billing_alerts", null)
 
   # Global Alternate Contacts
   global_billing_contact    = lookup(var.organization, "global_billing_contact", null)
@@ -77,9 +80,12 @@ module "organization" {
   # Billing CUR Reports
   billing_data_bucket_name = lookup(var.organization, "billing_data_bucket_name", null)
   cur_report_frequency     = lookup(var.organization, "cur_report_frequency", "NONE")
+
+  security_services = lookup(var.organization, "security_services", {})
 }
 
 variable "organization" {}
+variable "backend_bucket" {}
 
 output "org_name" {
   value = module.organization.org_name

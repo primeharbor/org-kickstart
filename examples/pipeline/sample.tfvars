@@ -29,6 +29,19 @@ organization = {
   deploy_audit_role           = true
   audit_role_name             = "security-audit"
 
+  organization_units = {
+
+    "MemeFactories" = {
+      name             = "MemeFactories"
+      is_child_of_root = true
+    }
+    "CoreIT" = {
+      name             = "CoreIT"
+      is_child_of_root = true
+    }
+
+  }
+
   accounts = {
     dev = {
       account_name  = "primeharbor-kickstart-dev"
@@ -123,5 +136,20 @@ organization = {
     disable_securityhub = true
   }
 
+  account_configurator = {
+    template                    = "SEE README"
+    account_factory_config_file = "account-config.yaml"
+  }
+
+  billing_alerts = {
+    levels = {
+      level1 = 10
+      level2 = 20
+      oh_shit = 100
+    }
+    subscriptions = [
+      "INSERT OTHER EMAILS TO GET BILLING ALERTS"
+    ]
+  }
 
 }
