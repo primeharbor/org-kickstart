@@ -87,6 +87,13 @@ variable "cloudtrail_loggroup_name" {
   default     = null
 }
 
+# VPC Flowlog Bucket
+variable "vpc_flowlogs_bucket_name" {
+  description = "Name of the S3 Bucket to create to store VPC Flow Logs. Set to null to skip creation"
+  type        = string
+  default     = null
+}
+
 #
 # Account Index
 #

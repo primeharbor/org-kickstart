@@ -28,6 +28,7 @@ organization = {
   disable_sso_management      = false
   deploy_audit_role           = true
   audit_role_name             = "security-audit"
+  vpc_flowlogs_bucket_name    = "primeharbor-kickstart-flowlogs"
 
   organization_units = {
 
