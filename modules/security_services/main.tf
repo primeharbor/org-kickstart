@@ -23,9 +23,6 @@ terraform {
 }
 
 variable "security_account_id" {}
-variable "security_hub_aggregation_region" {
-  default = false
-}
 
 #
 # Security Service flags
