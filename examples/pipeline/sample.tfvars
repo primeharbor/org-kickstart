@@ -133,6 +133,22 @@ organization = {
     }
   }
 
+  global_primary_contact = {
+    full_name       = "required"
+    company_name    = "Optional"
+    address_line_1  = "Required"
+    # address_line_2  = "Optional"
+    # address_line_3  = "Optional"
+    city            = "Required"
+    state_or_region = "GA"
+    # district_or_county = "Optional"
+    postal_code     = "Required"
+    country_code    = "US"
+    email_address   = "Required"
+    phone_number    = "+1-Required"
+    # website_url     = "Optional"
+  }
+
   security_services = {
     disable_guardduty   = false
     disable_securityhub = true
