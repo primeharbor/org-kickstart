@@ -94,8 +94,8 @@ resource "aws_kms_key" "macie_key" {
 }
 
 resource "aws_kms_alias" "macie_key" {
-  count                   = var.macie_bucket_name == null ? 0 : 1
-  provider                = aws.security-account
+  count         = var.macie_bucket_name == null ? 0 : 1
+  provider      = aws.security-account
   name          = "alias/macie-findings"
   target_key_id = aws_kms_key.macie_key[0].key_id
 }
