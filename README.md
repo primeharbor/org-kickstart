@@ -199,15 +199,13 @@ This can be used with an existing org. See [IMPORTING](IMPORTING.md) for more on
 
 
 ## Prior Art
-https://github.com/george-richardson/terraform-aws-personal-org
-https://github.com/chris-qa-org/terraform-aws-organzation-and-sso/tree/main/examples/accounts-and-permission-assignments
+* https://github.com/george-richardson/terraform-aws-personal-org
+* https://github.com/chris-qa-org/terraform-aws-organzation-and-sso/tree/main/examples/accounts-and-permission-assignments
 
 
 ## Future work
 1. Got the GuardDuty per-region stuff working for payer/security account. Now do the other services.
-2. Deletion of Default VPCs would be nice.
-    1. This might best be a stepfunction/lambda in the payer leveraging OrganizationAccountAccessRole
-    2. revisit the idea of setting BPA, EBS Encryption and other fast-fixes
+2. Integrate the https://github.com/primeharbor/pht-account-configurator Stack
 3. Billing Alarms are critical.
 4. ~Global Operational Contact.~
 5. Global Account Contact.

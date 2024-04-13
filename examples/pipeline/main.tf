@@ -61,11 +61,11 @@ module "organization" {
   audit_role_name   = lookup(var.organization, "audit_role_name", "security-audit")
 
   # CloudTrail
-  cloudtrail_bucket_name = lookup(var.organization, "cloudtrail_bucket_name", null)
+  cloudtrail_bucket_name   = lookup(var.organization, "cloudtrail_bucket_name", null)
   cloudtrail_loggroup_name = lookup(var.organization, "cloudtrail_loggroup_name", null)
 
   # Map Objects
-  accounts                 = var.organization["accounts"]
+  accounts                 = lookup(var.organization, "accounts", {})
   service_control_policies = lookup(var.organization, "service_control_policies", {})
   organization_units       = lookup(var.organization, "organization_units", {})
 

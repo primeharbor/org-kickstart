@@ -5,7 +5,7 @@ Kickstart and manage your AWS Organization via Terraform via PrimeHarbor's opini
 ## Getting setup
 
 Overview
-1. Make sure you've done all the artisinal steps in the console to enable AWS Organizations and AWS SSO
+1. Make sure you've done all the artisinal steps in the console to enable AWS Organizations and AWS SSO. See [BOOTSTRAP.md]
 2. Pick an environment name or code for your org install. Something like `pht` or `fooli`. Henceforth I'll refer to this as `$env`
 2. Use the [CodePipeline-Template.yaml](CodePipeline-Template.yaml) CloudFormation Template to bootstrap the terraform state bucket and CodePipeline for GitOps management.
 	1. `pip install cftdeploy`
@@ -14,6 +14,95 @@ Overview
 	4. `cft-deploy -m $env-Pipeline-Manifest.yaml`
 3. Copy the [sample.tfbackend](sample.tfbackend) to `$env.tfbackend`. Update the bucket with the name selected in the manifest above.
 3. Copy the [sample.tfvars](sample.tfvars) to `$env.tfvars`. Update all the things.
+
+
+## First Deploy - New Organization
+
+1. Export the name of the environment for future command, and then run terraform init
+  ```bash
+  export env=FOO
+  make tf-init
+  ```
+2. You must import the organizational management account and the organization that was created via ClickOps
+  ```bash
+  ./scripts/import-org.sh
+  cat import-org.tf
+  ```
+3. Review the import-org.tf file for accuracy.
+4. Run the teraform plan to create the security account (if one doesn't already exist)
+  ```bash
+  terraform plan -out=${env}-terraform.tfplan -no-color -var-file="${env}.tfvars" -target module.organization.module.security_account
+  ```
+5. Create the security account
+  ```bash
+  make tf-apply
+  ```
+6. Disable the creations of All AWS Accounts and Custom SCPs in your TF Vars file
+  1. Comment out the `accounts = {}` block
+  2. Comment out the `service_control_policies = {}` block
+  3. We will re-enable them after the first apply.
+  4. Delete the `security_services.tf` file on the first run.
+7. Run the full terraform plan
+  ```bash
+  make tf-plan
+  ```
+8. Run the first terraform apply
+  ```bash
+  make tf-apply
+  ```
+9. Generate the multi-region files and re-run the plan:
+  ```bash
+  ./scripts/generate_regions.sh
+  make tf-init
+  make tf-plan
+  ```
+
+
+
+If you see the following error:
+```
+Error: listing Organizations Accounts for parent (r-117h) and descendants: AccessDeniedException: You don't have permissions to access this resource.
+```
+You need to delete the `security_services.tf`, apply the changes, then re-generate the file from the `generate_regions.sh` script. The Security Account _must_ have delegated admin enabled before this resources can be plan'ed or apply'd
+
+
+## Post Deploy
+
+1. Clean up AWS Identity Center:
+  1. In the AWS Console: Login to the organization management as `TempAdministratorAccess`
+  1. Add yourself to the Admin group defined in `admin_group_name`
+  2. Log back into the organization management as `AdministratorAccess`
+  2. Remove the assignment for TempAdministratorAccess from the Organization Management Account
+  3. Delete permission set "TempAdministratorAccess"
+
+
+---
+# Older notes follow. Ignore this
+
+**Add Yourself to the allAdmins Group afterward**
+https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-activate-trusted-access.html
+https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacksets
+
+
+make tf-plan
+
+Things that _have_ to be imported
+payer  module.organization.aws_organizations_account.payer
+org module.organization.aws_organizations_organization.org
+
+
+export ORG_ID=`aws organizations describe-organization --query Organization.Id --output text`
+./tf-import.sh module.organization.aws_organizations_organization.org $ORG_ID
+
+terraform plan -out=${env}-terraform.tfplan -no-color -var-file="${env}.tfvars" --target module.organization.data.aws_organizations_organizational_unit_descendant_accounts.accounts
+
+
+
+module.organization.module.security_account.aws_organizations_account.account
+
+  terraform plan -out=${env}-terraform.tfplan -no-color -var-file="${env}.tfvars" --target module.organization.module.security_account.aws_organizations_account.account
+  make tf-apply
+
 
 ### Importing existing accounts
 
