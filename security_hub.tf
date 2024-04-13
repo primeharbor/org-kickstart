@@ -13,10 +13,15 @@
 # limitations under the License.
 
 resource "aws_securityhub_account" "payer_account" {
-  count = local.security_services["disable_securityhub"] ? 0 : 1
+  count                     = local.security_services["disable_securityhub"] ? 0 : 1
   enable_default_standards  = false
   control_finding_generator = "SECURITY_CONTROL"
   auto_enable_controls      = false
+  lifecycle {
+    ignore_changes = [
+      auto_enable_controls
+    ]
+  }
 }
 
 # We need to create the hub in the security account _before_ we delegate admin
@@ -27,6 +32,11 @@ resource "aws_securityhub_account" "security_account" {
   enable_default_standards  = false
   control_finding_generator = "SECURITY_CONTROL"
   auto_enable_controls      = false
+  lifecycle {
+    ignore_changes = [
+      auto_enable_controls
+    ]
+  }
 }
 
 resource "aws_organizations_delegated_administrator" "securityhub" {
