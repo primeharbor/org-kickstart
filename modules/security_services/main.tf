@@ -24,6 +24,14 @@ terraform {
 
 variable "security_account_id" {}
 
+# Create a bucket and stuff if this is defined
+variable "macie_bucket_name" {
+  default = null
+}
+variable "macie_key_arn" {
+  default = null
+}
+
 #
 # Security Service flags
 variable "security_services" {

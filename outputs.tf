@@ -19,3 +19,8 @@ output "org_name" {
 output "security_account_id" {
   value = module.security_account.account_id
 }
+
+# Things to pass to the Security Services Regional Modules
+output "macie_key_arn" {
+  value = var.macie_bucket_name == null ? null : aws_kms_key.macie_key[0].arn
+}

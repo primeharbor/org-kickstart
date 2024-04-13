@@ -93,6 +93,47 @@ resource "aws_kms_key" "macie_key" {
   deletion_window_in_days = 10
 }
 
+resource "aws_kms_alias" "macie_key" {
+  count                   = var.macie_bucket_name == null ? 0 : 1
+  provider                = aws.security-account
+  name          = "alias/macie-findings"
+  target_key_id = aws_kms_key.macie_key[0].key_id
+}
+
+resource "aws_kms_key_policy" "macie_key" {
+  count    = var.macie_bucket_name == null ? 0 : 1
+  provider = aws.security-account
+  key_id   = aws_kms_key.macie_key[0].id
+  policy = jsonencode({
+    Id      = "macie"
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Action = "kms:*"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${module.security_account.account_id}:root"
+        }
+        Resource = "*"
+      },
+      {
+        Sid = "Macie Permissions"
+        Action = [
+          "kms:GenerateDataKey",
+          "kms:Encrypt"
+        ]
+        Effect = "Allow"
+        Principal = {
+          Service = "macie.amazonaws.com"
+        }
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "macie_bucket" {
   count    = var.macie_bucket_name == null ? 0 : 1
   provider = aws.security-account

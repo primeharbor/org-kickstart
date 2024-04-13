@@ -66,6 +66,8 @@ module "security-services-$r" {
   }
   security_account_id = module.organization.security_account_id
   security_services   = var.organization["security_services"]
+  macie_key_arn       = module.organization.macie_key_arn
+  macie_bucket_name   = var.organization["macie_bucket_name"]
 }
 EOF
 
