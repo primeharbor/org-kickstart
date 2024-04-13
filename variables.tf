@@ -94,6 +94,15 @@ variable "vpc_flowlogs_bucket_name" {
   default     = null
 }
 
+# Macie Bucket
+variable "macie_bucket_name" {
+  description = "Name of the S3 Bucket to create to store Macie Findings. Set to null to skip creation"
+  type        = string
+  default     = null
+}
+
+
+
 #
 # Account Index
 #

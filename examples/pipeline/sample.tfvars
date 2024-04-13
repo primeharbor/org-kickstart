@@ -29,6 +29,7 @@ organization = {
   deploy_audit_role           = true
   audit_role_name             = "security-audit"
   vpc_flowlogs_bucket_name    = "primeharbor-kickstart-flowlogs"
+  macie_bucket_name           = "primeharbor-kickstart-macie-findings"
 
   organization_units = {
 

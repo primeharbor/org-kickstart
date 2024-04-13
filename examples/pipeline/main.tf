@@ -82,7 +82,9 @@ module "organization" {
   cur_report_frequency     = lookup(var.organization, "cur_report_frequency", "NONE")
 
   security_services        = lookup(var.organization, "security_services", {})
+
   vpc_flowlogs_bucket_name = lookup(var.organization, "vpc_flowlogs_bucket_name", null)
+  macie_bucket_name        = lookup(var.organization, "macie_bucket_name", null)
 }
 
 variable "organization" {}
