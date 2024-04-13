@@ -143,12 +143,12 @@ organization = {
 
   billing_alerts = {
     levels = {
-      level1 = 10
-      level2 = 20
+      level1  = 10
+      level2  = 20
       oh_shit = 100
     }
     subscriptions = [
-      "INSERT OTHER EMAILS TO GET BILLING ALERTS"
+      # "INSERT OTHER EMAILS TO GET BILLING ALERTS"
     ]
   }
 
