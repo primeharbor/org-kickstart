@@ -160,23 +160,23 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 #
 resource "aws_cloudtrail" "org_cloudtrail" {
   count                         = var.cloudtrail_bucket_name != null ? 1 : 0
-  depends_on                    = [aws_s3_bucket.cloudtrail_bucket[0]]
+  depends_on                    = [aws_s3_bucket.cloudtrail_bucket[0], aws_s3_bucket_policy.cloudtrail_bucket_policy[0]]
   name                          = "org_cloudtrail"
   s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket[0].id
   include_global_service_events = true
   enable_log_file_validation    = true
   is_multi_region_trail         = true
   is_organization_trail         = true
-  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_to_cloudwatch[0].arn
-  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:*"
+  cloud_watch_logs_role_arn     = var.cloudtrail_loggroup_name != null ? aws_iam_role.cloudtrail_to_cloudwatch[0].arn : null
+  cloud_watch_logs_group_arn    = var.cloudtrail_loggroup_name != null ? "${aws_cloudwatch_log_group.cloudtrail[0].arn}:*" : null
 }
 
 #
 # CloudWatch Log Group
 #
 resource "aws_cloudwatch_log_group" "cloudtrail" {
-  name              = var.cloudtrail_loggroup_name
   count             = var.cloudtrail_loggroup_name != null ? 1 : 0
+  name              = var.cloudtrail_loggroup_name
   retention_in_days = 365
 }
 
