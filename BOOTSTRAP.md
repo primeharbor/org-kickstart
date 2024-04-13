@@ -11,6 +11,7 @@ These is the list of tasks that need to be done via ClickOps in a new AWS Accoun
 5. Add yourself as a [user](https://us-east-1.console.aws.amazon.com/singlesignon/home?region=us-east-1#!/instances/fnord/users$addUserWizard)
 6. [Create a pre-defined](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/organization/permission-sets/create)  Permission Set named ***TempAdministratorAccess***. Probably want the duration as 4 hours.
 7. [Assign](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/organization/accounts) the Permission Set to the new Payer/Org Management Account
+8. [*Activate trusted access with AWS Organizations to use service-managed permissions*](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacksets) for CloudFormation stacksets (must be done via console)
 
 Log out of root and never use it again.
 
