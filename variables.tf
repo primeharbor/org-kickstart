@@ -132,7 +132,10 @@ variable "global_operations_contact" {
   description = "Map for the central operations alternate contact to be applied to all accounts"
   default     = null
 }
-
+variable "global_primary_contact" {
+  description = "Map for the primary account owner to be applied to all accounts"
+  default     = null
+}
 
 #
 # Billing

@@ -76,12 +76,13 @@ module "organization" {
   global_billing_contact    = lookup(var.organization, "global_billing_contact", null)
   global_security_contact   = lookup(var.organization, "global_security_contact", null)
   global_operations_contact = lookup(var.organization, "global_operations_contact", null)
+  global_primary_contact    = lookup(var.organization, "global_primary_contact", null)
 
   # Billing CUR Reports
   billing_data_bucket_name = lookup(var.organization, "billing_data_bucket_name", null)
   cur_report_frequency     = lookup(var.organization, "cur_report_frequency", "NONE")
 
-  security_services        = lookup(var.organization, "security_services", {})
+  security_services = lookup(var.organization, "security_services", {})
 
   vpc_flowlogs_bucket_name = lookup(var.organization, "vpc_flowlogs_bucket_name", null)
   macie_bucket_name        = lookup(var.organization, "macie_bucket_name", null)

@@ -30,6 +30,7 @@ module "accounts" {
   billing_contact          = var.global_billing_contact
   security_contact         = var.global_security_contact
   operations_contact       = var.global_operations_contact
+  primary_contact          = var.global_primary_contact
   disable_sso_management   = var.disable_sso_management
 }
 

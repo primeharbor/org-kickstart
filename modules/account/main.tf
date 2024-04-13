@@ -46,6 +46,9 @@ variable "security_contact" {
 variable "operations_contact" {
   default = null
 }
+variable "primary_contact" {
+  default = null
+}
 
 variable "disable_sso_management" {
   type = bool
@@ -60,7 +63,6 @@ resource "aws_organizations_account" "account" {
       tags
     ]
   }
-
 }
 
 output "account_id" {

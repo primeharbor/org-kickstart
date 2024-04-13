@@ -34,6 +34,22 @@ resource "aws_ssoadmin_account_assignment" "payer_account_group_assignment" {
   target_type        = "AWS_ACCOUNT"
 }
 
+resource "aws_account_primary_contact" "primary" {
+  count              = var.global_primary_contact != null ? 1 : 0
+  full_name          = var.global_primary_contact["full_name"]
+  company_name       = lookup(var.global_primary_contact, "company_name", null)
+  address_line_1     = var.global_primary_contact["address_line_1"]
+  address_line_2     = lookup(var.global_primary_contact, "address_line_2", null)
+  address_line_3     = lookup(var.global_primary_contact, "address_line_3", null)
+  city               = var.global_primary_contact["city"]
+  district_or_county = lookup(var.global_primary_contact, "district_or_county", null)
+  state_or_region    = lookup(var.global_primary_contact, "state_or_region", null)
+  postal_code        = var.global_primary_contact["postal_code"]
+  country_code       = var.global_primary_contact["country_code"]
+  phone_number       = var.global_primary_contact["phone_number"]
+  website_url        = lookup(var.global_primary_contact, "website_url", null)
+}
+
 resource "aws_account_alternate_contact" "billing" {
   count                  = var.global_billing_contact != null ? 1 : 0
   alternate_contact_type = "BILLING"

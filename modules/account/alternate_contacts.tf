@@ -41,3 +41,20 @@ resource "aws_account_alternate_contact" "operations" {
   email_address          = var.operations_contact["email_address"]
   phone_number           = var.operations_contact["phone_number"]
 }
+
+resource "aws_account_primary_contact" "primary" {
+  count              = var.primary_contact != null ? 1 : 0
+  account_id         = aws_organizations_account.account.id
+  full_name          = var.primary_contact["full_name"]
+  company_name       = lookup(var.primary_contact, "company_name", null)
+  address_line_1     = var.primary_contact["address_line_1"]
+  address_line_2     = lookup(var.primary_contact, "address_line_2", null)
+  address_line_3     = lookup(var.primary_contact, "address_line_3", null)
+  city               = var.primary_contact["city"]
+  district_or_county = lookup(var.primary_contact, "district_or_county", null)
+  state_or_region    = lookup(var.primary_contact, "state_or_region", null)
+  postal_code        = var.primary_contact["postal_code"]
+  country_code       = var.primary_contact["country_code"]
+  phone_number       = var.primary_contact["phone_number"]
+  website_url        = lookup(var.primary_contact, "website_url", null)
+}
