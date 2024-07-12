@@ -76,23 +76,22 @@ You need to delete the `security_services.tf`, apply the changes, then re-genera
   3. Delete permission set "TempAdministratorAccess"
 
 
+## Adding the Account Configurator
+
+The [pht-account-configurator] is a Serverless application that runs in the organizational management account. When it detects an account creation event, it uses the `OrganizationAccountAccessRole` to go into the new child account and configure or remove things that cannot be configured by AWS Organizations.
+
+git submodule add https://github.com/primeharbor/pht-account-configurator
+
+git submodule init
+git submodule update
+
+EOF
 ---
+
+
+
 # Older notes follow. Ignore this
 
-**Add Yourself to the allAdmins Group afterward**
-https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-activate-trusted-access.html
-https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacksets
-
-
-make tf-plan
-
-Things that _have_ to be imported
-payer  module.organization.aws_organizations_account.payer
-org module.organization.aws_organizations_organization.org
-
-
-export ORG_ID=`aws organizations describe-organization --query Organization.Id --output text`
-./tf-import.sh module.organization.aws_organizations_organization.org $ORG_ID
 
 terraform plan -out=${env}-terraform.tfplan -no-color -var-file="${env}.tfvars" --target module.organization.data.aws_organizations_organizational_unit_descendant_accounts.accounts
 
