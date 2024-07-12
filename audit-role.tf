@@ -34,6 +34,7 @@ resource "aws_cloudformation_stack_set" "audit_role" {
   parameters = {
     TrustedAccountNumber = module.security_account.account_id
     RoleName             = var.audit_role_name
+    DenyDataAccess       = false
   }
 
   auto_deployment {
