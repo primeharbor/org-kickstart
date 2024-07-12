@@ -205,17 +205,21 @@ This can be used with an existing org. See [IMPORTING](IMPORTING.md) for more on
 
 ## Future work
 1. Got the GuardDuty per-region stuff working for payer/security account. Now do the other services.
+  1. ~Macie~
+  2. ~Security Hub~
+  3. Inspector
+  4. Access Analyzer
 2. ~Integrate the https://github.com/primeharbor/pht-account-configurator Stack~
 3. ~Billing Alarms are critical.~
 4. ~Global Operational Contact.~
-5. Global Account Contact.
+5. ~Global Account Contact.~
 6. ~Setup arbitrary OUs, beyond the basic AWS recommended ones.~
 7. revisit the SCPs in my pet-ControlTower for other best practices to steal.
 8. Figure out if AWS Config Recorder/etc support should be an optional part of this
 9. ~Account Import Script~
 10. Make it work with GitOps & Code Pipeline
 10. Publish to Terraform Registry
-11. More AWS Identity Center customization.
+11. More AWS Identity Center customization. <- this will go in a different repo
 12. Optional DataTrails & integrate the advanced-event-selectors work I need to do.
 13. Org Wide Access Analyzer and reports on public stuff
 14. SCPs;
