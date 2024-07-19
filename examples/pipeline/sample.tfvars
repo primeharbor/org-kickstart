@@ -28,6 +28,7 @@ organization = {
   disable_sso_management      = false
   deploy_audit_role           = true
   audit_role_name             = "security-audit"
+  audit_role_template_url     = "https://s3.amazonaws.com/pht-cloudformation/aws-account-automation/AuditRole-Template.yaml"
   vpc_flowlogs_bucket_name    = "primeharbor-kickstart-flowlogs"
   macie_bucket_name           = "primeharbor-kickstart-macie-findings"
 

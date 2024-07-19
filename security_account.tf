@@ -22,7 +22,7 @@
 # https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/security-ou-and-accounts.html#security-tooling-accounts
 
 
-# We explictly create a security account.
+# We explicitly create a security account.
 module "security_account" {
   source = "./modules/account"
 
@@ -66,4 +66,3 @@ resource "aws_organizations_delegated_administrator" "cloudformation" {
   account_id        = module.security_account.account_id
   service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
 }
-
