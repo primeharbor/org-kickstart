@@ -32,8 +32,7 @@ organization = {
   vpc_flowlogs_bucket_name    = "primeharbor-kickstart-flowlogs"
   macie_bucket_name           = "primeharbor-kickstart-macie-findings"
 
-  organization_units = {
-
+  organizational_units = {
     "MemeFactories" = {
       name             = "MemeFactories"
       is_child_of_root = true
@@ -42,7 +41,6 @@ organization = {
       name             = "CoreIT"
       is_child_of_root = true
     }
-
   }
 
   accounts = {

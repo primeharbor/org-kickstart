@@ -165,7 +165,7 @@ variable "service_control_policies" {
   default     = {}
 }
 
-variable "organization_units" {
+variable "organizational_units" {
   description = "Map of OUs to deploy"
   default     = {}
 }

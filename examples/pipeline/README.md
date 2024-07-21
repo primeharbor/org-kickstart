@@ -29,7 +29,7 @@ Overview
   cat import-org.tf
   ```
 3. Review the import-org.tf file for accuracy.
-4. Run the teraform plan to create the security account (if one doesn't already exist)
+4. Run the terraform plan to create the security account (if one doesn't already exist)
   ```bash
   terraform plan -out=${env}-terraform.tfplan -no-color -var-file="${env}.tfvars" -target module.organization.module.security_account
   ```
@@ -57,8 +57,6 @@ Overview
   make tf-plan
   ```
 
-
-
 If you see the following error:
 ```
 Error: listing Organizations Accounts for parent (r-117h) and descendants: AccessDeniedException: You don't have permissions to access this resource.
@@ -85,7 +83,7 @@ git submodule add https://github.com/primeharbor/pht-account-configurator
 git submodule init
 git submodule update
 
-EOF
+<!--EOF
 ---
 
 
@@ -164,7 +162,6 @@ make env=$env tf-init
 ./tf-import.sh module.organization.aws_organizations_organizational_unit.suspended_ou ou-rrrr-uuuuuuu
 
 
-
 # Import all the AWS accounts
 bash ./import_accounts.sh
 ```
@@ -202,3 +199,4 @@ make tf-show | grep "will be updated"
   # module.organization.module.security_account.aws_organizations_account.account will be updated in-place
 
 ```
+-->
