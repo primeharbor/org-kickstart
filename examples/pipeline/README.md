@@ -25,7 +25,7 @@ Overview
   ```
 2. You must import the organizational management account and the organization that was created via ClickOps
   ```bash
-  ./scripts/import-org.sh
+  ./scripts/import_org.sh
   cat import-org.tf
   ```
 3. Review the import-org.tf file for accuracy.
