@@ -38,10 +38,12 @@ Overview
   make tf-apply
   ```
 6. Disable the creations of All AWS Accounts and Custom SCPs in your TF Vars file
-  1. Comment out the `accounts = {}` block
-  2. Comment out the `service_control_policies = {}` block
-  3. We will re-enable them after the first apply.
-  4. Delete the `security_services.tf` file on the first run.
+  1. **IMPORTANT**: Ensure that your `payer_name` and `payer_email` variables align with what you manually used when creating the first AWS account, otherwise
+     it will force a recreation of the account.
+  2. Comment out the `accounts = {}` block
+  3. Comment out the `service_control_policies = {}` block
+  4. We will re-enable them after the first apply.
+  5. Delete the `security_services.tf` file on the first run.
 7. Run the full terraform plan
   ```bash
   make tf-plan
