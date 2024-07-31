@@ -55,7 +55,7 @@ organization = {
     sandbox = {
       account_name  = "primeharbor-kickstart-sandbox"
       account_email = "aws+kickstart-sandbox@primeharbor.com"
-      parent_ou_id  = "ou-yyyy-yyyyyyyy"
+      parent_ou_id  = "Sandbox"
     }
   }
 
@@ -83,7 +83,7 @@ organization = {
       policy_name        = "SuspendedAccounts"
       policy_description = "Denies all activity in accounts in the SuspendedOU"
       policy_json_file   = "policies/SuspendedAccountsPolicy.json.tftpl"
-      policy_targets     = ["ou-xxxx-xxxxxxxx"]
+      policy_targets     = ["Suspended"]
       policy_vars = {
         audit_role_name = "security-audit"
       }
@@ -102,8 +102,8 @@ organization = {
       policy_description = "Deny access to unapproved default regions"
       policy_json_file   = "policies/DisableRegionsPolicy.json.tftpl"
       policy_targets = [
-        "ou-xxxx-xxxxxxxx", # Workloads
-        "ou-yyyy-yyyyyyyy"  # Sandbox
+        "Workloads",
+        "Sandbox"
       ]
       policy_vars = {
         allowed_regions = ["us-east-1", "eu-west-1"]
@@ -116,8 +116,8 @@ organization = {
       policy_description = "Deny access to unapproved Instance Types"
       policy_json_file   = "policies/DenyUnapprovedInstanceTypes.json"
       policy_targets = [
-        "ou-xxxx-xxxxxxxx", # Workloads
-        "ou-yyyy-yyyyyyyy"  # Sandbox
+        "Workloads",
+        "Sandbox"
       ]
     }
 
@@ -126,8 +126,8 @@ organization = {
       policy_description = "Deny access to unapproved Services"
       policy_json_file   = "policies/DenyUnapprovedServices.json"
       policy_targets = [
-        "ou-xxxx-xxxxxxxx", # Workloads
-        "ou-yyyy-yyyyyyyy"  # Sandbox
+        "Workloads",
+        "Sandbox"
       ]
     }
   }
