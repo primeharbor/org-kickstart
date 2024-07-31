@@ -80,5 +80,4 @@ data "aws_iam_policy_document" "vpc_flowlogs_bucket_policy" {
     actions   = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.vpc_flowlogs_bucket[0].arn}/*"]
   }
-
 }

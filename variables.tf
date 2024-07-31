@@ -165,7 +165,7 @@ variable "service_control_policies" {
   default     = {}
 }
 
-variable "organization_units" {
+variable "organizational_units" {
   description = "Map of OUs to deploy"
   default     = {}
 }
@@ -183,4 +183,10 @@ variable "deploy_audit_role" {
   description = "Boolean to determine if org-kickstart should manage Audit Role"
   type        = bool
   default     = true
+}
+
+variable "audit_role_template_url" {
+  description = "The location of the audit role template URL"
+  type        = string
+  default     = "https://s3.amazonaws.com/pht-cloudformation/aws-account-automation/AuditRole-Template.yaml"
 }

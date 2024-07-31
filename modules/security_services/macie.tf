@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-# Explictly enable Macie in the parent and security account
+# Explicitly enable Macie in the parent and security account
 resource "aws_macie2_account" "payer_account" {
   count                        = local.security_services["disable_macie"] ? 0 : 1
   provider                     = aws.payer_account

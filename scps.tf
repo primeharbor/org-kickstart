@@ -22,5 +22,3 @@ module "scp" {
   ou_name_to_id      = local.ou_name_to_id # Pass the map to avoid regenerating it
   root_ou            = aws_organizations_organization.org.roots[0].id
 }
-
-

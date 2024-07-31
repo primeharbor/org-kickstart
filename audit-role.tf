@@ -19,7 +19,7 @@ resource "aws_cloudformation_stack_set" "audit_role" {
   permission_model = "SERVICE_MANAGED"
   call_as          = "DELEGATED_ADMIN"
   description      = "Deploy the Audit Role to all AWS Accounts"
-  template_url     = "https://s3.amazonaws.com/pht-cloudformation/aws-account-automation/AuditRole-Template.yaml"
+  template_url     = var.audit_role_template_url
 
   # Bug with provider https://github.com/hashicorp/terraform-provider-aws/issues/23464
   # TF attempts to remove the administration_role_arn, even though it's added as part of a tf refresh
@@ -77,7 +77,7 @@ resource "aws_cloudformation_stack_set_instance" "audit_role" {
 resource "aws_cloudformation_stack" "audit_role_payer" {
   count        = var.deploy_audit_role == true ? 1 : 0
   name         = "audit-role"
-  template_url = "https://s3.amazonaws.com/pht-cloudformation/aws-account-automation/AuditRole-Template.yaml"
+  template_url = var.audit_role_template_url
 
   parameters = {
     TrustedAccountNumber = module.security_account.account_id

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-# Explictly create the detectors in the parent and security account
+# Explicitly create the detectors in the parent and security account
 resource "aws_guardduty_detector" "payer_detector" {
   count    = local.security_services["disable_guardduty"] ? 0 : 1
   provider = aws.payer_account

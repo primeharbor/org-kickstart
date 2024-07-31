@@ -28,5 +28,4 @@ output "macie_key_arn" {
 output "sso_instance_arn" {
   description = "AWS Identity Center Instance ARN managed by org-kickstart"
   value       = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
-
 }

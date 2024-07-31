@@ -35,7 +35,7 @@ variable "macie_key_arn" {
 #
 # Security Service flags
 variable "security_services" {
-  description = "explictly disable or not manage a security service"
+  description = "explicitly disable or not manage a security service"
   default = {
     disable_guardduty   = "false"
     disable_macie       = "false"
