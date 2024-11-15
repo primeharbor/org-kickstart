@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
     condition {
       test     = "StringEquals"
       variable = "aws:PrincipalOrgID"
-      values   = [aws_organizations_organization.org.id]
+      values   = [data.aws_organizations_organization.org.id]
     }
     condition {
       test     = "StringLike"
