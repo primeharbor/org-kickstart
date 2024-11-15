@@ -68,6 +68,7 @@ module "organization" {
   # Map Objects
   accounts                 = lookup(var.organization, "accounts", {})
   service_control_policies = lookup(var.organization, "service_control_policies", {})
+  resource_control_policies = lookup(var.organization, "resource_control_policies", {})
   organization_units       = lookup(var.organization, "organization_units", {})
   account_configurator     = lookup(var.organization, "account_configurator", null)
   billing_alerts           = lookup(var.organization, "billing_alerts", null)
@@ -95,6 +96,14 @@ output "org_name" {
   value = module.organization.org_name
 }
 
+output "org_id" {
+  value = module.organization.org_id
+}
+
 output "security_account_id" {
   value = module.organization.security_account_id
+}
+
+output "sso_instance_arn" {
+  value = module.organization.sso_instance_arn
 }
