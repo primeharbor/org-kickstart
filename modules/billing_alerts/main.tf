@@ -16,12 +16,12 @@ variable "payer_email" {}
 variable "organization_name" {}
 
 variable "billing_levels" {
-  type = map(any)
+  type    = map(any)
   default = {}
 }
 
 variable "billing_subscriptions" {
-  type = list
+  type    = list(any)
   default = []
 }
 
