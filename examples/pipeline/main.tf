@@ -66,12 +66,12 @@ module "organization" {
   cloudtrail_loggroup_name = lookup(var.organization, "cloudtrail_loggroup_name", null)
 
   # Map Objects
-  accounts                 = lookup(var.organization, "accounts", {})
-  service_control_policies = lookup(var.organization, "service_control_policies", {})
+  accounts                  = lookup(var.organization, "accounts", {})
+  service_control_policies  = lookup(var.organization, "service_control_policies", {})
   resource_control_policies = lookup(var.organization, "resource_control_policies", {})
-  organization_units       = lookup(var.organization, "organization_units", {})
-  account_configurator     = lookup(var.organization, "account_configurator", null)
-  billing_alerts           = lookup(var.organization, "billing_alerts", null)
+  organization_units        = lookup(var.organization, "organization_units", {})
+  account_configurator      = lookup(var.organization, "account_configurator", null)
+  billing_alerts            = lookup(var.organization, "billing_alerts", null)
 
   # Global Alternate Contacts
   global_billing_contact    = lookup(var.organization, "global_billing_contact", null)
