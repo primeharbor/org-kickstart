@@ -50,6 +50,11 @@ variable "primary_contact" {
   default = null
 }
 
+variable "preserve_root" {
+  default = false
+}
+
+
 variable "disable_sso_management" {
   type = bool
 }
@@ -64,6 +69,28 @@ resource "aws_organizations_account" "account" {
     ]
   }
 }
+
+resource "null_resource" "remove_root" {
+  count = var.preserve_root == false ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "${path.module}/disable_root.sh ${aws_organizations_account.account.id}"
+    when    = create
+  }
+}
+
+#
+# My highly opinionated opinion is that we will always manage the removal of root
+# But if you need to create a root credential, you should do it by hand.
+#
+# resource "null_resource" "enable_root" {
+#   count = var.preserve_root == true ? 1 : 0
+
+#   provisioner "local-exec" {
+#     command = "${path.module}/enable_root.sh ${aws_organizations_account.account.id}"
+#     when    = create
+#   }
+# }
 
 output "account_id" {
   value = aws_organizations_account.account.id

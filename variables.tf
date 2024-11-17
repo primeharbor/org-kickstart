@@ -37,6 +37,12 @@ variable "security_account_name" {
   default     = "Security Account"
 }
 
+variable "security_preserve_root" {
+  description = "Do not delete the root credentials for the Security Account"
+  type        = bool
+  default     = false
+}
+
 variable "payer_email" {
   description = "Root Email address for the Organization Management account"
   type        = string
