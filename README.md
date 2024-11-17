@@ -46,7 +46,7 @@ org-kickstart is indented to support all the basic things needed to setup a prop
     15. Security Hub
     16. SSM
     17. AWS IAM Identity Center (SSO)
-9. Manage Service Control Policies and allow templating of SCPs
+9. Manage Service Control Policies and Resource Control Policies and allow templating of RCPs/SCPs
 10. Grant Admin Access to all accounts via AWS Identity Center
     1. Create a AdministratorAccess AWS Identity Center PermissionSet
     2. Create a Identity Center Group
@@ -71,12 +71,12 @@ Sample tfvars file:
 
 organization = {
   organization_name           = "pht-kickstart"
-  payer_name                  = "PrimeHarbor Test Payer"
-  payer_email                 = "aws+kickstart-payer@primeharbor.com"
-  security_account_name       = "primeharbor-kickstart-security"
-  security_account_root_email = "aws+kickstart-security@primeharbor.com"
-  cloudtrail_bucket_name      = "primeharbor-kickstart-cloudtrail"
-  billing_data_bucket_name    = "primeharbor-kickstart-cur"
+  payer_name                  = "example Test Payer"
+  payer_email                 = "aws+kickstart-payer@example.com"
+  security_account_name       = "example-kickstart-security"
+  security_account_root_email = "aws+kickstart-security@example.com"
+  cloudtrail_bucket_name      = "example-kickstart-cloudtrail"
+  billing_data_bucket_name    = "example-kickstart-cur"
   cur_report_frequency        = "DAILY" # Valid options: DAILY, HOURLY, MONTHLY
 
   session_duration          = "PT8H"
@@ -84,16 +84,16 @@ organization = {
 
   accounts = {
     dev = {
-      account_name  = "primeharbor-kickstart-dev"
-      account_email = "aws+kickstart-dev@primeharbor.com"
+      account_name  = "example-kickstart-dev"
+      account_email = "aws+kickstart-dev@example.com"
     }
     it = {
-      account_name  = "primeharbor-kickstart-it"
-      account_email = "aws+kickstart-it@primeharbor.com"
+      account_name  = "example-kickstart-it"
+      account_email = "aws+kickstart-it@example.com"
     }
     sandbox = {
-      account_name  = "primeharbor-kickstart-sandbox"
-      account_email = "aws+kickstart-sandbox@primeharbor.com"
+      account_name  = "example-kickstart-sandbox"
+      account_email = "aws+kickstart-sandbox@example.com"
       parent_ou_id  = "ou-yyyy-yyyyyyyy"
     }
   }
@@ -101,14 +101,14 @@ organization = {
   global_billing_contact = {
     name          = "Chris Farris"
     title         = "CFO"
-    email_address = "billing@primeharbor.com"
+    email_address = "billing@example.com"
     phone_number  = "+14041234567"
   }
 
   global_security_contact = {
     name          = "Chris Farris"
     title         = "Global CISO"
-    email_address = "security@primeharbor.com"
+    email_address = "security@example.com"
     phone_number  = "+14041234567"
   }
 
@@ -129,6 +129,17 @@ organization = {
       policy_name        = "DenyRoot"
       policy_description = "Denies use of root user"
       policy_json_file   = "policies/DenyRootSCP.json"
+    }
+  }
+
+  resource_control_policies = {
+    s3_data_perimeter = {
+      policy_name        = "S3DataPerimeter"
+      policy_description = "Restricts S3 to Principals inside the Org"
+      policy_json_file   = "policies/RCP_S3DataPerimeter.json.tftpl"
+      policy_vars = {
+        org_id = "o-xxxxx" # Sorry, you have to manually encode this at this time.
+      }
     }
   }
 

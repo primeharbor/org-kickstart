@@ -165,6 +165,11 @@ variable "service_control_policies" {
   default     = {}
 }
 
+variable "resource_control_policies" {
+  description = "Map of RCPs to deploy"
+  default     = {}
+}
+
 variable "organization_units" {
   description = "Map of OUs to deploy"
   default     = {}
