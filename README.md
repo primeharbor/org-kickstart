@@ -93,18 +93,54 @@ organization = {
     dev = {
       account_name  = "example-kickstart-dev"
       account_email = "aws+kickstart-dev@example.com"
+      # You can override the Operations Contact
+      operations_contact = {
+        name          = "J. Chris Farris"
+        title         = "VP Engineering"
+        email_address = "engineering@example.com"
+        phone_number  = "+14041234567"
+      }
     }
+
     it = {
       account_name  = "example-kickstart-it"
       account_email = "aws+kickstart-it@example.com"
     }
+
     sandbox = {
       account_name  = "example-kickstart-sandbox"
       account_email = "aws+kickstart-sandbox@example.com"
       parent_ou_id  = "ou-yyyy-yyyyyyyy"
+
+      # You can override the Primary Contact / Account Owner
+      primary_contact = {
+        full_name       = "Chris Farris"
+        company_name    = "PrimeHarbor Technologies, LLC"
+        address_line_1  = "1234 Main Street"
+        address_line_2  = "Suite 101"
+        city            = "Atlanta"
+        state_or_region = "GA"
+        postal_code     = "30332"
+        country_code    = "US"
+        email_address   = "aws@example.com"
+        phone_number    = "+14041234567"
+        website_url     = "https://example.com"
+      }
     }
   }
 
+  #
+  # Alternate Contacts.
+  #
+  # The Operations contact can be overriden in the account block
+  global_operations_contact = {
+    name          = "J. Chris Farris"
+    title         = "CEO"
+    email_address = "ops@example.com"
+    phone_number  = "+14041234567"
+  }
+
+  # The Billing and Security Contacts should be the same for all accounts.
   global_billing_contact = {
     name          = "Chris Farris"
     title         = "CFO"
@@ -117,6 +153,20 @@ organization = {
     title         = "Global CISO"
     email_address = "security@example.com"
     phone_number  = "+14041234567"
+  }
+
+  global_primary_contact = {
+    full_name       = "Chris Farris"
+    company_name    = "PrimeHarbor Technologies, LLC"
+    address_line_1  = "1234 Main Street"
+    address_line_2  = "Suite 101"
+    city            = "Atlanta"
+    state_or_region = "GA"
+    postal_code     = "30332"
+    country_code    = "US"
+    email_address   = "aws@example.com"
+    phone_number    = "+14041234567"
+    website_url     = "https://example.com"
   }
 
   organization_units = {
