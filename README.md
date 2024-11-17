@@ -70,17 +70,24 @@ Sample tfvars file:
 ```hcl
 
 organization = {
-  organization_name           = "pht-kickstart"
+  organization_name           = "org-kickstart"
   payer_name                  = "example Test Payer"
   payer_email                 = "aws+kickstart-payer@example.com"
   security_account_name       = "example-kickstart-security"
   security_account_root_email = "aws+kickstart-security@example.com"
   cloudtrail_bucket_name      = "example-kickstart-cloudtrail"
+  cloudtrail_loggroup_name    = "CloudTrail/DefaultLogGroup"
   billing_data_bucket_name    = "example-kickstart-cur"
   cur_report_frequency        = "DAILY" # Valid options: DAILY, HOURLY, MONTHLY
+  audit_role_name             = "security-audit"
+  session_duration            = "PT10H"
+  admin_permission_set_name   = "AdministratorAccess"
+  admin_group_name            = "aws-admin"
+  disable_sso_management      = false
+  deploy_audit_role           = false
+  # vpc_flowlogs_bucket_name    = "org-flowlogs"
+  # macie_bucket_name           = "org-macie-findings"
 
-  session_duration          = "PT8H"
-  admin_permission_set_name = "AdministratorAccess"
 
   accounts = {
     dev = {
@@ -176,8 +183,21 @@ organization = {
     disable_guardduty   = true
     disable_securityhub = true
     disable_macie       = true
-    disable_inspector   = true
   }
+
+  billing_alerts = {
+    levels = {
+      level1  = 50
+      level2  = 150
+      oh_shit = 400
+    }
+    # The Payer Account Email address is automatically subscribed to billing alerts
+    # Add any additional users here.
+    # subscriptions = [
+    #   # "user@example.com"
+    # ]
+  }
+
 }
 ```
 
