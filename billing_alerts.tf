@@ -13,40 +13,6 @@
 # limitations under the License.
 
 
-# resource "aws_sns_topic" "billing_alerts" {
-#   count = var.billing_alerts == null ? 0 : 1
-#   name  = "${var.organization_name}-billing-alerts"
-# }
-
-# resource "aws_sns_topic_subscription" "billing_alerts_root_email" {
-#   count     = var.billing_alerts == null ? 0 : 1
-#   topic_arn = aws_sns_topic.billing_alerts[0].arn
-#   protocol  = "email"
-#   endpoint  = var.payer_email
-# }
-
-# resource "aws_cloudwatch_metric_alarm" "billing_alarm" {
-#   for_each            = var.billing_alerts["levels"]
-#   alarm_name          = "billing_alarm_${each.key}"
-#   alarm_description   = "Alarm if AWS spending is over ${each.value}"
-#   namespace           = "AWS/Billing"
-#   metric_name         = "EstimatedCharges"
-#   comparison_operator = "GreaterThanThreshold"
-#   threshold           = each.value
-#   evaluation_periods  = 1
-#   period              = 21600
-#   statistic           = "Maximum"
-#   alarm_actions       = [aws_sns_topic.billing_alerts[0].arn]
-# }
-
-# resource "aws_sns_topic_subscription" "billing_alerts" {
-#   # for_each  = toset(var.billing_alerts["subscriptions"])
-#   for_each  = toset(lookup(var.billing_alerts, "subscriptions", {}))
-#   topic_arn = aws_sns_topic.billing_alerts[0].arn
-#   protocol  = "email"
-#   endpoint  = each.key
-# }
-
 module "billing_alerts" {
   source = "./modules/billing_alerts"
   count  = var.billing_alerts == null ? 0 : 1
