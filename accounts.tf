@@ -33,4 +33,3 @@ module "accounts" {
   primary_contact          = var.global_primary_contact
   disable_sso_management   = var.disable_sso_management
 }
-

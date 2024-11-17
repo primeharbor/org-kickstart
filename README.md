@@ -112,8 +112,7 @@ organization = {
     phone_number  = "+14041234567"
   }
 
-  organization_units = {
-
+  organizational_units = {
     "bu1" = {
       name             = "business_unit_1"
       is_child_of_root = true

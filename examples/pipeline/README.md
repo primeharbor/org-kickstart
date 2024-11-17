@@ -25,11 +25,11 @@ Overview
   ```
 2. You must import the organizational management account and the organization that was created via ClickOps
   ```bash
-  ./scripts/import-org.sh
+  ./scripts/import_org.sh
   cat import-org.tf
   ```
 3. Review the import-org.tf file for accuracy.
-4. Run the teraform plan to create the security account (if one doesn't already exist)
+4. Run the terraform plan to create the security account (if one doesn't already exist)
   ```bash
   terraform plan -out=${env}-terraform.tfplan -no-color -var-file="${env}.tfvars" -target module.organization.module.security_account
   ```
@@ -38,10 +38,12 @@ Overview
   make tf-apply
   ```
 6. Disable the creations of All AWS Accounts and Custom SCPs in your TF Vars file
-  1. Comment out the `accounts = {}` block
-  2. Comment out the `service_control_policies = {}` block
-  3. We will re-enable them after the first apply.
-  4. Delete the `security_services.tf` file on the first run.
+  1. **IMPORTANT**: Ensure that your `payer_name` and `payer_email` variables align with what you manually used when creating the first AWS account, otherwise
+     it will force a recreation of the account.
+  2. Comment out the `accounts = {}` block
+  3. Comment out the `service_control_policies = {}` block
+  4. We will re-enable them after the first apply.
+  5. Delete the `security_services.tf` file on the first run.
 7. Run the full terraform plan
   ```bash
   make tf-plan
@@ -56,8 +58,6 @@ Overview
   make tf-init
   make tf-plan
   ```
-
-
 
 If you see the following error:
 ```
@@ -85,7 +85,7 @@ git submodule add https://github.com/primeharbor/pht-account-configurator
 git submodule init
 git submodule update
 
-EOF
+<!--EOF
 ---
 
 
@@ -164,7 +164,6 @@ make env=$env tf-init
 ./tf-import.sh module.organization.aws_organizations_organizational_unit.suspended_ou ou-rrrr-uuuuuuu
 
 
-
 # Import all the AWS accounts
 bash ./import_accounts.sh
 ```
@@ -202,3 +201,4 @@ make tf-show | grep "will be updated"
   # module.organization.module.security_account.aws_organizations_account.account will be updated in-place
 
 ```
+-->
