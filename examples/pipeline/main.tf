@@ -69,6 +69,7 @@ module "organization" {
   accounts                  = lookup(var.organization, "accounts", {})
   service_control_policies  = lookup(var.organization, "service_control_policies", {})
   resource_control_policies = lookup(var.organization, "resource_control_policies", {})
+  declarative_policies      = lookup(var.organization, "declarative_policies", {})
   organization_units        = lookup(var.organization, "organization_units", {})
   account_configurator      = lookup(var.organization, "account_configurator", null)
   billing_alerts            = lookup(var.organization, "billing_alerts", null)
@@ -83,10 +84,11 @@ module "organization" {
   billing_data_bucket_name = lookup(var.organization, "billing_data_bucket_name", null)
   cur_report_frequency     = lookup(var.organization, "cur_report_frequency", "NONE")
 
-  security_services = lookup(var.organization, "security_services", {})
-
-  vpc_flowlogs_bucket_name = lookup(var.organization, "vpc_flowlogs_bucket_name", null)
-  macie_bucket_name        = lookup(var.organization, "macie_bucket_name", null)
+  # Security Stuff
+  security_services              = lookup(var.organization, "security_services", {})
+  vpc_flowlogs_bucket_name       = lookup(var.organization, "vpc_flowlogs_bucket_name", null)
+  macie_bucket_name              = lookup(var.organization, "macie_bucket_name", null)
+  declarative_policy_bucket_name = lookup(var.organization, "declarative_policy_bucket_name", null)
 }
 
 variable "organization" {}
@@ -106,4 +108,8 @@ output "security_account_id" {
 
 output "sso_instance_arn" {
   value = module.organization.sso_instance_arn
+}
+
+output "declarative_policy_bucket" {
+  value = module.organization.declarative_policy_bucket
 }
