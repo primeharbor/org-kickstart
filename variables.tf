@@ -181,6 +181,16 @@ variable "organization_units" {
   default     = {}
 }
 
+variable "declarative_policy_bucket_name" {
+  description = "Name of S3 Bucket for Declarative Policy Reports"
+  default = null
+}
+
+variable "declarative_policies" {
+  description = "Map of Declarative Policies to deploy"
+  default     = {}
+}
+
 #
 # Audit Role
 #

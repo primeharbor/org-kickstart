@@ -1,0 +1,12 @@
+{
+  "ec2_attributes": {
+    "exception_message": {
+      "@@assign": "Sharing of EBS Snapshots is denied by Organizational Policy via the org-kickstart framework"
+    },
+    "snapshot_block_public_access": {
+      "state": {
+        "@@assign": "block_all_sharing"
+      }
+    }
+  }
+}
