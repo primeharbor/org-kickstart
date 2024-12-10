@@ -23,6 +23,7 @@ resource "aws_organizations_organization" "org" {
     "cloudtrail.amazonaws.com",
     "config-multiaccountsetup.amazonaws.com",
     "config.amazonaws.com",
+    "ec2.amazonaws.com",
     "fms.amazonaws.com",
     "guardduty.amazonaws.com",
     "health.amazonaws.com",
@@ -44,13 +45,22 @@ resource "aws_organizations_organization" "org" {
   enabled_policy_types = [
     "AISERVICES_OPT_OUT_POLICY",
     "BACKUP_POLICY",
-    "SERVICE_CONTROL_POLICY",
+    "DECLARATIVE_POLICY_EC2",
     "RESOURCE_CONTROL_POLICY",
+    "SERVICE_CONTROL_POLICY",
     "TAG_POLICY"
   ]
 
   feature_set = "ALL"
 }
 
-# Leverage data vs the resource so things don't un-necessairly change when updating the org.
+# Enable management of root credentials
+resource "aws_iam_organizations_features" "org" {
+  enabled_features = [
+    "RootCredentialsManagement",
+    "RootSessions"
+  ]
+}
+
+# Leverage data vs the resource so things don't un-necessarily change when updating the org.
 data "aws_organizations_organization" "org" {}
