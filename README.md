@@ -189,6 +189,31 @@ organization = {
     }
   }
 
+  declarative_policies = {
+    deny_public_ami = {
+      policy_name        = "Block_Public_AMIs"
+      policy_description = "Deny the public sharing of all AMIs"
+      policy_type        = "DECLARATIVE_POLICY_EC2"
+      policy_json_file   = "policies/EC2ImageBPA_DCP.json"
+      policy_targets     = ["HostedSites", "CustomerAccess", "Workloads"]
+    }
+
+    deny_public_snapshot = {
+      policy_name        = "Block_Public_Snapshots"
+      policy_description = "Deny the public sharing of all EBS Snapshots"
+      policy_json_file   = "policies/EC2SnapshotBPA_DCP.json"
+      policy_type        = "DECLARATIVE_POLICY_EC2"
+      policy_targets     = ["HostedSites", "CustomerAccess", "Workloads"]
+    }
+
+    enable_imdsv2 = {
+      policy_name        = "Enforce_IMDSv2"
+      policy_description = "Enforce the usage of IMSv2 - Require Tokens, and set a hop limit of 2"
+      policy_json_file   = "policies/EC2IMDSv2Enforce_DCP.json"
+      policy_type        = "DECLARATIVE_POLICY_EC2"
+      policy_targets     = ["HostedSites", "CustomerAccess", "Workloads"]
+    }
+
   resource_control_policies = {
     s3_data_perimeter = {
       policy_name        = "S3DataPerimeter"
