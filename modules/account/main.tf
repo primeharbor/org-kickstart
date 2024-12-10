@@ -50,11 +50,6 @@ variable "primary_contact" {
   default = null
 }
 
-variable "preserve_root" {
-  default = false
-}
-
-
 variable "disable_sso_management" {
   type = bool
 }

@@ -36,7 +36,6 @@ module "security_account" {
   security_contact         = var.global_security_contact
   operations_contact       = var.global_operations_contact
   primary_contact          = var.global_primary_contact
-  preserve_root            = var.security_preserve_root
 }
 
 
