@@ -16,29 +16,29 @@
 # Bucket
 #
 resource "aws_s3_bucket" "declarative_policy_bucket" {
-  count    = var.declarative_policy_bucket_name == null ? 0 : 1
-  bucket   = var.declarative_policy_bucket_name
+  count  = var.declarative_policy_bucket_name == null ? 0 : 1
+  bucket = var.declarative_policy_bucket_name
 }
 
 resource "aws_s3_bucket_versioning" "declarative_policy_bucket" {
-  count    = var.declarative_policy_bucket_name == null ? 0 : 1
-  bucket   = aws_s3_bucket.declarative_policy_bucket[0].id
+  count  = var.declarative_policy_bucket_name == null ? 0 : 1
+  bucket = aws_s3_bucket.declarative_policy_bucket[0].id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_ownership_controls" "declarative_policy_bucket" {
-  count    = var.declarative_policy_bucket_name == null ? 0 : 1
-  bucket   = aws_s3_bucket.declarative_policy_bucket[0].id
+  count  = var.declarative_policy_bucket_name == null ? 0 : 1
+  bucket = aws_s3_bucket.declarative_policy_bucket[0].id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
 }
 
 resource "aws_s3_bucket_public_access_block" "declarative_policy_bucket_bpa" {
-  count    = var.declarative_policy_bucket_name == null ? 0 : 1
-  bucket   = aws_s3_bucket.declarative_policy_bucket[0].id
+  count  = var.declarative_policy_bucket_name == null ? 0 : 1
+  bucket = aws_s3_bucket.declarative_policy_bucket[0].id
 
   # Modifying these settings prevents Terraform from running.
   block_public_acls       = true
@@ -48,9 +48,9 @@ resource "aws_s3_bucket_public_access_block" "declarative_policy_bucket_bpa" {
 }
 
 resource "aws_s3_bucket_policy" "declarative_policy_bucket_policy" {
-  count    = var.declarative_policy_bucket_name == null ? 0 : 1
-  bucket   = aws_s3_bucket.declarative_policy_bucket[0].id
-  policy   = data.aws_iam_policy_document.declarative_policy_bucket_policy[0].json
+  count  = var.declarative_policy_bucket_name == null ? 0 : 1
+  bucket = aws_s3_bucket.declarative_policy_bucket[0].id
+  policy = data.aws_iam_policy_document.declarative_policy_bucket_policy[0].json
 }
 
 data "aws_iam_policy_document" "declarative_policy_bucket_policy" {
@@ -66,9 +66,9 @@ data "aws_iam_policy_document" "declarative_policy_bucket_policy" {
     actions   = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.declarative_policy_bucket[0].arn}/*"]
     condition {
-      test = "StringLike"
+      test     = "StringLike"
       variable = "aws:SourceArn"
-      values = ["arn:aws:declarative-policies-ec2:*:${aws_organizations_account.payer.id}:*"]
+      values   = ["arn:aws:declarative-policies-ec2:*:${aws_organizations_account.payer.id}:*"]
     }
   }
 }
@@ -89,6 +89,5 @@ module "declarative_policies" {
 }
 
 output "declarative_policy_bucket" {
-    value = aws_s3_bucket.declarative_policy_bucket[0].id
-
+  value = aws_s3_bucket.declarative_policy_bucket[0].id
 }

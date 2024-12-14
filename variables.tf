@@ -177,7 +177,7 @@ variable "organization_units" {
 
 variable "declarative_policy_bucket_name" {
   description = "Name of S3 Bucket for Declarative Policy Reports"
-  default = null
+  default     = null
 }
 
 variable "declarative_policies" {
