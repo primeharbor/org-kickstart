@@ -1,0 +1,285 @@
+# Copyright 2018-2023 Chris Farris <chrisf@primeharbor.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This template creates a cross account role for audit & security tool management from a dedicated security account
+
+# TemplateSource: https://github.com/primeharbor/aws-account-automation/blob/master/cloudformation/AuditRole-Template.yaml
+
+Parameters:
+
+  TrustedAccountNumber:
+    Description: The 12 digit AWS account number to grant access to.
+    Default: '123456789012'
+    MinLength: '12'
+    AllowedPattern: '[0-9]+'
+    MaxLength: '12'
+    Type: String
+
+  RoleName:
+    Description: The name of the Audit Role to be created
+    Default: 'security-audit'
+    Type: String
+
+  DenyDataAccess:
+    Description: If set to 'true' it will restrict the audit role from accessing most data resources
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'false'
+
+Conditions:
+  cEnableDenyDataAccessPolicy: !Equals [!Ref 'DenyDataAccess', 'true']
+
+Resources:
+  AuditorCrossAccountRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/SecurityAudit
+      - arn:aws:iam::aws:policy/ReadOnlyAccess
+      - arn:aws:iam::aws:policy/AWSAccountManagementReadOnlyAccess
+      - arn:aws:iam::aws:policy/AWSSSOReadOnly
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Action: sts:AssumeRole
+          Sid: ''
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${TrustedAccountNumber}:root"
+      Policies:
+        - PolicyName: MissingPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "iam:Simulate*"
+                  - "account:GetContactInformation"
+                  - "ecr:StartImageScan"
+                  - "glue:GetConnections"
+                  - "backup:ListReportPlans"
+                Resource: "*"
+        - PolicyName: SecurityAuditTools
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                - "trustedAdvisor:*"
+                - "health:*"
+                - "access-analyzer:*"
+                - "macie:*"
+                - "inspector:*"
+                - "support:*"
+                - "guardduty:*"
+                - "securityhub:*"
+                Resource: "*"
+        - PolicyName: BillingAuditPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                - "aws-portal:View*" # Legacy Perm going away
+                - "ce:*"             # Full Access to Cost Explorer
+                - "account:Get*"
+                - "billing:Get*"
+                - "payments:List*"
+                - "payments:Get*"
+                - "tax:List*"
+                - "tax:Get*"
+                - "consolidatedbilling:Get*"
+                - "consolidatedbilling:List*"
+                - "invoicing:List*"
+                - "invoicing:Get*"
+                - "cur:Get*"
+                - "cur:Validate*"
+                - "freetier:Get*"
+                Resource: "*"
+
+  DenyDataAccessPolicy:
+    Type: AWS::IAM::Policy
+    Condition: cEnableDenyDataAccessPolicy
+    Properties:
+      PolicyName: DenyDataAccess
+      Roles:
+        - !Ref AuditorCrossAccountRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Deny"
+            Resource: "*"
+            Action:
+              - aoss:APIAccessAll
+              - aoss:DashboardsAccessAll
+              - appsync:GetDataSource
+              - appsync:GetFunction
+              - athena:GetQueryExecution
+              - athena:GetQueryResults
+              - athena:GetQueryResultsStream
+              - cassandra:Select
+              - chatbot:DescribeSlackChannels
+              - chatbot:DescribeSlackUserIdentities
+              - chatbot:ListMicrosoftTeamsConfiguredTeams
+              - chatbot:ListMicrosoftTeamsUserIdentities
+              - chime:GetAttendee
+              - chime:GetChannelMessage
+              - chime:GetMeeting
+              - chime:GetMeetingDetail
+              - chime:GetRoom
+              - chime:GetUser
+              - chime:GetUserActivityReportData
+              - chime:GetUserByEmail
+              - chime:GetUserSettings
+              - chime:ListAttendees
+              - chime:ListMeetingEvents
+              - chime:ListMeetings
+              - chime:ListUsers
+              - cleanrooms:GetProtectedQuery
+              - cloudformation:GetTemplate
+              - cloudfront:GetFunction
+              - cloudtrail:GetQueryResults
+              - cloudtrail:LookupEvents
+              - codeartifact:GetPackageVersionAsset
+              - codeartifact:GetPackageVersionReadme
+              - codeartifact:ReadFromRepository
+              - codebuild:BatchGetReportGroups
+              - codebuild:BatchGetReports
+              - codecommit:BatchGetCommits
+              - codecommit:BatchGetPullRequests
+              - codecommit:BatchGetRepositories
+              - codecommit:DescribeMergeConflicts
+              - codecommit:DescribePullRequestEvents
+              - codecommit:GetApprovalRuleTemplate
+              - codecommit:GetBlob
+              - codecommit:GetBranch
+              - codecommit:GetComment
+              - codecommit:GetCommentReactions
+              - codecommit:GetCommentsForComparedCommit
+              - codecommit:GetCommentsForPullRequest
+              - codecommit:GetCommit
+              - codecommit:GetCommitHistory
+              - codecommit:GetCommitsFromMergeBase
+              - codecommit:GetDifferences
+              - codecommit:GetFile
+              - codecommit:GetFolder
+              - codecommit:GetMergeCommit
+              - codecommit:GetMergeConflicts
+              - codecommit:GetMergeOptions
+              - codecommit:GetObjectIdentifier
+              - codecommit:GetPullRequest
+              - codecommit:GetPullRequestApprovalStates
+              - codecommit:GetPullRequestOverrideState
+              - codecommit:GetReferences
+              - codecommit:GetTree
+              - codecommit:GitPull
+              - codeguru-profiler:GetRecommendations
+              - codeguru-reviewer:DescribeCodeReview
+              - codeguru-reviewer:DescribeRecommendationFeedback
+              - codepipeline:GetPipelineExecution
+              - cognito-identity:LookupDeveloperIdentity
+              - cognito-idp:AdminGetDevice
+              - cognito-idp:AdminGetUser
+              - cognito-idp:AdminListDevices
+              - cognito-idp:AdminListGroupsForUser
+              - cognito-idp:AdminListUserAuthEvents
+              - cognito-idp:GetDevice
+              - cognito-idp:GetGroup
+              - cognito-idp:GetUser
+              - cognito-idp:ListUsers
+              - cognito-idp:ListDevices
+              - cognito-idp:ListGroups
+              - cognito-sync:ListRecords
+              - cognito-sync:QueryRecords
+              - connect:ListUsers
+              - datapipeline:QueryObjects
+              - dax:BatchGetItem
+              - dax:GetItem
+              - dax:Query
+              - dax:Scan
+              - dynamodb:BatchGetItem
+              - dynamodb:GetItem
+              - dynamodb:GetRecords
+              - dynamodb:Query
+              - dynamodb:Scan
+              - ecr:GetDownloadUrlForLayer
+              - es:ESHttpDelete
+              - es:ESHttpGet
+              - es:ESHttpHead
+              - es:ESHttpPatch
+              - es:ESHttpPost
+              - es:ESHttpPut
+              - gamelift:GetInstanceAccess
+              - healthlake:ReadResource
+              - healthlake:SearchWithGet
+              - healthlake:SearchWithPost
+              - kendra:Query
+              - kinesis:GetRecords
+              - kinesisvideo:GetImages
+              - kinesisvideo:GetMedia
+              - lambda:GetFunction
+              - lambda:GetLayerVersion
+              - lightsail:GetContainerImages
+              - logs:GetLogEvents
+              - logs:GetLogRecord
+              - logs:GetQueryResults
+              - logs:Unmask
+              - macie2:GetFindings
+              - mediastore:GetObject
+              - qldb:GetBlock
+              - rds:DownloadCompleteDBLogFile
+              - rds:DownloadDBLogFilePortion
+              - robomaker:GetWorldTemplateBody
+              - s3-object-lambda:GetObject
+              - s3-object-lambda:GetObjectVersion
+              - s3-object-lambda:ListBucket
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - sagemaker:Search
+              - sdb:Select
+              - serverlessrepo:GetApplication
+              - serverlessrepo:GetCloudFormationTemplate
+              - sqs:ReceiveMessage
+              - ssm:GetDocument
+              - ssm:GetParameter
+              - ssm:GetParameterHistory
+              - ssm:GetParameters
+              - ssm:GetParametersByPath
+              - sso-directory:DescribeGroup
+              - sso-directory:DescribeUser
+              - sso-directory:SearchGroups
+              - sso-directory:SearchUsers
+              - sso:SearchGroups
+              - sso:SearchUsers
+              - support:DescribeAttachment
+              - support:DescribeCommunications
+              - workdocs:GetDocument
+              - workdocs:GetDocumentPath
+              - workdocs:GetDocumentVersion
+              - workmail:ListGroupMembers
+              - workmail:ListGroups
+              - workmail:ListUsers
+
+Outputs:
+  RoleARN:
+    Description: The ARN of the Audit role that can be assumed by the other account.
+    Value: !GetAtt AuditorCrossAccountRole.Arn
+
+  TemplateVersion:
+    Value: 1.4.0

@@ -194,6 +194,12 @@ variable "audit_role_name" {
   type        = string
 }
 
+variable "audit_role_stack_set_template_url" {
+  description = "URL that points to the Audit Role Policy Template"
+  default     = null
+  type        = string
+}
+
 variable "deploy_audit_role" {
   description = "Boolean to determine if org-kickstart should manage Audit Role"
   type        = bool
