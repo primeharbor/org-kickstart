@@ -81,10 +81,10 @@ resource "aws_cloudformation_stack_set_instance" "audit_role" {
 # Delegated Admin Stacksets doesn't deploy to the payer
 #
 resource "aws_cloudformation_stack" "audit_role_payer" {
-  count = var.deploy_audit_role == true ? 1 : 0
-  name  = "audit-role"
-
-  template_body = file("${path.module}/templates/AuditRole-Template.yaml")
+  count         = var.deploy_audit_role == true ? 1 : 0
+  name          = "audit-role"
+  template_body = local.audit_role_stack_set_template_body
+  template_url  = local.audit_role_stack_set_template_url
 
   parameters = {
     TrustedAccountNumber = module.security_account.account_id
