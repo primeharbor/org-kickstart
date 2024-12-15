@@ -13,23 +13,25 @@
 # limitations under the License.
 
 organization = {
-  organization_name           = "pht-kickstart"
-  payer_name                  = "PrimeHarbor Test Payer"
-  payer_email                 = "aws+kickstart-payer@primeharbor.com"
-  security_account_name       = "primeharbor-kickstart-security"
-  security_account_root_email = "aws+kickstart-security@primeharbor.com"
-  cloudtrail_bucket_name      = "primeharbor-kickstart-cloudtrail"
-  cloudtrail_loggroup_name    = "CloudTrail/DefaultLogGroup"
-  billing_data_bucket_name    = "primeharbor-kickstart-cur"
-  cur_report_frequency        = "DAILY" # Valid options: DAILY, HOURLY, MONTHLY
-  session_duration            = "PT8H"
-  admin_permission_set_name   = "AdministratorAccess"
-  admin_group_name            = "AllAdmins"
-  disable_sso_management      = false
-  deploy_audit_role           = true
-  audit_role_name             = "security-audit"
-  vpc_flowlogs_bucket_name    = "primeharbor-kickstart-flowlogs"
-  macie_bucket_name           = "primeharbor-kickstart-macie-findings"
+  organization_name                 = "org-kickstart"
+  payer_name                        = "Example Test Payer"
+  payer_email                       = "aws+kickstart-payer@example.com"
+  security_account_name             = "example-kickstart-security"
+  security_account_root_email       = "aws+kickstart-security@example.com"
+  cloudtrail_bucket_name            = "example-kickstart-cloudtrail"
+  cloudtrail_loggroup_name          = "CloudTrail/DefaultLogGroup"
+  billing_data_bucket_name          = "example-kickstart-cur"
+  cur_report_frequency              = "DAILY" # Valid options: DAILY, HOURLY, MONTHLY
+  session_duration                  = "PT8H"
+  admin_permission_set_name         = "AdministratorAccess"
+  admin_group_name                  = "AllAdmins"
+  disable_sso_management            = false
+  deploy_audit_role                 = true
+  audit_role_name                   = "security-audit"
+  audit_role_stack_set_template_url = "https://s3.amazonaws.com/pht-cloudformation/aws-account-automation/AuditRole-Template.yaml"
+  declarative_policy_bucket_name    = "account-status-report-bucket-example"
+  vpc_flowlogs_bucket_name          = "example-kickstart-flowlogs"
+  macie_bucket_name                 = "example-kickstart-macie-findings"
 
   organization_units = {
 
@@ -46,32 +48,63 @@ organization = {
 
   accounts = {
     dev = {
-      account_name  = "primeharbor-kickstart-dev"
-      account_email = "aws+kickstart-dev@primeharbor.com"
+      account_name  = "example-kickstart-dev"
+      account_email = "aws+kickstart-dev@example.com"
     }
     it = {
-      account_name  = "primeharbor-kickstart-it"
-      account_email = "aws+kickstart-it@primeharbor.com"
+      account_name  = "example-kickstart-it"
+      account_email = "aws+kickstart-it@example.com"
     }
     sandbox = {
-      account_name  = "primeharbor-kickstart-sandbox"
-      account_email = "aws+kickstart-sandbox@primeharbor.com"
+      account_name  = "example-kickstart-sandbox"
+      account_email = "aws+kickstart-sandbox@example.com"
       parent_ou_id  = "ou-yyyy-yyyyyyyy"
+
+      # You can override the Primary Contact / Account Owner
+      primary_contact = {
+        full_name       = "Chris Farris"
+        company_name    = "Fooli Media Services, LLC"
+        address_line_1  = "1234 Main Street"
+        address_line_2  = "Suite 101"
+        city            = "Atlanta"
+        state_or_region = "GA"
+        postal_code     = "30332"
+        country_code    = "US"
+        email_address   = "aws@example.com"
+        phone_number    = "+14041234567"
+        website_url     = "https://example.com"
+      }
     }
   }
 
   global_billing_contact = {
     name          = "Chris Farris"
     title         = "CFO"
-    email_address = "billing@primeharbor.com"
+    email_address = "billing@example.com"
     phone_number  = "+14041234567"
   }
 
   global_security_contact = {
     name          = "Chris Farris"
     title         = "Global CISO"
-    email_address = "security@primeharbor.com"
+    email_address = "security@example.com"
     phone_number  = "+14041234567"
+  }
+
+  global_primary_contact = {
+    full_name      = "required"
+    company_name   = "Optional"
+    address_line_1 = "Required"
+    # address_line_2  = "Optional"
+    # address_line_3  = "Optional"
+    city            = "Required"
+    state_or_region = "GA"
+    # district_or_county = "Optional"
+    postal_code   = "Required"
+    country_code  = "US"
+    email_address = "Required"
+    phone_number  = "+1-Required"
+    # website_url     = "Optional"
   }
 
   service_control_policies = {
@@ -133,25 +166,49 @@ organization = {
     }
   }
 
-  global_primary_contact = {
-    full_name      = "required"
-    company_name   = "Optional"
-    address_line_1 = "Required"
-    # address_line_2  = "Optional"
-    # address_line_3  = "Optional"
-    city            = "Required"
-    state_or_region = "GA"
-    # district_or_county = "Optional"
-    postal_code   = "Required"
-    country_code  = "US"
-    email_address = "Required"
-    phone_number  = "+1-Required"
-    # website_url     = "Optional"
+  resource_control_policies = {
+    s3_data_perimeter = {
+      policy_name        = "S3DataPerimeter"
+      policy_description = "Restricts S3 to Principals inside the Org"
+      policy_json_file   = "policies/RCP_S3DataPerimeter.json.tftpl"
+      policy_vars = {
+        org_id = "o-yyyyyy" # This needs to be hardcoded for reasons
+      }
+    }
+  }
+
+  declarative_policies = {
+    deny_public_ami = {
+      policy_name        = "Block_Public_AMIs"
+      policy_description = "Deny the public sharing of all AMIs"
+      policy_type        = "DECLARATIVE_POLICY_EC2"
+      policy_json_file   = "policies/EC2ImageBPA_DCP.json"
+      policy_targets     = ["Workloads", "Governance", "Suspended", "CoreIT"]
+    }
+
+    deny_public_snapshot = {
+      policy_name        = "Block_Public_Snapshots"
+      policy_description = "Deny the public sharing of all EBS Snapshots"
+      policy_json_file   = "policies/EC2SnapshotBPA_DCP.json"
+      policy_type        = "DECLARATIVE_POLICY_EC2"
+      policy_targets     = ["Workloads", "Governance", "Suspended", "CoreIT"]
+    }
+
+    # Do not enable. This will break the IR Scenario
+    enable_imdsv2 = {
+      policy_name        = "Enforce_IMDSv2"
+      policy_description = "Enforce the usage of IMSv2 - Require Tokens, and set a hop limit of 2"
+      policy_json_file   = "policies/EC2IMDSv2Enforce_DCP.json"
+      policy_type        = "DECLARATIVE_POLICY_EC2"
+      policy_targets     = ["Workloads", "Governance", "Suspended", "CoreIT"]
+    }
+
   }
 
   security_services = {
     disable_guardduty   = false
     disable_securityhub = true
+    disable_macie       = true
   }
 
   account_configurator = {
@@ -171,3 +228,5 @@ organization = {
   }
 
 }
+
+backend_bucket = "org-kickstart-example"
