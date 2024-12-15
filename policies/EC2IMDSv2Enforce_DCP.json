@@ -1,0 +1,21 @@
+{
+    "ec2_attributes": {
+      "instance_metadata_defaults": {
+        "http_tokens": {
+          "@@assign": "required"
+        },
+        "http_put_response_hop_limit": {
+          "@@assign": 2
+        },
+        "http_endpoint": {
+          "@@assign": "no_preference"
+        },
+        "instance_metadata_tags": {
+          "@@assign": "no_preference"
+        }
+      },
+      "exception_message": {
+        "@@assign": "Per Organizational Policy, all EC2 Instances must launch with Tokens required with a max hop limit of 2."
+      }
+    }
+  }

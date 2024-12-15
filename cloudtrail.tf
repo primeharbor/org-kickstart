@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
     condition {
       test     = "StringEquals"
       variable = "aws:PrincipalOrgID"
-      values   = [aws_organizations_organization.org.id]
+      values   = [data.aws_organizations_organization.org.id]
     }
     condition {
       test     = "StringLike"
@@ -200,25 +200,28 @@ resource "aws_iam_role" "cloudtrail_to_cloudwatch" {
     ]
   })
 
-  inline_policy {
-    name = "cloudtrail_to_cloudwatch"
-    policy = jsonencode({
-      Version = "2012-10-17"
-      Statement = [
-        {
-          Action = [
-            "logs:CreateLogStream",
-            "logs:PutLogEvents"
-          ]
-          Effect   = "Allow"
-          Sid      = "AWSCloudTrailCreateLogStream"
-          Resource = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:log-stream:*"
-        },
-      ]
-    })
-  }
-
 }
+
+resource "aws_iam_role_policy" "cloudtrail_to_cloudwatch" {
+  count = var.cloudtrail_loggroup_name != null ? 1 : 0
+  name  = "cloudtrail_to_cloudwatch"
+  role  = aws_iam_role.cloudtrail_to_cloudwatch[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Effect   = "Allow"
+        Sid      = "AWSCloudTrailCreateLogStream"
+        Resource = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:log-stream:*"
+      },
+    ]
+  })
+}
+
 
 output "cloudtrail_s3_notification_topic" {
   value = var.cloudtrail_bucket_name != null ? aws_sns_topic.cloudtrail_s3_notification_topic[0].arn : null

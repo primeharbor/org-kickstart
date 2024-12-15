@@ -165,8 +165,23 @@ variable "service_control_policies" {
   default     = {}
 }
 
+variable "resource_control_policies" {
+  description = "Map of RCPs to deploy"
+  default     = {}
+}
+
 variable "organization_units" {
   description = "Map of OUs to deploy"
+  default     = {}
+}
+
+variable "declarative_policy_bucket_name" {
+  description = "Name of S3 Bucket for Declarative Policy Reports"
+  default     = null
+}
+
+variable "declarative_policies" {
+  description = "Map of Declarative Policies to deploy"
   default     = {}
 }
 
@@ -176,6 +191,12 @@ variable "organization_units" {
 variable "audit_role_name" {
   description = "Name of the AuditRole to deploy"
   default     = "security-audit"
+  type        = string
+}
+
+variable "audit_role_stack_set_template_url" {
+  description = "URL that points to the Audit Role Policy Template"
+  default     = null
   type        = string
 }
 
