@@ -249,7 +249,6 @@ organization = {
       policy_targets     = ["Workloads", "Governance", "Suspended", "CoreIT"]
     }
 
-    # Do not enable. This will break the IR Scenario
     enable_imdsv2 = {
       policy_name        = "Enforce_IMDSv2"
       policy_description = "Enforce the usage of IMSv2 - Require Tokens, and set a hop limit of 2"
