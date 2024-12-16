@@ -19,30 +19,30 @@
 # Governance holds the security & payer accounts
 resource "aws_organizations_organizational_unit" "governance_ou" {
   name      = "Governance"
-  parent_id = aws_organizations_organization.org.roots[0].id
+  parent_id = data.aws_organizations_organization.org.roots[0].id
 }
 
 # Most accounts go here
 resource "aws_organizations_organizational_unit" "workloads_ou" {
   name      = "Workloads"
-  parent_id = aws_organizations_organization.org.roots[0].id
+  parent_id = data.aws_organizations_organization.org.roots[0].id
 }
 
 # Create Sandbox accounts, if you want devs to have more service freedom
 resource "aws_organizations_organizational_unit" "sandbox_ou" {
   name      = "Sandbox"
-  parent_id = aws_organizations_organization.org.roots[0].id
+  parent_id = data.aws_organizations_organization.org.roots[0].id
 }
 
 # Accounts you're going to close or have closed go here.
 resource "aws_organizations_organizational_unit" "suspended_ou" {
   name      = "Suspended"
-  parent_id = aws_organizations_organization.org.roots[0].id
+  parent_id = data.aws_organizations_organization.org.roots[0].id
 }
 
 # Fetch the list of AWS Organizational Units
 data "aws_organizations_organizational_units" "all_ous" {
-  parent_id = aws_organizations_organization.org.roots[0].id
+  parent_id = data.aws_organizations_organization.org.roots[0].id
 }
 
 # Create a map to look up OU IDs by name. Thanks ChatGPT for almost getting there with what I needed.

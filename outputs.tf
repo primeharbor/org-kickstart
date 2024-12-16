@@ -16,6 +16,10 @@ output "org_name" {
   value = var.organization_name
 }
 
+output "org_id" {
+  value = data.aws_organizations_organization.org.id
+}
+
 output "security_account_id" {
   value = module.security_account.account_id
 }

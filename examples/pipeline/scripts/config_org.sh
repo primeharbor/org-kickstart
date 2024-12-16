@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2024 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+TF_DATA=$1
+SSO_NAME=$2
 
-module "billing_alerts" {
-  source = "./modules/billing_alerts"
-  count  = var.billing_alerts == null ? 0 : 1
+if [ -z "$SSO_NAME" ] ; then
+  echo "USAGE: $0 output-ENV.json <SSO_NAME>"
+  exit 1
+fi
 
-  payer_email           = var.payer_email
-  organization_name     = var.organization_name
-  billing_levels        = lookup(var.billing_alerts, "levels", {})
-  billing_subscriptions = lookup(var.billing_alerts, "subscriptions", [])
+SSO_INSTANCE_ARN=`jq -r .sso_instance_arn.value $TF_DATA`
+aws sso-admin update-instance --name $SSO_NAME --instance-arn $SSO_INSTANCE_ARN
 
-}

@@ -1,4 +1,4 @@
-# Copyright 2023 Chris Farris <chris@primeharbor.com>
+# Copyright 2024 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-locals {
-  audit_role_stack_set_template_body = var.audit_role_stack_set_template_url == null ? file("${path.module}/templates/AuditRole-Template.yaml") : null
-  audit_role_stack_set_template_url  = var.audit_role_stack_set_template_url != null ? var.audit_role_stack_set_template_url : null
-}
-
-resource "aws_cloudformation_stack_set" "audit_role" {
-  count            = var.deploy_audit_role == true ? 1 : 0
+resource "aws_cloudformation_stack_set" "stack_set" {
   provider         = aws.security-account
-  name             = "audit-role-stackset"
+  name             = var.stack_set_name
   permission_model = "SERVICE_MANAGED"
   call_as          = "DELEGATED_ADMIN"
-  description      = "Deploy the Audit Role to all AWS Accounts"
-  template_body    = local.audit_role_stack_set_template_body
-  template_url     = local.audit_role_stack_set_template_url
+  description      = var.stack_set_description
+  template_body    = local.stack_set_template_body
+  template_url     = local.stack_set_template_url
+  parameters       = var.parameters
 
   # Bug with provider https://github.com/hashicorp/terraform-provider-aws/issues/23464
   # TF attempts to remove the administration_role_arn, even though it's added as part of a tf refresh
@@ -36,16 +31,9 @@ resource "aws_cloudformation_stack_set" "audit_role" {
       administration_role_arn
     ]
   }
-
-  parameters = {
-    TrustedAccountNumber = module.security_account.account_id
-    RoleName             = var.audit_role_name
-    DenyDataAccess       = false
-  }
-
   auto_deployment {
     enabled                          = true
-    retain_stacks_on_account_removal = true
+    retain_stacks_on_account_removal = var.retain_stack
   }
 
   capabilities = [
@@ -60,13 +48,12 @@ resource "aws_cloudformation_stack_set" "audit_role" {
   }
 }
 
-resource "aws_cloudformation_stack_set_instance" "audit_role" {
-  count          = var.deploy_audit_role == true ? 1 : 0
+resource "aws_cloudformation_stack_set_instance" "stack_set" {
   provider       = aws.security-account
-  region         = "us-east-1"
+  region         = var.region
   call_as        = "DELEGATED_ADMIN"
-  retain_stack   = true
-  stack_set_name = aws_cloudformation_stack_set.audit_role[0].name
+  retain_stack   = var.retain_stack
+  stack_set_name = aws_cloudformation_stack_set.stack_set.name
   deployment_targets {
     organizational_unit_ids = [aws_organizations_organization.org.roots[0].id]
   }
@@ -80,16 +67,11 @@ resource "aws_cloudformation_stack_set_instance" "audit_role" {
 #
 # Delegated Admin Stacksets doesn't deploy to the payer
 #
-resource "aws_cloudformation_stack" "audit_role_payer" {
-  count         = var.deploy_audit_role == true ? 1 : 0
-  name          = "audit-role"
-  template_body = local.audit_role_stack_set_template_body
-  template_url  = local.audit_role_stack_set_template_url
-
-  parameters = {
-    TrustedAccountNumber = module.security_account.account_id
-    RoleName             = var.audit_role_name
-  }
+resource "aws_cloudformation_stack" "payer_stack" {
+  name          = var.stack_set_name
+  template_body = local.stack_set_template_body
+  template_url  = local.stack_set_template_url
+  parameters    = var.parameters
   capabilities = [
     "CAPABILITY_NAMED_IAM"
   ]

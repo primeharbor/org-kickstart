@@ -1,0 +1,12 @@
+{
+    "ec2_attributes": {
+      "image_block_public_access": {
+        "state": {
+          "@@assign": "block_new_sharing"
+        }
+      },
+      "exception_message": {
+        "@@assign": "Sharing of AMIs is denied by Organizational Policy via the org-kickstart framework"
+      }
+    }
+  }

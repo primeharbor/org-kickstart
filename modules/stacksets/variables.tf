@@ -12,14 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+variable "stack_set_name" {
+  type = string
+}
 
-module "billing_alerts" {
-  source = "./modules/billing_alerts"
-  count  = var.billing_alerts == null ? 0 : 1
+variable "stack_set_description" {
+  type = string
+}
 
-  payer_email           = var.payer_email
-  organization_name     = var.organization_name
-  billing_levels        = lookup(var.billing_alerts, "levels", {})
-  billing_subscriptions = lookup(var.billing_alerts, "subscriptions", [])
+variable "stack_set_template_body" {
+  type = string
+}
 
+variable "stack_set_template_url" {
+  type = string
+}
+
+variable "parameters" {
+  type    = map(string)
+  default = {}
+}
+
+variable "retain_stack" {
+  default = true
+}
+
+variable "region" {
+  default = "us-east-1"
+}
+
+locals {
+  stack_set_template_body = var.stack_set_template_url == null ? var.stack_set_template_body : null
+  stack_set_template_url  = var.stack_set_template_url != null ? var.stack_set_template_url : null
 }

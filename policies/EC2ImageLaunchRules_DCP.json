@@ -1,0 +1,23 @@
+{
+    "ec2_attributes": {
+      "allowed_images_settings": {
+        "state": {
+          "@@assign": "audit_mode"
+        },
+        "image_criteria": {
+          "criteria_1": {
+            "allowed_image_providers": {
+              "@@assign": [
+                "amazon",
+                "aws_marketplace",
+                "aws_backup_vault"
+              ]
+            }
+          }
+        }
+      },
+      "exception_message": {
+        "@@assign": "A Decalaritve Policy has blocked the launch of this AMI due to being an untrusted source"
+      }
+    }
+  }
