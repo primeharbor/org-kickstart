@@ -57,5 +57,5 @@ locals {
 resource "aws_organizations_organizational_unit" "custom_ous" {
   for_each  = var.organization_units
   name      = each.value["name"]
-  parent_id = each.value["is_child_of_root"] ? data.aws_organizations_organization.org.roots[0].id : local.ou_name_to_id[each.value["parent_id"]]
+  parent_id = each.value["parent_id"] == null ? aws_organizations_organization.org.roots[0].id : local.ou_name_to_id[each.value["parent_id"]]
 }
