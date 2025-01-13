@@ -13,6 +13,7 @@
 # limitations under the License.
 
 terraform {
+  required_version = ">= 1.0, < 2.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -21,28 +22,8 @@ terraform {
   }
 }
 
-# Payer ID
-data "external" "get_caller_identity" {
-  program = ["aws", "sts", "get-caller-identity"]
-}
-data "aws_regions" "current" {}
-
-#
-# Security Service flags
-variable "security_services" {
-  description = "explictly disable or not manage a security service"
-  default = {
-    disable_guardduty   = "false"
-    disable_macie       = "false"
-    disable_inspector   = "false"
-    disable_securityhub = "false"
-  }
-}
-
 locals {
-  payer_account_id = data.external.get_caller_identity.result.Account
-  regions          = data.aws_regions.current.names
-  default_tags     = var.tag_set
+  default_tags = var.tag_set
   security_services = merge(
     tomap({
       disable_guardduty   = "false"

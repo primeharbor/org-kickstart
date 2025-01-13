@@ -64,7 +64,7 @@ variable "session_duration" {
 
   validation {
     # Regex taken from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sso-permissionset.html#cfn-sso-permissionset-sessionduration and modified to use HCL2 compatiable syntax
-    condition     = can(regex("^(-?)P(?=\\d|T\\d)(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)([DW]))?(?:T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+(?:\\.\\d+)?)S)?)?$", var.session_duration))
+    condition     = can(regex("^P(?:(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?)$", var.session_duration))
     error_message = "Session duration must use the ISO8601 duration format. ${var.session_duration} isn't a valid duration string"
   }
 }
@@ -115,9 +115,30 @@ variable "accounts" {
   description = "AWS accounts to provision in the organization"
   type = map(
     object({
-      account_name   = string
-      account_email  = string
-      parent_ou_name = optional(string)
+      account_name    = string
+      account_email   = string
+      delegated_admin = optional(list(string), [])
+      operations_contact = optional(object({
+        name          = string
+        title         = string
+        email_address = string
+        phone_number  = string
+      }))
+      primary_contact = optional(object({
+        full_name          = string
+        company_name       = optional(string)
+        address_line_1     = string
+        address_line_2     = optional(string)
+        address_line_3     = optional(string)
+        city               = string
+        district_or_county = optional(string)
+        state_or_region    = optional(string)
+        postal_code        = string
+        country_code       = string
+        phone_number       = string
+        website_url        = optional(string)
+      }))
+      parent_ou_name = optional(string, "Workloads")
     })
   )
 }
@@ -226,8 +247,8 @@ variable "service_control_policies" {
       policy_name        = string
       policy_description = string
       policy_json_file   = string
-      policy_targets     = optional(list(string))
-      policy_vars        = optional(map(any))
+      policy_targets     = optional(list(string), ["Root"])
+      policy_vars        = optional(map(string), {})
     })
   )
 }
@@ -235,6 +256,15 @@ variable "service_control_policies" {
 variable "resource_control_policies" {
   description = "Map of RCPs to deploy"
   default     = {}
+  type = map(
+    object({
+      policy_name        = string
+      policy_description = string
+      policy_json_file   = string
+      policy_targets     = optional(list(string), ["Root"])
+      policy_vars        = optional(map(string), {})
+    })
+  )
 }
 
 variable "organization_units" {
@@ -252,11 +282,19 @@ variable "organization_units" {
 variable "declarative_policy_bucket_name" {
   description = "Name of S3 Bucket for Declarative Policy Reports"
   default     = null
+  type        = string
 }
 
 variable "declarative_policies" {
   description = "Map of Declarative Policies to deploy"
   default     = {}
+  type = map(object({
+    policy_name        = string
+    policy_description = string
+    policy_json_file   = string
+    policy_targets     = optional(list(string), ["Root"])
+    policy_vars        = optional(map(string), {})
+  }))
 }
 
 #
@@ -278,4 +316,17 @@ variable "deploy_audit_role" {
   description = "Boolean to determine if org-kickstart should manage Audit Role"
   type        = bool
   default     = true
+}
+
+#
+# Security Service flags
+variable "security_services" {
+  description = "explictly disable or not manage a security service"
+  type        = map(string)
+  default = {
+    disable_guardduty   = "false"
+    disable_macie       = "false"
+    disable_inspector   = "false"
+    disable_securityhub = "false"
+  }
 }

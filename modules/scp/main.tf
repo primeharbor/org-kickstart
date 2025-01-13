@@ -45,8 +45,8 @@ resource "aws_organizations_policy" "scp" {
 }
 
 resource "aws_organizations_policy_attachment" "scp_attachment" {
-  count     = length(var.policy_targets)
+  for_each  = toset(var.policy_targets)
   policy_id = aws_organizations_policy.scp.id
-  target_id = var.policy_targets[count.index] == "Root" ? var.root_ou : var.ou_name_to_id[var.policy_targets[count.index]]
+  target_id = each.value == "Root" ? var.root_ou : var.ou_name_to_id[each.value]
 }
 

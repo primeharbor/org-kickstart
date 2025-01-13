@@ -49,7 +49,7 @@
       "Effect": "Deny",
       "Condition": {
         "StringNotEquals": {
-          "aws:RequestedRegion": ${jsonencode( [ for region in allowed_regions : "${region}"])}
+          "aws:RequestedRegion": ${allowed_regions}
         },
         "ArnNotLike": {
           "aws:PrincipalArn": [
