@@ -1,0 +1,17 @@
+{
+    "ec2_attributes": {
+      "exception_message": {
+        "@@assign": "Sharing of AMIs is permitted by Organizational Policy in this OU"
+      },
+      "image_block_public_access": {
+        "state": {
+          "@@assign": "unblocked"
+        }
+      },
+      "snapshot_block_public_access": {
+        "state": {
+          "@@assign": "unblocked"
+        }
+      }
+    }
+  }
