@@ -22,17 +22,18 @@ module "accounts" {
   for_each = var.accounts
   source   = "./modules/account"
 
-  account_name             = each.value["account_name"]
-  account_email            = each.value["account_email"]
-  parent_ou_id             = local.ou_name_to_id[each.value.parent_ou_name]
-  admin_permission_set_arn = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
-  admin_group_id           = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
-  billing_contact          = var.global_billing_contact
-  security_contact         = var.global_security_contact
-  operations_contact       = lookup(each.value, "operations_contact", null) == null ? var.global_operations_contact : each.value.operations_contact
-  primary_contact          = lookup(each.value, "primary_contact", null) == null ? var.global_primary_contact : each.value.primary_contact
-  disable_sso_management   = var.disable_sso_management
-  delegated_admin          = each.value.delegated_admin
-  monthly_budget_amount    = lookup(each.value, "monthly_budget_amount", 0)
-  budget_alert_recipients  = concat(lookup(each.value, "budget_alert_recipients", []), lookup(var.budget_defaults, "alert_recipients", []))
+  account_email             = each.value["account_email"]
+  account_name              = each.value["account_name"]
+  admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
+  admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
+  billing_contact           = var.global_billing_contact
+  budget_alert_recipients   = concat(lookup(each.value, "budget_alert_recipients", []), lookup(var.budget_defaults, "alert_recipients", []))
+  default_close_on_deletion = var.default_close_on_deletion
+  delegated_admin           = each.value.delegated_admin
+  disable_sso_management    = var.disable_sso_management
+  monthly_budget_amount     = lookup(each.value, "monthly_budget_amount", 0)
+  operations_contact        = lookup(each.value, "operations_contact", null) == null ? var.global_operations_contact : each.value.operations_contact
+  parent_ou_id              = local.ou_name_to_id[each.value.parent_ou_name]
+  primary_contact           = lookup(each.value, "primary_contact", null) == null ? var.global_primary_contact : each.value.primary_contact
+  security_contact          = var.global_security_contact
 }
