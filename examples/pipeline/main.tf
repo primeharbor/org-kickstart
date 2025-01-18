@@ -50,6 +50,8 @@ module "organization" {
   security_account_name       = var.organization["security_account_name"]
   payer_email                 = var.organization["payer_email"]
   payer_name                  = var.organization["payer_name"]
+  default_close_on_deletion   = lookup(var.organization, "default_close_on_deletion", false)
+  security_account            = var.organization["security_account"]
 
   # SSO
   session_duration          = lookup(var.organization, "session_duration", "PT8H")

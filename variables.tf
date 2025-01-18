@@ -145,6 +145,38 @@ variable "accounts" {
   )
 }
 
+variable "security_account" {
+  description = "Settings for the Security Account"
+  type = object({
+    # account_name    = string
+    # account_email   = string
+    delegated_admin = optional(list(string), [])
+    operations_contact = optional(object({
+      name          = string
+      title         = string
+      email_address = string
+      phone_number  = string
+    }))
+    primary_contact = optional(object({
+      full_name          = string
+      company_name       = optional(string)
+      address_line_1     = string
+      address_line_2     = optional(string)
+      address_line_3     = optional(string)
+      city               = string
+      district_or_county = optional(string)
+      state_or_region    = optional(string)
+      postal_code        = string
+      country_code       = string
+      phone_number       = string
+      website_url        = optional(string)
+    }))
+    monthly_budget_amount   = optional(number, 0)
+    budget_alert_recipients = optional(list(string), [])
+  })
+
+}
+
 variable "account_configurator" {
   description = "Serverless Application to configure new accounts. See https://github.com/primeharbor/pht-account-configurator"
   default     = null
@@ -349,4 +381,10 @@ variable "security_services" {
     disable_inspector   = "false"
     disable_securityhub = "false"
   }
+}
+
+variable "default_close_on_deletion" {
+  description = "If set, the AWS Account will be closed when it's removed from org-kickstart. Set this with caution"
+  default     = false
+  type        = bool
 }

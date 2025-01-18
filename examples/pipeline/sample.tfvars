@@ -32,6 +32,13 @@ organization = {
   declarative_policy_bucket_name    = "account-status-report-bucket-example"
   vpc_flowlogs_bucket_name          = "example-kickstart-flowlogs"
   macie_bucket_name                 = "example-kickstart-macie-findings"
+  default_close_on_deletion         = true
+
+  security_account = {
+    delegated_admin         = ["fms.amazonaws.com"]
+    monthly_budget_amount   = 20
+    budget_alert_recipients = ["soc@example.com"]
+  }
 
   organization_units = {
 

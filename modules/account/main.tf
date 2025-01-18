@@ -59,10 +59,17 @@ variable "disable_sso_management" {
   type = bool
 }
 
+variable "default_close_on_deletion" {
+  description = "If set, the AWS Account will be closed when it's removed from org-kickstart. Set this with caution"
+  default     = false
+  type        = bool
+}
+
 resource "aws_organizations_account" "account" {
-  name      = var.account_name
-  email     = var.account_email
-  parent_id = var.parent_ou_id
+  name              = var.account_name
+  email             = var.account_email
+  parent_id         = var.parent_ou_id
+  close_on_deletion = var.default_close_on_deletion
   lifecycle {
     ignore_changes = [
       tags
