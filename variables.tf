@@ -138,7 +138,9 @@ variable "accounts" {
         phone_number       = string
         website_url        = optional(string)
       }))
-      parent_ou_name = optional(string, "Workloads")
+      parent_ou_name          = optional(string, "Workloads")
+      monthly_budget_amount   = optional(number, 0)
+      budget_alert_recipients = optional(list(string), [])
     })
   )
 }
@@ -156,14 +158,6 @@ variable "backend_bucket" {
   type        = string
 }
 
-variable "billing_alerts" {
-  description = "Triggers for billing alerts and who should recieve them"
-  type = object({
-    levels        = map(number)
-    subscriptions = list(string)
-  })
-  default = null
-}
 
 #
 # Account Contacts
@@ -235,6 +229,32 @@ variable "cur_report_frequency" {
     condition     = can(regex("^(DAILY|HOURLY|MONTHLY|NONE)$", var.cur_report_frequency))
     error_message = "Valid options: DAILY, HOURLY, MONTHLY, NONE"
   }
+}
+
+variable "billing_alerts" {
+  description = "Triggers for billing alerts and who should recieve them"
+  type = object({
+    levels        = map(number)
+    subscriptions = list(string)
+  })
+  default = null
+}
+
+variable "budget_defaults" {
+  description = "Defaults for AWS Budgets"
+  type = object({
+    alert_recipients      = list(string)
+    currency              = string
+    warning_percentage    = number
+    organizational_budget = number
+  })
+  default = {
+    alert_recipients      = []
+    currency              = "USD"
+    warning_percentage    = 85
+    organizational_budget = 0
+  }
+
 }
 
 #

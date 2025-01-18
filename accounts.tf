@@ -33,4 +33,6 @@ module "accounts" {
   primary_contact          = lookup(each.value, "primary_contact", null) == null ? var.global_primary_contact : each.value.primary_contact
   disable_sso_management   = var.disable_sso_management
   delegated_admin          = each.value.delegated_admin
+  monthly_budget_amount    = lookup(each.value, "monthly_budget_amount", 0)
+  budget_alert_recipients  = concat(lookup(each.value, "budget_alert_recipients", []), lookup(var.budget_defaults, "alert_recipients", []))
 }

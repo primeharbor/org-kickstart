@@ -105,3 +105,57 @@ resource "aws_cur_report_definition" "cur_report_definition" {
   additional_artifacts       = ["ATHENA"]
   report_versioning          = "OVERWRITE_REPORT"
 }
+
+resource "aws_budgets_budget" "organization" {
+  count        = lookup(var.budget_defaults, "organizational_budget", 0) == 0 ? 0 : 1
+  name         = "${var.organization_name} Organization Default Monthly Budget"
+  budget_type  = "COST"
+  limit_amount = lookup(var.budget_defaults, "organizational_budget")
+  limit_unit   = lookup(var.budget_defaults, "currency", "USD")
+  time_unit    = "MONTHLY"
+  account_id   = aws_organizations_account.payer.id
+
+
+  # We want three notifications. First when the forecast exceeds the limit
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 100
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "FORECASTED"
+    subscriber_email_addresses = lookup(var.budget_defaults, "alert_recipients", [])
+  }
+
+  # Second when the Actual Cost his the warning threshold
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = lookup(var.budget_defaults, "warning_percentage", 85)
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = lookup(var.budget_defaults, "alert_recipients", [])
+  }
+
+  # Finally when he budget is exceeded
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 100
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = lookup(var.budget_defaults, "alert_recipients", [])
+  }
+
+  # Highly Opinionated - I want to report budget only on usage, before credits and discounts, and
+  # avoiding one-time charges.
+  cost_types {
+    include_credit             = false
+    include_discount           = false # This is debatable for enterprise customers.
+    include_other_subscription = false
+    include_recurring          = false
+    include_refund             = false
+    include_subscription       = false
+    include_support            = false
+    include_tax                = true # This is part of the overall usage cost.
+    include_upfront            = false
+    use_blended                = false
+  }
+
+}

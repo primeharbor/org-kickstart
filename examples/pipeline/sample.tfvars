@@ -48,18 +48,21 @@ organization = {
 
   accounts = {
     dev = {
-      account_name  = "example-kickstart-dev"
-      account_email = "aws+kickstart-dev@example.com"
+      account_name            = "example-kickstart-dev"
+      account_email           = "aws+kickstart-dev@example.com"
+      monthly_budget_amount   = 35
+      budget_alert_recipients = ["test@example.com"]
     }
     it = {
-      account_name  = "example-kickstart-it"
-      account_email = "aws+kickstart-it@example.com"
+      account_name          = "example-kickstart-it"
+      account_email         = "aws+kickstart-it@example.com"
+      monthly_budget_amount = 150
     }
 
     sso = {
-      account_name  = "example-sso"
-      account_email = "aws+ssot@example.com"
-      parent_ou_name = "Governance"
+      account_name    = "example-sso"
+      account_email   = "aws+ssot@example.com"
+      parent_ou_name  = "Governance"
       delegated_admin = ["sso.amazonaws.com"]
     }
 
@@ -232,6 +235,13 @@ organization = {
     subscriptions = [
       # "INSERT OTHER EMAILS TO GET BILLING ALERTS"
     ]
+  }
+
+  budget_defaults = {
+    alert_recipients      = ["finance@example.com"]
+    currency              = "USD"
+    warning_percentage    = 85
+    organizational_budget = 75
   }
 
 }
