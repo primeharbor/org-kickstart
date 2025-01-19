@@ -13,20 +13,25 @@
 # limitations under the License.
 
 variable "policy_name" {
-  description = "Name of the SCP to Create"
+  description = "Name of the Organization Policy to Create"
   type        = string
 }
 
 variable "policy_description" {
-  description = "Description of the Policy"
+  description = "Description of the Organization Policy"
   type        = string
   default     = null
 }
 
 variable "policy_targets" {
-  description = "OU to attach Policy to"
+  description = "OU to attach Organization Policy to"
   type        = list(string)
   default     = []
+}
+
+variable "policy_type" {
+  description = "Type of Organization Policy to create. (RESOURCE_CONTROL_POLICY, SERVICE_CONTROL_POLICY, DECLARATIVE_POLICY_EC2)"
+  type        = string
 }
 
 variable "policy_json" {
@@ -34,19 +39,33 @@ variable "policy_json" {
   type        = string
 }
 
-variable "ou_name_to_id" {}
-variable "root_ou" {}
+variable "ou_name_to_id" {
+  description = "map to look up OU IDs by name."
+}
 
-resource "aws_organizations_policy" "scp" {
+variable "root_ou" {
+  description = "ID of the Root OU"
+}
+
+resource "aws_organizations_policy" "org_policy" {
   name        = var.policy_name
-  type        = "SERVICE_CONTROL_POLICY"
+  type        = var.policy_type
   description = var.policy_description
   content     = var.policy_json
 }
 
-resource "aws_organizations_policy_attachment" "scp_attachment" {
+# resource "aws_organizations_policy_attachment" "org_policy_attachment" {
+#   count     = length(var.policy_targets)
+#   policy_id = aws_organizations_policy.org_policy.id
+#   target_id = (
+#     var.policy_targets[count.index] == "Root" ?
+#     var.root_ou :
+#     var.ou_name_to_id[var.policy_targets[count.index]] )
+# }
+
+resource "aws_organizations_policy_attachment" "org_policy_attachment" {
   for_each  = toset(var.policy_targets)
-  policy_id = aws_organizations_policy.scp.id
+  policy_id = aws_organizations_policy.org_policy.id
   target_id = each.value == "Root" ? var.root_ou : var.ou_name_to_id[each.value]
 }
 

@@ -79,7 +79,7 @@ data "aws_iam_policy_document" "declarative_policy_bucket_policy" {
 module "declarative_policies" {
   for_each = var.declarative_policies
 
-  source             = "./modules/declarative_policies"
+  source             = "./modules/org_policies"
   policy_type        = "DECLARATIVE_POLICY_EC2"
   policy_name        = each.value.policy_name
   policy_description = each.value.policy_description
