@@ -136,9 +136,12 @@ variable "accounts" {
         phone_number       = string
         website_url        = optional(string)
       }))
-      parent_ou_name          = optional(string, "Workloads")
-      monthly_budget_amount   = optional(number, 0)
-      budget_alert_recipients = optional(list(string), [])
+      parent_ou_name            = optional(string, "Workloads")
+      monthly_budget_amount     = optional(number, 0)
+      budget_alert_recipients   = optional(list(string), [])
+      service_control_policies  = optional(list(string), [])
+      resource_control_policies = optional(list(string), [])
+      declarative_policies_ec2  = optional(list(string), [])
     })
   )
 }
@@ -300,6 +303,7 @@ variable "service_control_policies" {
       policy_json_file   = string
       policy_targets     = optional(list(string), ["Root"])
       policy_vars        = optional(map(string), {})
+      do_not_attach      = optional(bool, false)
     })
   )
 }
@@ -314,6 +318,7 @@ variable "resource_control_policies" {
       policy_json_file   = string
       policy_targets     = optional(list(string), ["Root"])
       policy_vars        = optional(map(string), {})
+      do_not_attach      = optional(bool, false)
     })
   )
 }
@@ -345,6 +350,7 @@ variable "declarative_policies" {
     policy_json_file   = string
     policy_targets     = optional(list(string), ["Root"])
     policy_vars        = optional(map(string), {})
+    do_not_attach      = optional(bool, false)
   }))
 }
 

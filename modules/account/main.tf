@@ -38,31 +38,56 @@ variable "admin_group_id" {
 }
 
 variable "billing_contact" {
-  default = null
+  description = "The Billing Alternate Contact to apply to this account."
+  default     = null
 }
 variable "security_contact" {
-  default = null
+  description = "The Security Alternate Contact to apply to this account."
+  default     = null
 }
 variable "operations_contact" {
-  default = null
+  description = "The Operations Alternate Contact to apply to this account."
+  default     = null
 }
 variable "primary_contact" {
-  default = null
+  description = "The Primary Contact / Account Owner to apply to this account."
+  default     = null
 }
 
 variable "delegated_admin" {
-  type    = set(string)
-  default = []
+  description = "List of AWS Services that this account is a delegated administrator for"
+  type        = set(string)
+  default     = []
 }
 
 variable "disable_sso_management" {
-  type = bool
+  default     = false
+  description = "If set, the default SSO assignment won't be applied to this account"
+  type        = bool
 }
 
 variable "default_close_on_deletion" {
   description = "If set, the AWS Account will be closed when it's removed from org-kickstart. Set this with caution"
   default     = false
   type        = bool
+}
+
+variable "service_control_policies" {
+  description = "List of SCP Names that are directly applied to this AWS Account. Policies must be created before they can be referenced."
+  default     = []
+  type        = list(string)
+}
+
+variable "resource_control_policies" {
+  description = "List of RCP Names that are directly applied to this AWS Account. Policies must be created before they can be referenced."
+  default     = []
+  type        = list(string)
+}
+
+variable "declarative_policies_ec2" {
+  description = "List of Declarative Policy Names that are directly applied to this AWS Account. Policies must be created before they can be referenced."
+  default     = []
+  type        = list(string)
 }
 
 resource "aws_organizations_account" "account" {

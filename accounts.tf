@@ -36,4 +36,7 @@ module "accounts" {
   parent_ou_id              = local.ou_name_to_id[each.value.parent_ou_name]
   primary_contact           = lookup(each.value, "primary_contact", null) == null ? var.global_primary_contact : each.value.primary_contact
   security_contact          = var.global_security_contact
+  service_control_policies  = lookup(each.value, "service_control_policies", [])
+  resource_control_policies = lookup(each.value, "resource_control_policies", [])
+  declarative_policies_ec2  = lookup(each.value, "declarative_policies_ec2", [])
 }
