@@ -139,6 +139,7 @@ resource "aws_sns_topic" "cloudtrail_s3_notification_topic" {
   count    = var.cloudtrail_bucket_name == null ? 0 : 1
   provider = aws.security-account
   name     = "cloudtrail-s3-event-notification-topic"
+  kms_master_key_id = "alias/aws/sns"
   policy   = data.aws_iam_policy_document.cloudtrail_s3_notification_topic[0].json
 }
 
@@ -159,6 +160,7 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 # And the Trail is created in the Management Account
 #
 resource "aws_cloudtrail" "org_cloudtrail" {
+  #checkov:skip=CKV_AWS_252:We use S3 Event notification rather than CloudTrail SNS topic
   count                         = var.cloudtrail_bucket_name != null ? 1 : 0
   depends_on                    = [aws_s3_bucket.cloudtrail_bucket[0], aws_s3_bucket_policy.cloudtrail_bucket_policy[0]]
   name                          = "org_cloudtrail"
@@ -175,6 +177,8 @@ resource "aws_cloudtrail" "org_cloudtrail" {
 # CloudWatch Log Group
 #
 resource "aws_cloudwatch_log_group" "cloudtrail" {
+  #checkov:skip=CKV_AWS_158:CWLogs is encrypted by default. CMKs are overkill.
+  # https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html
   count             = var.cloudtrail_loggroup_name != null ? 1 : 0
   name              = var.cloudtrail_loggroup_name
   retention_in_days = 365

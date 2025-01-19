@@ -27,6 +27,17 @@ resource "aws_s3_bucket" "billing_logs" {
   bucket = var.billing_data_bucket_name
 }
 
+resource "aws_s3_bucket_public_access_block" "billing_logs" {
+  count  = var.billing_data_bucket_name != null ? 1 : 0
+  bucket   = aws_s3_bucket.billing_logs[0].id
+
+  # Modifying these settings prevents Terraform from running.
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 data "aws_iam_policy_document" "allow_billing_logging" {
   count = var.billing_data_bucket_name != null ? 1 : 0
   statement {

@@ -28,6 +28,7 @@ variable "billing_subscriptions" {
 
 resource "aws_sns_topic" "billing_alerts" {
   name = "${var.organization_name}-billing-alerts"
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "billing_alerts_root_email" {

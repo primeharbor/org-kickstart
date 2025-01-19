@@ -36,10 +36,10 @@ locals {
 module "organization" {
 
   # Use the latest
-  source = "github.com/primeharbor/org-kickstart"
+  # source = "github.com/primeharbor/org-kickstart"
 
   # Pin to a specific release
-  # source = "github.com/primeharbor/org-kickstart?ref=v0.0.1"
+  source = "github.com/primeharbor/org-kickstart?ref=0.3.0"
 
   tag_set        = local.default_tags
   backend_bucket = var.backend_bucket

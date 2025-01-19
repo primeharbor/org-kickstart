@@ -42,11 +42,10 @@ resource "aws_s3_bucket_public_access_block" "vpc_flowlogs_bucket_bpa" {
   provider = aws.security-account
   bucket   = aws_s3_bucket.vpc_flowlogs_bucket[0].id
 
-  # Modifying these settings prevents Terraform from running.
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
-  restrict_public_buckets = false
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_policy" "vpc_flowlogs_bucket_policy" {

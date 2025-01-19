@@ -87,6 +87,7 @@ data "aws_iam_policy_document" "macie_bucket_policy" {
 # KMS
 #
 resource "aws_kms_key" "macie_key" {
+  #checkov:skip=CKV_AWS_7:Don't do annual key rotations for cost reasons.
   count                   = var.macie_bucket_name == null ? 0 : 1
   provider                = aws.security-account
   description             = "This key is used for Macie Findings"
