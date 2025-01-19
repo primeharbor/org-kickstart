@@ -228,9 +228,11 @@ resource "aws_iam_role_policy" "cloudtrail_to_cloudwatch" {
 
 
 output "cloudtrail_s3_notification_topic" {
+  description = "ARN of the SNS Topic that receives S3 notifications of new CloudTrail event objects."
   value = var.cloudtrail_bucket_name != null ? aws_sns_topic.cloudtrail_s3_notification_topic[0].arn : null
 }
 
 output "cloudtrail_cloudwatch_log_group" {
+  description = "ARN of the CloudWatch Log Group that has the CloudTrail Management Events"
   value = var.cloudtrail_loggroup_name != null ? aws_cloudwatch_log_group.cloudtrail[0].arn : null
 }

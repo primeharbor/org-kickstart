@@ -14,7 +14,7 @@
 
 
 output "declarative_policy_bucket" {
-  description = "Bucket used to store declarative policies"
+  description = "S3 Bucket used to store declarative policies"
   value       = var.declarative_policy_bucket_name != null ? aws_s3_bucket.declarative_policy_bucket[0].id : null
 }
 

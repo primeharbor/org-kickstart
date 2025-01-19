@@ -29,7 +29,6 @@ variable "tag_set" {
 variable "security_account_root_email" {
   description = "Root Email address for the security account"
   type        = string
-  default     = null
 }
 variable "security_account_name" {
   description = "Name of the Security Account"
@@ -40,7 +39,6 @@ variable "security_account_name" {
 variable "payer_email" {
   description = "Root Email address for the Organization Management account"
   type        = string
-  default     = null
 }
 variable "payer_name" {
   description = "Name of the Organization Management account"
@@ -53,23 +51,23 @@ variable "payer_name" {
 # SSO
 #
 variable "disable_sso_management" {
-  description = "Set to true to manage AWS Identity Center outside of org-kickstart"
+  description = "Set to true to disable creating a default Admin Permission Set in Identity Center."
   type        = bool
   default     = false
 }
 variable "session_duration" {
-  description = "Default Session Duration"
+  description = "Admin Permission Set Session Duration"
   type        = string
   default     = "PT8H"
 
   validation {
-    # Regex taken from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sso-permissionset.html#cfn-sso-permissionset-sessionduration and modified to use HCL2 compatiable syntax
+    # Regex taken from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sso-permissionset.html#cfn-sso-permissionset-sessionduration and modified to use HCL2 compatible syntax
     condition     = can(regex("^P(?:(\\d+Y)?(\\d+M)?(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?)$", var.session_duration))
     error_message = "Session duration must use the ISO8601 duration format. ${var.session_duration} isn't a valid duration string"
   }
 }
 variable "admin_permission_set_name" {
-  description = "Name of the Permission Set to Create"
+  description = "Name of the Default Admin Permission Set to Create"
   type        = string
   default     = "AdministratorAccess"
 }
@@ -88,7 +86,7 @@ variable "cloudtrail_bucket_name" {
   default     = null
 }
 variable "cloudtrail_loggroup_name" {
-  description = "Name of the CloudWatch Log Group in the payer account where CloudTrail will send its events"
+  description = "Name of the CloudWatch Log Group in the payer account where CloudTrail will send its events. Set to null to disable CloudTrail to CloudWatch Logs."
   type        = string
   default     = null
 }
@@ -112,7 +110,7 @@ variable "macie_bucket_name" {
 # Account Index
 #
 variable "accounts" {
-  description = "AWS accounts to provision in the organization"
+  description = "AWS accounts to provision in the organization. "
   type = map(
     object({
       account_name    = string
@@ -146,8 +144,9 @@ variable "accounts" {
 }
 
 variable "security_account" {
-  description = "Settings for the Security Account"
+  description = "Settings for the Security Account."
   type = object({
+    # These will move from the main module to here at some point.
     # account_name    = string
     # account_email   = string
     delegated_admin = optional(list(string), [])
@@ -195,7 +194,7 @@ variable "backend_bucket" {
 # Account Contacts
 #
 variable "global_billing_contact" {
-  description = "Map for the central billing alternate contact to be applied to all accounts"
+  description = "Billing alternate contact to be applied to all accounts."
   default     = null
   type = object({
     name          = string
@@ -205,7 +204,7 @@ variable "global_billing_contact" {
   })
 }
 variable "global_security_contact" {
-  description = "Map for the central security alternate contact to be applied to all accounts"
+  description = "Security alternate contact to be applied to all accounts"
   default     = null
   type = object({
     name          = string
@@ -215,7 +214,7 @@ variable "global_security_contact" {
   })
 }
 variable "global_operations_contact" {
-  description = "Map for the central operations alternate contact to be applied to all accounts"
+  description = "Default operations alternate contact to be applied to all accounts. Can be overridden in account definition."
   default     = null
   type = object({
     name          = string
@@ -225,7 +224,7 @@ variable "global_operations_contact" {
   })
 }
 variable "global_primary_contact" {
-  description = "Map for the primary account owner to be applied to all accounts"
+  description = "Default primary account owner to be applied to all accounts. Can be overridden in account definition."
   default     = null
   type = object({
     full_name          = string
@@ -247,7 +246,7 @@ variable "global_primary_contact" {
 # Billing
 #
 variable "billing_data_bucket_name" {
-  description = "Name of the S3 Bucket for CUR reports. Set to null to disable"
+  description = "Name of the S3 Bucket for CUR reports. Set to null to disable CUR report generation."
   type        = string
   default     = null
 }
@@ -264,7 +263,7 @@ variable "cur_report_frequency" {
 }
 
 variable "billing_alerts" {
-  description = "Triggers for billing alerts and who should recieve them"
+  description = "Triggers for billing alerts and who should receive them."
   type = object({
     levels        = map(number)
     subscriptions = list(string)
@@ -273,7 +272,7 @@ variable "billing_alerts" {
 }
 
 variable "budget_defaults" {
-  description = "Defaults for AWS Budgets"
+  description = "Default values for AWS Budgets. Some settings can be overridden in the account definition."
   type = object({
     alert_recipients      = list(string)
     currency              = string
@@ -292,7 +291,7 @@ variable "budget_defaults" {
 #
 # SCPs & OUs
 variable "service_control_policies" {
-  description = "Map of SCPs to deploy"
+  description = "Map of SCPs to create and attach."
   default     = {}
   type = map(
     object({
@@ -306,7 +305,7 @@ variable "service_control_policies" {
 }
 
 variable "resource_control_policies" {
-  description = "Map of RCPs to deploy"
+  description = "Map of RCPs to create and attach."
   default     = {}
   type = map(
     object({
@@ -320,7 +319,7 @@ variable "resource_control_policies" {
 }
 
 variable "organization_units" {
-  description = "Map of OUs to deploy"
+  description = "Map of OUs to create."
   default     = {}
   type = map(
     object({
@@ -332,13 +331,13 @@ variable "organization_units" {
 }
 
 variable "declarative_policy_bucket_name" {
-  description = "Name of S3 Bucket for Declarative Policy Reports"
+  description = "Name of S3 Bucket for Declarative Policy Reports. Set to null to disable Declarative Policy Reports."
   default     = null
   type        = string
 }
 
 variable "declarative_policies" {
-  description = "Map of Declarative Policies to deploy"
+  description = "Map of Declarative Policies to create and attach."
   default     = {}
   type = map(object({
     policy_name        = string
@@ -365,7 +364,7 @@ variable "audit_role_stack_set_template_url" {
 }
 
 variable "deploy_audit_role" {
-  description = "Boolean to determine if org-kickstart should manage Audit Role"
+  description = "Boolean to determine if org-kickstart should manage a Security Audit Role. Set to false to disable the creation of an Audit Role stackset."
   type        = bool
   default     = true
 }
@@ -373,7 +372,7 @@ variable "deploy_audit_role" {
 #
 # Security Service flags
 variable "security_services" {
-  description = "explictly disable or not manage a security service"
+  description = "Explicitly disable or not manage a security service"
   type        = map(string)
   default = {
     disable_guardduty   = "false"
@@ -384,7 +383,7 @@ variable "security_services" {
 }
 
 variable "default_close_on_deletion" {
-  description = "If set, the AWS Account will be closed when it's removed from org-kickstart. Set this with caution"
+  description = "If set, the AWS Account will be closed when it's removed from org-kickstart. Set this with caution."
   default     = false
   type        = bool
 }
