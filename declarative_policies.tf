@@ -87,4 +87,5 @@ module "declarative_policies" {
   policy_targets     = each.value.policy_targets
   ou_name_to_id      = local.ou_name_to_id # Pass the map to avoid regenerating it
   root_ou            = aws_organizations_organization.org.roots[0].id
+  do_not_attach      = each.value.do_not_attach
 }
