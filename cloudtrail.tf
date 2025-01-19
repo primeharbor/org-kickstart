@@ -136,11 +136,11 @@ data "aws_iam_policy_document" "cloudtrail_s3_notification_topic" {
 }
 
 resource "aws_sns_topic" "cloudtrail_s3_notification_topic" {
-  count    = var.cloudtrail_bucket_name == null ? 0 : 1
-  provider = aws.security-account
-  name     = "cloudtrail-s3-event-notification-topic"
+  count             = var.cloudtrail_bucket_name == null ? 0 : 1
+  provider          = aws.security-account
+  name              = "cloudtrail-s3-event-notification-topic"
   kms_master_key_id = "alias/aws/sns"
-  policy   = data.aws_iam_policy_document.cloudtrail_s3_notification_topic[0].json
+  policy            = data.aws_iam_policy_document.cloudtrail_s3_notification_topic[0].json
 }
 
 resource "aws_s3_bucket_notification" "bucket_notification" {
@@ -229,10 +229,10 @@ resource "aws_iam_role_policy" "cloudtrail_to_cloudwatch" {
 
 output "cloudtrail_s3_notification_topic" {
   description = "ARN of the SNS Topic that receives S3 notifications of new CloudTrail event objects."
-  value = var.cloudtrail_bucket_name != null ? aws_sns_topic.cloudtrail_s3_notification_topic[0].arn : null
+  value       = var.cloudtrail_bucket_name != null ? aws_sns_topic.cloudtrail_s3_notification_topic[0].arn : null
 }
 
 output "cloudtrail_cloudwatch_log_group" {
   description = "ARN of the CloudWatch Log Group that has the CloudTrail Management Events"
-  value = var.cloudtrail_loggroup_name != null ? aws_cloudwatch_log_group.cloudtrail[0].arn : null
+  value       = var.cloudtrail_loggroup_name != null ? aws_cloudwatch_log_group.cloudtrail[0].arn : null
 }
