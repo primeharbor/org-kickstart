@@ -90,6 +90,17 @@ variable "declarative_policies_ec2" {
   type        = list(string)
 }
 
+variable "scp_name_to_id_map" {
+  description = "Lookup table of SCPs by their name"
+}
+variable "rcp_name_to_id_map" {
+  description = "Lookup table of RCPs by their name"
+}
+variable "dp_ec2_name_to_id_map" {
+  description = "Lookup table of EC2 Decalarative Policies by their name"
+}
+
+
 resource "aws_organizations_account" "account" {
   name              = var.account_name
   email             = var.account_email

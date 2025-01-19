@@ -13,60 +13,20 @@
 # limitations under the License.
 
 
-
-data "aws_organizations_policies" "scps" {
-  filter = "SERVICE_CONTROL_POLICY"
-}
-data "aws_organizations_policies" "rcps" {
-  filter = "RESOURCE_CONTROL_POLICY"
-}
-data "aws_organizations_policies" "dp_ec2" {
-  filter = "DECLARATIVE_POLICY_EC2"
-}
-
-data "aws_organizations_policy" "scps" {
-  for_each  = toset(data.aws_organizations_policies.scps.ids)
-  policy_id = each.value
-}
-data "aws_organizations_policy" "rcps" {
-  for_each  = toset(data.aws_organizations_policies.rcps.ids)
-  policy_id = each.value
-}
-data "aws_organizations_policy" "dp_ec2" {
-  for_each  = toset(data.aws_organizations_policies.dp_ec2.ids)
-  policy_id = each.value
-}
-
-# Create a map to look up OU IDs by name. Thanks ChatGPT for almost getting there with what I needed.
-locals {
-  scp_name_to_id = {
-    for scp in data.aws_organizations_policy.scps :
-    scp.name => scp.policy_id
-  }
-  rcp_name_to_id = {
-    for rcp in data.aws_organizations_policy.rcps :
-    rcp.name => rcp.policy_id
-  }
-  dp_ec2_name_to_id = {
-    for dp in data.aws_organizations_policy.dp_ec2 :
-    dp.name => dp.policy_id
-  }
-}
-
 resource "aws_organizations_policy_attachment" "scp_attachment" {
   for_each  = toset(var.service_control_policies)
-  policy_id = local.scp_name_to_id[each.value]
+  policy_id = var.scp_name_to_id_map[each.value]
   target_id = aws_organizations_account.account.id
 }
 
 resource "aws_organizations_policy_attachment" "rcp_attachment" {
   for_each  = toset(var.resource_control_policies)
-  policy_id = local.rcp_name_to_id[each.value]
+  policy_id = var.rcp_name_to_id_map[each.value]
   target_id = aws_organizations_account.account.id
 }
 
 resource "aws_organizations_policy_attachment" "dp_ec2_attachment" {
   for_each  = toset(var.declarative_policies_ec2)
-  policy_id = local.dp_ec2_name_to_id[each.value]
+  policy_id = var.dp_ec2_name_to_id_map[each.value]
   target_id = aws_organizations_account.account.id
 }
