@@ -64,3 +64,6 @@ resource "aws_iam_organizations_features" "org" {
 
 # Leverage data vs the resource so things don't un-necessarily change when updating the org.
 data "aws_organizations_organization" "org" {}
+
+# Enable resource sharing within the org without the need for invites.
+resource "aws_ram_sharing_with_organization" "enable" {}
