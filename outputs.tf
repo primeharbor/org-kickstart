@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+output "accounts" {
+  description = "Map of account names to account IDs"
+  value = merge(
+    { payer = aws_organizations_account.payer.id, security = module.security_account.account_id },
+    { for name, account in module.accounts : name => account.account_id }
+  )
+}
 
 output "declarative_policy_bucket" {
   description = "S3 Bucket used to store declarative policies"
