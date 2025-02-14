@@ -115,3 +115,7 @@ output "sso_instance_arn" {
 output "declarative_policy_bucket" {
   value = module.organization.declarative_policy_bucket
 }
+
+output "account_list" {
+  value = module.organization.accounts
+}
