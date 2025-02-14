@@ -77,3 +77,14 @@ output "policy_id" {
   description = "Policy ID of the created Policy"
   value       = aws_organizations_policy.org_policy.id
 }
+
+# In version 0.3.0 we moved the SCP policies to a more generic Org Policies module.
+# This ensure that the policies and OU attachments aren't destroyed & recreated
+moved {
+  from = aws_organizations_policy.scp
+  to   = aws_organizations_policy.org_policy
+}
+moved {
+  from = aws_organizations_policy_attachment.scp_attachment
+  to   = aws_organizations_policy_attachment.org_policy_attachment
+}
