@@ -81,3 +81,8 @@ clean:
 
 account-configurator:
 	cd pht-account-configurator ; $(MAKE) package
+
+checkov:
+	@terraform show -json $(env)-terraform.tfplan | jq > $(env)-tfplan.json
+	checkov -s -f $(env)-tfplan.json --repo-root-for-plan-enrichment . --quiet --compact \
+		--skip-check CKV2_AWS_3,CKV2_AWS_62,CKV_AWS_144,CKV_AWS_274,CKV_AWS_124,CKV2_AWS_61,CKV_AWS_18

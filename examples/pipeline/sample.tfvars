@@ -55,10 +55,11 @@ organization = {
 
   accounts = {
     dev = {
-      account_name            = "example-kickstart-dev"
-      account_email           = "aws+kickstart-dev@example.com"
-      monthly_budget_amount   = 35
-      budget_alert_recipients = ["test@example.com"]
+      account_name             = "example-kickstart-dev"
+      account_email            = "aws+kickstart-dev@example.com"
+      monthly_budget_amount    = 35
+      budget_alert_recipients  = ["test@example.com"]
+      service_control_policies = ["DenyProductionAccess"]
     }
     it = {
       account_name          = "example-kickstart-it"
@@ -67,10 +68,11 @@ organization = {
     }
 
     sso = {
-      account_name    = "example-sso"
-      account_email   = "aws+ssot@example.com"
-      parent_ou_name  = "Governance"
-      delegated_admin = ["sso.amazonaws.com"]
+      account_name              = "example-sso"
+      account_email             = "aws+ssot@example.com"
+      parent_ou_name            = "Governance"
+      delegated_admin           = ["sso.amazonaws.com"]
+      resource_control_policies = ["BlockS3ExternalAccess"]
     }
 
     sandbox = {
@@ -130,12 +132,13 @@ organization = {
       policy_name        = "DenyRoot"
       policy_description = "Denies use of root user"
       policy_json_file   = "policies/DenyRootSCP.json"
+      # Lack of policy_target implies root
     }
     suspended_ou = {
       policy_name        = "SuspendedAccounts"
       policy_description = "Denies all activity in accounts in the SuspendedOU"
       policy_json_file   = "policies/SuspendedAccountsPolicy.json.tftpl"
-      policy_targets     = ["ou-xxxx-xxxxxxxx"]
+      policy_targets     = ["Suspended"]
       policy_vars = {
         audit_role_name = "security-audit"
       }
@@ -153,10 +156,7 @@ organization = {
       policy_name        = "DenyRegions"
       policy_description = "Deny access to unapproved default regions"
       policy_json_file   = "policies/DisableRegionsPolicy.json.tftpl"
-      policy_targets = [
-        "ou-xxxx-xxxxxxxx", # Workloads
-        "ou-yyyy-yyyyyyyy"  # Sandbox
-      ]
+      policy_targets     = ["Workloads", "Sandbox"]
       policy_vars = {
         allowed_regions = ["us-east-1", "eu-west-1"]
         audit_role_name = "security-audit"
@@ -167,20 +167,14 @@ organization = {
       policy_name        = "DenyInstanceTypes"
       policy_description = "Deny access to unapproved Instance Types"
       policy_json_file   = "policies/DenyUnapprovedInstanceTypes.json"
-      policy_targets = [
-        "ou-xxxx-xxxxxxxx", # Workloads
-        "ou-yyyy-yyyyyyyy"  # Sandbox
-      ]
+      policy_targets     = ["Workloads", "Sandbox"]
     }
 
     workload_deny_services = {
       policy_name        = "DenyServices"
       policy_description = "Deny access to unapproved Services"
       policy_json_file   = "policies/DenyUnapprovedServices.json"
-      policy_targets = [
-        "ou-xxxx-xxxxxxxx", # Workloads
-        "ou-yyyy-yyyyyyyy"  # Sandbox
-      ]
+      policy_targets     = ["Workloads", "Sandbox"]
     }
   }
 
@@ -210,6 +204,14 @@ organization = {
       policy_json_file   = "policies/EC2SnapshotBPA_DCP.json"
       policy_type        = "DECLARATIVE_POLICY_EC2"
       policy_targets     = ["Workloads", "Governance", "Suspended", "CoreIT"]
+    }
+
+    permit_public_snapshot_ami = {
+      policy_name        = "Permit_Public_AMI_Snapshots"
+      policy_description = "Permit the public sharing of all EBS Snapshots or AMIs"
+      policy_json_file   = "policies/EC2ImageSnapshotBPA_ALLOW_DCP.json"
+      policy_type        = "DECLARATIVE_POLICY_EC2"
+      do_not_attach      = true
     }
 
     enable_imdsv2 = {

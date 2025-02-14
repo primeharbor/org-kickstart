@@ -40,6 +40,9 @@ module "security_account" {
   parent_ou_id              = aws_organizations_organizational_unit.governance_ou.id
   primary_contact           = var.global_primary_contact
   security_contact          = var.global_security_contact
+  scp_name_to_id_map        = local.scp_name_to_id
+  rcp_name_to_id_map        = local.rcp_name_to_id
+  dp_ec2_name_to_id_map     = local.dp_ec2_name_to_id
 }
 
 

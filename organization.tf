@@ -56,6 +56,7 @@ resource "aws_organizations_organization" "org" {
 
 # Enable management of root credentials
 resource "aws_iam_organizations_features" "org" {
+  depends_on = [aws_organizations_organization.org]
   enabled_features = [
     "RootCredentialsManagement",
     "RootSessions"

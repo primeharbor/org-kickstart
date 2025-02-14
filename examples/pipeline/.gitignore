@@ -23,6 +23,7 @@ security_account_regions.tf
 security_services.tf
 
 *.tfplan
+*tfplan.json
 
 # Local .terraform directories
 .terraform

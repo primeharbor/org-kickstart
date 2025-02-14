@@ -15,13 +15,15 @@
 module "scp" {
   for_each = var.service_control_policies
 
-  source             = "./modules/scp"
+  source             = "./modules/org_policies"
   policy_name        = each.value.policy_name
   policy_description = each.value.policy_description
+  policy_type        = "SERVICE_CONTROL_POLICY"
   policy_json        = templatefile(fileexists(each.value.policy_json_file) ? each.value.policy_json_file : "${path.module}/${each.value.policy_json_file}", each.value.policy_vars)
   policy_targets     = each.value.policy_targets
   ou_name_to_id      = local.ou_name_to_id # Pass the map to avoid regenerating it
   root_ou            = aws_organizations_organization.org.roots[0].id
+  do_not_attach      = each.value.do_not_attach
 }
 
 
