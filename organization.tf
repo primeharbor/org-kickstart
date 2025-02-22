@@ -35,6 +35,7 @@ resource "aws_organizations_organization" "org" {
     "macie.amazonaws.com",
     "malware-protection.guardduty.amazonaws.com",
     "member.org.stacksets.cloudformation.amazonaws.com",
+    "notifications.amazonaws.com",
     "ram.amazonaws.com",
     "reporting.trustedadvisor.amazonaws.com",
     "securityhub.amazonaws.com",
