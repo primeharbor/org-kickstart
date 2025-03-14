@@ -393,3 +393,14 @@ variable "default_close_on_deletion" {
   default     = false
   type        = bool
 }
+
+variable "datatrail" {
+  description = "Details on the DataTrails"
+  default     = null
+  type = object({
+    bucket_name      = string
+    trail_name       = string
+    enabled          = optional(bool, true)
+    excluded_buckets = list(string)
+  })
+}
