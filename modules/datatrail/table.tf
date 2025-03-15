@@ -37,77 +37,77 @@ resource "aws_glue_catalog_table" "datatrail" {
     }
 
     columns {
-      name = "eventVersion"
+      name = "eventversion"
       type = "string"
     }
 
     columns {
-      name = "userIdentity"
+      name = "useridentity"
       type = "struct<type:string,principalId:string,arn:string,accountId:string,invokedBy:string,accessKeyId:string,userName:string,sessionContext:struct<attributes:struct<mfaAuthenticated:string,creationDate:string>,sessionIssuer:struct<type:string,principalId:string,arn:string,accountId:string,username:string>,ec2RoleDelivery:string,webIdFederationData:struct<federatedProvider:string,attributes:map<string,string>>>>"
     }
 
     columns {
-      name = "eventTime"
+      name = "eventtime"
       type = "string"
     }
 
     columns {
-      name = "eventSource"
+      name = "eventsource"
       type = "string"
     }
 
     columns {
-      name = "eventName"
+      name = "eventname"
       type = "string"
     }
 
     columns {
-      name = "awsRegion"
+      name = "awsregion"
       type = "string"
     }
 
     columns {
-      name = "sourceIpAddress"
+      name = "sourceipaddress"
       type = "string"
     }
 
     columns {
-      name = "userAgent"
+      name = "useragent"
       type = "string"
     }
 
     columns {
-      name = "errorCode"
+      name = "errorcode"
       type = "string"
     }
 
     columns {
-      name = "errorMessage"
+      name = "errormessage"
       type = "string"
     }
 
     columns {
-      name = "requestParameters"
+      name = "requestparameters"
       type = "string"
     }
 
     columns {
-      name = "responseElements"
+      name = "responseelements"
       type = "string"
     }
 
     columns {
-      name = "additionalEventData"
+      name = "additionaleventdata"
       type = "string"
     }
 
     columns {
-      name = "requestId"
+      name = "requestid"
       type = "string"
     }
 
     columns {
-      name = "eventId"
+      name = "eventid"
       type = "string"
     }
 
@@ -117,37 +117,37 @@ resource "aws_glue_catalog_table" "datatrail" {
     }
 
     columns {
-      name = "eventType"
+      name = "eventtype"
       type = "string"
     }
 
     columns {
-      name = "apiVersion"
+      name = "apiversion"
       type = "string"
     }
 
     columns {
-      name = "readOnly"
+      name = "readonly"
       type = "boolean"
     }
 
     columns {
-      name = "recipientAccountId"
+      name = "recipientaccountid"
       type = "string"
     }
 
     columns {
-      name = "serviceEventDetails"
+      name = "serviceeventdetails"
       type = "string"
     }
 
     columns {
-      name = "sharedEventID"
+      name = "sharedeventid"
       type = "string"
     }
 
     columns {
-      name = "vpcEndpointId"
+      name = "vpcendpointid"
       type = "string"
     }
   }
