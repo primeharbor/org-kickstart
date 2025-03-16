@@ -131,3 +131,74 @@ resource "aws_athena_named_query" "external_accounts" {
     ORDER BY record_count DESC;
 EOQ
 }
+
+resource "aws_athena_named_query" "data_access_errors" {
+  provider    = aws.security-account
+  name        = "data_access_errors"
+  description = "Report on all Errors accessing S3 Buckets in the org"
+  workgroup   = aws_athena_workgroup.datatrail.id
+  database    = aws_glue_catalog_database.datatrail.name
+  query       = <<EOQ
+    SELECT eventname,
+      r.arn AS s3_bucket_name,
+      recipientaccountid AS AWSAccount,
+      errormessage,
+      CASE
+        WHEN useridentity.arn IS NOT null then useridentity.arn
+        WHEN useridentity.accountid = 'anonymous' then 'anonymous'
+        ELSE useridentity.invokedby
+      END AS principal,
+      COUNT(*) AS TotalEvents
+    FROM datatrail
+      CROSS JOIN UNNEST(resources) AS t (r)
+    WHERE r.type = 'AWS::S3::Bucket'
+      AND from_iso8601_timestamp(eventtime) >= now() - interval '1' day
+      AND errorcode = 'AccessDenied'
+    GROUP BY r.arn,
+      eventname,
+      recipientaccountid,
+      errormessage,
+      CASE
+        WHEN useridentity.arn IS NOT null then useridentity.arn
+        WHEN useridentity.accountid = 'anonymous' then 'anonymous'
+        ELSE useridentity.invokedby
+      END
+    ORDER BY TotalEvents DESC
+EOQ
+}
+
+resource "aws_athena_named_query" "data_access_errors_explicit_deny" {
+  provider    = aws.security-account
+  name        = "data_access_errors_explicit_deny"
+  description = "Report on all Errors accessing S3 Buckets in the org where the error message contains 'explict deny'"
+  workgroup   = aws_athena_workgroup.datatrail.id
+  database    = aws_glue_catalog_database.datatrail.name
+  query       = <<EOQ
+    SELECT eventname,
+      r.arn AS s3_bucket_name,
+      recipientaccountid AS AWSAccount,
+      errormessage,
+      CASE
+        WHEN useridentity.arn IS NOT null then useridentity.arn
+        WHEN useridentity.accountid = 'anonymous' then 'anonymous'
+        ELSE useridentity.invokedby
+      END AS principal,
+      COUNT(*) AS TotalEvents
+    FROM datatrail
+      CROSS JOIN UNNEST(resources) AS t (r)
+    WHERE r.type = 'AWS::S3::Bucket'
+      AND from_iso8601_timestamp(eventtime) >= now() - interval '1' day
+      AND errorcode = 'AccessDenied'
+      AND errormessage LIKE '%explicit% den%'
+    GROUP BY r.arn,
+      eventname,
+      recipientaccountid,
+      errormessage,
+      CASE
+        WHEN useridentity.arn IS NOT null then useridentity.arn
+        WHEN useridentity.accountid = 'anonymous' then 'anonymous'
+        ELSE useridentity.invokedby
+      END
+    ORDER BY TotalEvents DESC
+EOQ
+}
