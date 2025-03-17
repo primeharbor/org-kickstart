@@ -253,6 +253,15 @@ organization = {
     organizational_budget = 75
   }
 
+  datatrail = {
+    bucket_name = "my-datatrail"
+    trail_name  = "my-datatrail"
+    enabled     = false
+    excluded_buckets = [
+      "example-kickstart-cloudtrail"
+    ]
+  }
+
 }
 
 backend_bucket = "org-kickstart-example"
