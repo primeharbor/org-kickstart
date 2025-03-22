@@ -136,7 +136,10 @@ variable "accounts" {
         phone_number       = string
         website_url        = optional(string)
       }))
+      # parent_ou_id can explicitly override the OU assignment and lookup by name.
+      # parent_ou_id takes precedence over parent_ou_name
       parent_ou_name            = optional(string, "Workloads")
+      parent_ou_id              = optional(string, null)
       monthly_budget_amount     = optional(number, 0)
       budget_alert_recipients   = optional(list(string), [])
       service_control_policies  = optional(list(string), [])
@@ -392,4 +395,15 @@ variable "default_close_on_deletion" {
   description = "If set, the AWS Account will be closed when it's removed from org-kickstart. Set this with caution."
   default     = false
   type        = bool
+}
+
+variable "datatrail" {
+  description = "Details on the DataTrails"
+  default     = null
+  type = object({
+    bucket_name      = string
+    trail_name       = string
+    enabled          = optional(bool, true)
+    excluded_buckets = list(string)
+  })
 }
