@@ -9,10 +9,29 @@
             "Resource": "*",
             "Condition": {
                 "StringNotEqualsIfExists": {
-                    "aws:PrincipalOrgID": "${org_id}"
+                    "aws:PrincipalOrgID": "${org_id}",
+                    "aws:PrincipalAccount": ${account_ids}
                 },
                 "BoolIfExists": {
                     "aws:PrincipalIsAWSService": "false"
+                }
+            }
+        },
+        {
+            "Sid": "EnforceConfusedDeputyProtection",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": "*",
+            "Condition": {
+                "StringNotEqualsIfExists": {
+                    "aws:SourceOrgID": "${org_id}"
+                },
+                "Null": {
+                    "aws:SourceAccount": "false"
+                },
+                "Bool": {
+                    "aws:PrincipalIsAWSService": "true"
                 }
             }
         }
