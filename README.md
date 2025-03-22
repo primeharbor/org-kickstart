@@ -105,6 +105,7 @@ organization = {
     dev = {
       account_name  = "example-kickstart-dev"
       account_email = "aws+kickstart-dev@example.com"
+      monthly_budget_amount = 500
     }
 
     it = {
@@ -290,6 +291,23 @@ organization = {
     ]
   }
 
+  budget_defaults = {
+    alert_recipients      = ["chris@example.com"]
+    currency              = "USD"
+    warning_percentage    = 90
+    organizational_budget = 210
+  }
+
+  datatrail = {
+    bucket_name = "my-datatrail"
+    trail_name  = "my-datatrail"
+    enabled     = false
+    excluded_buckets = [
+      "example-kickstart-cloudtrail"
+    ]
+  }
+
+
 }
 
 backend_bucket = "org-kickstart-example"
@@ -324,6 +342,6 @@ This can be used with an existing org. See [IMPORTING](IMPORTING.md) for more on
 7. revisit the SCPs in my pet-ControlTower for other best practices to steal.
 10. Make it work with GitOps & Code Pipeline
 10. Publish to Terraform Registry
-12. Optional DataTrails & integrate the advanced-event-selectors work I need to do.
+12. ~Optional DataTrails & integrate the advanced-event-selectors work I need to do.~
 13. Org Wide Access Analyzer and reports on public stuff
 15. Enable optional GuardDuty Services
