@@ -33,7 +33,7 @@ module "accounts" {
   disable_sso_management    = var.disable_sso_management
   monthly_budget_amount     = lookup(each.value, "monthly_budget_amount", 0)
   operations_contact        = lookup(each.value, "operations_contact", null) == null ? var.global_operations_contact : each.value.operations_contact
-  parent_ou_id              = local.ou_name_to_id[each.value.parent_ou_name]
+  parent_ou_id              = lookup(each.value, "parent_ou_id", null) == null ? local.ou_name_to_id[each.value.parent_ou_name] : each.value.parent_ou_id
   primary_contact           = lookup(each.value, "primary_contact", null) == null ? var.global_primary_contact : each.value.primary_contact
   security_contact          = var.global_security_contact
   service_control_policies  = lookup(each.value, "service_control_policies", [])

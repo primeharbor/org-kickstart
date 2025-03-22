@@ -136,7 +136,10 @@ variable "accounts" {
         phone_number       = string
         website_url        = optional(string)
       }))
+      # parent_ou_id can explicitly override the OU assignment and lookup by name.
+      # parent_ou_id takes precedence over parent_ou_name
       parent_ou_name            = optional(string, "Workloads")
+      parent_ou_id              = optional(string, null)
       monthly_budget_amount     = optional(number, 0)
       budget_alert_recipients   = optional(list(string), [])
       service_control_policies  = optional(list(string), [])
