@@ -24,3 +24,4 @@ fi
 SSO_INSTANCE_ARN=`jq -r .sso_instance_arn.value $TF_DATA`
 aws sso-admin update-instance --name $SSO_NAME --instance-arn $SSO_INSTANCE_ARN
 
+aws health enable-health-service-access-for-organization --region us-east-1

@@ -52,3 +52,7 @@ resource "aws_organizations_delegated_administrator" "cloudformation" {
   service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
 }
 
+resource "aws_organizations_delegated_administrator" "health" {
+  account_id        = module.security_account.account_id
+  service_principal = "health.amazonaws.com"
+}
