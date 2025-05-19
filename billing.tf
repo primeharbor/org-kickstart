@@ -86,7 +86,7 @@ data "aws_iam_policy_document" "allow_billing_logging" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceArn"
-      values   = ["arn:aws:cur:us-east-1:${aws_organizations_account.payer.id}:definition/*"]
+      values   = ["arn:aws:cur:${data.aws_region.current.name}:${aws_organizations_account.payer.id}:definition/*"]
     }
 
   }
@@ -112,7 +112,7 @@ resource "aws_cur_report_definition" "cur_report_definition" {
   additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
   s3_bucket                  = aws_s3_bucket.billing_logs[0].id
   s3_prefix                  = "athena-cur-report"
-  s3_region                  = "us-east-1"
+  s3_region                  = data.aws_region.current.name
   additional_artifacts       = ["ATHENA"]
   report_versioning          = "OVERWRITE_REPORT"
 }
