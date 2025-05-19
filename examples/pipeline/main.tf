@@ -23,7 +23,7 @@ terraform {
 
   # This is configured in the $env.backend file
   backend "s3" {
-    region = "us-east-1"
+
   }
 }
 
