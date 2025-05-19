@@ -36,7 +36,6 @@ locals {
 # Create Default Provider for Management Account
 #
 provider "aws" {
-  region = "us-east-1"
   default_tags {
     tags = local.default_tags
   }
@@ -45,7 +44,6 @@ provider "aws" {
 
 provider "aws" {
   alias  = "security-account"
-  region = "us-east-1"
   assume_role {
     role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
@@ -53,3 +51,5 @@ provider "aws" {
     tags = local.default_tags
   }
 }
+
+data "aws_region" "current" {}
