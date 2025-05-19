@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 #
-# Define the Organization & enable as many services as makes sense
+# Define the Organization & enable services
 #
-resource "aws_organizations_organization" "org" {
-  aws_service_access_principals = [
+# Default service setup with what makes sense.
+
+locals {
+  default_aws_service_access_principals = [
     "access-analyzer.amazonaws.com",
     "account.amazonaws.com",
     "backup.amazonaws.com",
@@ -43,7 +46,7 @@ resource "aws_organizations_organization" "org" {
     "sso.amazonaws.com",
   ]
 
-  enabled_policy_types = [
+  default_enabled_policy_types = [
     "AISERVICES_OPT_OUT_POLICY",
     "BACKUP_POLICY",
     "DECLARATIVE_POLICY_EC2",
@@ -51,6 +54,14 @@ resource "aws_organizations_organization" "org" {
     "SERVICE_CONTROL_POLICY",
     "TAG_POLICY"
   ]
+}
+
+
+# Create the organization
+resource "aws_organizations_organization" "org" {
+  aws_service_access_principals = var.aws_service_access_principals != null ? var.aws_service_access_principals : local.default_aws_service_access_principals
+
+  enabled_policy_types = var.enabled_policy_types != null ? var.enabled_policy_types : local.default_enabled_policy_types
 
   feature_set = "ALL"
 }
