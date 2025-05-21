@@ -21,7 +21,7 @@ terraform {
   }
   required_version = ">= 0.14.9"
 
-  # This is configured in the $env.backend file
+  # This is configured in the $env.tfbackend file, see sample.tfbackend
   backend "s3" {
 
   }
