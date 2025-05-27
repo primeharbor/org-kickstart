@@ -388,6 +388,7 @@ variable "security_services" {
     disable_macie       = "false"
     disable_inspector   = "false"
     disable_securityhub = "false"
+    disable_stacksets   = "false"
   }
 }
 
