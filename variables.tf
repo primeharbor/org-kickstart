@@ -357,6 +357,19 @@ variable "declarative_policies" {
   }))
 }
 
+variable "aws_service_access_principals" {
+  description = "List of AWS service principals to enable in the organization"
+  type        = list(string)
+  default     = null
+}
+
+variable "enabled_policy_types" {
+  description = "List of enabled policy types for the organization"
+  type        = list(string)
+  default     = null
+}
+
+
 #
 # Audit Role
 #
