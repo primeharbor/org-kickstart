@@ -357,16 +357,16 @@ variable "declarative_policies" {
   }))
 }
 
-variable "aws_service_access_principals" {
-  description = "List of AWS service principals to enable in the organization"
+variable "aws_service_access_principals_to_exclude" {
+  description = "List of AWS service access principals to exclude from the default set."
   type        = list(string)
-  default     = null
+  default     = []
 }
 
-variable "enabled_policy_types" {
-  description = "List of enabled policy types for the organization"
+variable "organization_policy_types_to_exclude" {
+  description = "List of organization policy types to exclude from the default set."
   type        = list(string)
-  default     = null
+  default     = []
 }
 
 
@@ -395,7 +395,7 @@ variable "deploy_audit_role" {
 # Security Service flags
 variable "security_services" {
   description = "Explicitly disable or not manage a security service"
-  type        = object({
+  type = object({
     disable_guardduty   = optional(bool, false)
     disable_macie       = optional(bool, false)
     disable_inspector   = optional(bool, false)

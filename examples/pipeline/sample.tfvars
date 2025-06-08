@@ -127,6 +127,14 @@ organization = {
     # website_url     = "Optional"
   }
 
+  aws_service_access_principals_to_exclude = [
+    "ipam.amazonaws.com"
+  ]
+
+  organization_policy_types_to_exclude = [
+    "TAG_POLICY"
+  ]
+
   service_control_policies = {
     deny_root = {
       policy_name        = "DenyRoot"
