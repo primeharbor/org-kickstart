@@ -15,14 +15,14 @@
 
 # Explictly enable Macie in the parent and security account
 resource "aws_macie2_account" "payer_account" {
-  count                        = local.security_services["disable_macie"] ? 0 : 1
+  count                        = var.security_services["disable_macie"] ? 0 : 1
   provider                     = aws.payer_account
   finding_publishing_frequency = "FIFTEEN_MINUTES"
   status                       = "ENABLED"
 }
 
 resource "aws_macie2_account" "security_account" {
-  count                        = local.security_services["disable_macie"] ? 0 : 1
+  count                        = var.security_services["disable_macie"] ? 0 : 1
   provider                     = aws.security_account
   finding_publishing_frequency = "FIFTEEN_MINUTES"
   status                       = "ENABLED"
@@ -30,7 +30,7 @@ resource "aws_macie2_account" "security_account" {
 
 # Assign delegated admin to the security account via GuardDuty APIs
 resource "aws_macie2_organization_admin_account" "macie" {
-  count    = local.security_services["disable_macie"] ? 0 : 1
+  count    = var.security_services["disable_macie"] ? 0 : 1
   provider = aws.payer_account
   depends_on = [
     aws_macie2_account.payer_account,
@@ -40,7 +40,7 @@ resource "aws_macie2_organization_admin_account" "macie" {
 }
 
 resource "aws_macie2_classification_export_configuration" "export_config" {
-  count    = local.security_services["disable_macie"] || var.macie_bucket_name == null || var.macie_key_arn == null ? 0 : 1
+  count    = var.security_services["disable_macie"] || var.macie_bucket_name == null || var.macie_key_arn == null ? 0 : 1
   provider = aws.security_account
   depends_on = [
     aws_macie2_account.security_account
@@ -68,7 +68,7 @@ resource "aws_macie2_member" "member" {
 
     # We cannot use count here either, so we must add the disable_guardduty flag
     for index, account in data.aws_organizations_organizational_unit_descendant_accounts.accounts.accounts :
-    account.id => account if account.id != var.security_account_id && !local.security_services["disable_macie"]
+    account.id => account if account.id != var.security_account_id && !var.security_services["disable_macie"]
   }
 
   lifecycle {

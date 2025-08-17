@@ -30,15 +30,6 @@ terraform {
 
 locals {
   default_tags = var.tag_set
-  security_services = merge(
-    tomap({
-      disable_guardduty   = "false"
-      disable_macie       = "false"
-      disable_inspector   = "false"
-      disable_securityhub = "false"
-    }),
-    var.security_services
-  )
 }
 
 #

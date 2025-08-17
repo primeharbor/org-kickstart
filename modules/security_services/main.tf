@@ -36,26 +36,14 @@ variable "macie_key_arn" {
 # Security Service flags
 variable "security_services" {
   description = "explictly disable or not manage a security service"
-  default = {
-    disable_guardduty   = "false"
-    disable_macie       = "false"
-    disable_inspector   = "false"
-    disable_securityhub = "false"
-  }
+  type = object({
+    disable_guardduty   = optional(bool, false)
+    disable_macie       = optional(bool, false)
+    disable_inspector   = optional(bool, false)
+    disable_securityhub = optional(bool, false)
+    disable_stacksets   = optional(bool, false)
+  })
 }
-
-locals {
-  security_services = merge(
-    tomap({
-      disable_guardduty   = "false"
-      disable_macie       = "false"
-      disable_inspector   = "false"
-      disable_securityhub = "false"
-    }),
-    var.security_services,
-  )
-}
-
 
 data "aws_organizations_organization" "org" {}
 data "aws_organizations_organizational_unit_descendant_accounts" "accounts" {
