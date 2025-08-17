@@ -48,7 +48,7 @@ module "security_account" {
 
 # And delegate power to it
 resource "aws_organizations_delegated_administrator" "cloudformation" {
-  count             = local.security_services["disable_stacksets"] ? 0 : 1
+  count             = var.security_services["disable_stacksets"] ? 0 : 1
   account_id        = module.security_account.account_id
   service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
 }
