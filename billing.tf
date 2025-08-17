@@ -118,11 +118,11 @@ resource "aws_cur_report_definition" "cur_report_definition" {
 }
 
 resource "aws_budgets_budget" "organization" {
-  count        = lookup(var.budget_defaults, "organizational_budget", 0) == 0 ? 0 : 1
+  count        = var.budget_defaults.organizational_budget != 0 ? 1 : 0
   name         = "${var.organization_name} Organization Default Monthly Budget"
   budget_type  = "COST"
-  limit_amount = lookup(var.budget_defaults, "organizational_budget")
-  limit_unit   = lookup(var.budget_defaults, "currency", "USD")
+  limit_amount = var.budget_defaults.organizational_budget
+  limit_unit   = var.budget_defaults.currency
   time_unit    = "MONTHLY"
   account_id   = aws_organizations_account.payer.id
 
@@ -133,16 +133,16 @@ resource "aws_budgets_budget" "organization" {
     threshold                  = 100
     threshold_type             = "PERCENTAGE"
     notification_type          = "FORECASTED"
-    subscriber_email_addresses = lookup(var.budget_defaults, "alert_recipients", [])
+    subscriber_email_addresses = var.budget_defaults.alert_recipients
   }
 
   # Second when the Actual Cost his the warning threshold
   notification {
     comparison_operator        = "GREATER_THAN"
-    threshold                  = lookup(var.budget_defaults, "warning_percentage", 85)
+    threshold                  = var.budget_defaults.warning_percentage
     threshold_type             = "PERCENTAGE"
     notification_type          = "ACTUAL"
-    subscriber_email_addresses = lookup(var.budget_defaults, "alert_recipients", [])
+    subscriber_email_addresses = var.budget_defaults.alert_recipients
   }
 
   # Finally when he budget is exceeded
@@ -151,7 +151,7 @@ resource "aws_budgets_budget" "organization" {
     threshold                  = 100
     threshold_type             = "PERCENTAGE"
     notification_type          = "ACTUAL"
-    subscriber_email_addresses = lookup(var.budget_defaults, "alert_recipients", [])
+    subscriber_email_addresses = var.budget_defaults.alert_recipients
   }
 
   # Highly Opinionated - I want to report budget only on usage, before credits and discounts, and

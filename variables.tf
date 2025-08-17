@@ -280,18 +280,13 @@ variable "billing_alerts" {
 variable "budget_defaults" {
   description = "Default values for AWS Budgets. Some settings can be overridden in the account definition."
   type = object({
-    alert_recipients      = list(string)
-    currency              = string
-    warning_percentage    = number
-    organizational_budget = number
+    alert_recipients      = optional(list(string), [])
+    currency              = optional(string, "USD")
+    warning_percentage    = optional(number, 85)
+    organizational_budget = optional(number, 0)
   })
-  default = {
-    alert_recipients      = []
-    currency              = "USD"
-    warning_percentage    = 85
-    organizational_budget = 0
-  }
 
+  default = {}
 }
 
 #
