@@ -54,6 +54,12 @@ variable "disable_sso_management" {
   type = bool
 }
 
+variable "sso_instance_region" {
+  type        = string
+  default     = "us-east-1"
+  description = "Region where the AWS SSO instance is configured"
+}
+
 resource "aws_organizations_account" "account" {
   name      = var.account_name
   email     = var.account_email
