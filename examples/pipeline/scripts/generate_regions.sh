@@ -21,7 +21,7 @@ else
   REPO=github.com/primeharbor/org-kickstart//modules/security_services?ref=$VERSION
 fi
 
-REPO=/Users/chris/AWS/org-kickstart/modules/security_services
+#REPO=/Users/chris/AWS/org-kickstart/modules/security_services
 
 REGIONS=`aws ec2 describe-regions  | jq -r '.Regions[].RegionName'`
 
