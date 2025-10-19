@@ -145,14 +145,14 @@ Resources:
                   - s3:Get*
                   - s3:ListBucket
                 Resource:
-                 - !Sub arn:aws:s3:::${PipelineBucket}
+                 - !Sub arn:${AWS::Partition}:s3:::${PipelineBucket}
               - Sid: AccessPipelineBucketObjects
                 Effect: Allow
                 Action:
                   - s3:PutObject*
                   - s3:GetObject*
                 Resource:
-                  - !Sub arn:aws:s3:::${PipelineBucket}/*
+                  - !Sub arn:${AWS::Partition}:s3:::${PipelineBucket}/*
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -269,7 +269,7 @@ Resources:
               Service:
                 - codebuild.amazonaws.com
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
       Policies:
         - PolicyName: root
           PolicyDocument:
@@ -288,7 +288,7 @@ Resources:
                   - s3:Get*
                   - s3:ListBucket
                 Resource:
-                 - !Sub arn:aws:s3:::${PipelineBucket}
+                 - !Sub arn:${AWS::Partition}:s3:::${PipelineBucket}
               - Sid: AccessPipelineBucketObjects
                 Effect: Allow
                 Action:
@@ -297,7 +297,7 @@ Resources:
                   - s3:GetObjectVersion
                   - s3:GetBucketVersioning
                 Resource:
-                  - !Sub arn:aws:s3:::${PipelineBucket}/*
+                  - !Sub arn:${AWS::Partition}:s3:::${PipelineBucket}/*
 
   TerraformPlanProject:
     Type: AWS::CodeBuild::Project
