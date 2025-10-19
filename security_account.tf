@@ -35,14 +35,16 @@ module "security_account" {
   default_close_on_deletion = false
   delegated_admin           = lookup(var.security_account, "delegated_admin", [])
   disable_sso_management    = var.disable_sso_management
+  dp_ec2_name_to_id_map     = local.dp_ec2_name_to_id
   monthly_budget_amount     = lookup(var.security_account, "monthly_budget_amount", 0)
   operations_contact        = var.global_operations_contact
   parent_ou_id              = aws_organizations_organizational_unit.governance_ou.id
   primary_contact           = var.global_primary_contact
-  security_contact          = var.global_security_contact
-  scp_name_to_id_map        = local.scp_name_to_id
   rcp_name_to_id_map        = local.rcp_name_to_id
-  dp_ec2_name_to_id_map     = local.dp_ec2_name_to_id
+  scp_name_to_id_map        = local.scp_name_to_id
+  security_contact          = var.global_security_contact
+  sso_instance_region       = var.sso_instance_region
+
 }
 
 

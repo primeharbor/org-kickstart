@@ -76,6 +76,12 @@ variable "admin_group_name" {
   type        = string
   default     = "AllAdmins"
 }
+variable "sso_instance_region" {
+  type        = string
+  default     = "us-east-1"
+  description = "Region where the AWS SSO instance is configured"
+}
+
 
 #
 # CloudTrail

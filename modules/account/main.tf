@@ -100,6 +100,11 @@ variable "dp_ec2_name_to_id_map" {
   description = "Lookup table of EC2 Decalarative Policies by their name"
 }
 
+variable "sso_instance_region" {
+  type        = string
+  default     = "us-east-1"
+  description = "Region where the AWS SSO instance is configured"
+}
 
 resource "aws_organizations_account" "account" {
   name              = var.account_name
