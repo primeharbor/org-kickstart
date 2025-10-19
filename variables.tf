@@ -433,14 +433,3 @@ variable "datatrail" {
     excluded_buckets = list(string)
   })
 }
-
-variable "user_notifications" {
-  description = "Configuration for user notifications."
-  type = object({
-    enabled                 = optional(bool, false)
-    contact_email           = string
-    contact_name            = string
-    aggregation_duration    = optional(string, "LONG")
-    notification_hub_region = optional(string, "us-east-1")
-  })
-}
