@@ -131,6 +131,10 @@ organization = {
     "ipam.amazonaws.com"
   ]
 
+  aws_service_access_principals_to_enable = [
+    "securitylake.amazonaws.com",
+  ]
+
   organization_policy_types_to_exclude = [
     "TAG_POLICY"
   ]

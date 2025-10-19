@@ -57,14 +57,23 @@ locals {
   default_enabled_policy_types = [
     "AISERVICES_OPT_OUT_POLICY",
     "BACKUP_POLICY",
+    "CHATBOT_POLICY",
     "DECLARATIVE_POLICY_EC2",
     "RESOURCE_CONTROL_POLICY",
+    "SECURITYHUB_POLICY",
     "SERVICE_CONTROL_POLICY",
     "TAG_POLICY"
   ]
 
+  merged_aws_service_access_principals = distinct(
+    concat(
+      local.default_aws_service_access_principals,
+      var.aws_service_access_principals_to_enable
+    )
+  )
+
   filtered_aws_service_access_principals = [
-    for principal in local.default_aws_service_access_principals :
+    for principal in local.merged_aws_service_access_principals :
     principal if !(contains(var.aws_service_access_principals_to_exclude, principal))
   ]
 
@@ -78,8 +87,8 @@ locals {
 # Create the organization
 resource "aws_organizations_organization" "org" {
   aws_service_access_principals = local.filtered_aws_service_access_principals
-  enabled_policy_types = local.filtered_enabled_policy_types
-  feature_set = "ALL"
+  enabled_policy_types          = local.filtered_enabled_policy_types
+  feature_set                   = "ALL"
 }
 
 # Enable management of root credentials

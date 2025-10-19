@@ -363,6 +363,12 @@ variable "aws_service_access_principals_to_exclude" {
   default     = []
 }
 
+variable "aws_service_access_principals_to_enable" {
+  description = "List of AWS service access principals to enable if they're not part of the default set."
+  type        = list(string)
+  default     = []
+}
+
 variable "organization_policy_types_to_exclude" {
   description = "List of organization policy types to exclude from the default set."
   type        = list(string)
@@ -425,5 +431,16 @@ variable "datatrail" {
     trail_name       = string
     enabled          = optional(bool, true)
     excluded_buckets = list(string)
+  })
+}
+
+variable "user_notifications" {
+  description = "Configuration for user notifications."
+  type = object({
+    enabled                 = optional(bool, false)
+    contact_email           = string
+    contact_name            = string
+    aggregation_duration    = optional(string, "LONG")
+    notification_hub_region = optional(string, "us-east-1")
   })
 }
