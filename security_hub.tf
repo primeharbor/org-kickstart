@@ -94,8 +94,8 @@ resource "aws_securityhub_configuration_policy" "no_enabled_standards" {
   description = "Enable Security Hub Central Configuration without any Standards"
 
   configuration_policy {
-    service_enabled = true
-    enabled_standard_arns = [ ]
+    service_enabled       = true
+    enabled_standard_arns = []
     security_controls_configuration {
       disabled_control_identifiers = []
     }
