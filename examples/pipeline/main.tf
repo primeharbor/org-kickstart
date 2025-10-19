@@ -15,7 +15,8 @@
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
+      version = ">= 5.99.1"
     }
   }
   required_version = ">= 0.14.9"
@@ -60,21 +61,25 @@ module "organization" {
   disable_sso_management    = lookup(var.organization, "disable_sso_management", false)
 
   # Audit Role
-  deploy_audit_role = lookup(var.organization, "deploy_audit_role", true)
-  audit_role_name   = lookup(var.organization, "audit_role_name", "security-audit")
+  deploy_audit_role                 = lookup(var.organization, "deploy_audit_role", true)
+  audit_role_name                   = lookup(var.organization, "audit_role_name", "security-audit")
+  audit_role_stack_set_template_url = lookup(var.organization, "audit_role_stack_set_template_url", null)
 
   # CloudTrail
   cloudtrail_bucket_name   = lookup(var.organization, "cloudtrail_bucket_name", null)
   cloudtrail_loggroup_name = lookup(var.organization, "cloudtrail_loggroup_name", null)
 
   # Map Objects
-  accounts                  = lookup(var.organization, "accounts", {})
-  service_control_policies  = lookup(var.organization, "service_control_policies", {})
-  resource_control_policies = lookup(var.organization, "resource_control_policies", {})
-  declarative_policies      = lookup(var.organization, "declarative_policies", {})
-  organization_units        = lookup(var.organization, "organization_units", {})
-  account_configurator      = lookup(var.organization, "account_configurator", null)
-  billing_alerts            = lookup(var.organization, "billing_alerts", null)
+  accounts                                 = lookup(var.organization, "accounts", {})
+  organization_policy_types_to_exclude     = lookup(var.organization, "organization_policy_types_to_exclude", null)
+  aws_service_access_principals_to_exclude = lookup(var.organization, "aws_service_access_principals_to_exclude", null)
+  aws_service_access_principals_to_enable  = lookup(var.organization, "aws_service_access_principals_to_enable", null)
+  service_control_policies                 = lookup(var.organization, "service_control_policies", {})
+  resource_control_policies                = lookup(var.organization, "resource_control_policies", {})
+  declarative_policies                     = lookup(var.organization, "declarative_policies", {})
+  organization_units                       = lookup(var.organization, "organization_units", {})
+  account_configurator                     = lookup(var.organization, "account_configurator", null)
+  billing_alerts                           = lookup(var.organization, "billing_alerts", null)
 
   # Global Alternate Contacts
   global_billing_contact    = lookup(var.organization, "global_billing_contact", null)
@@ -85,12 +90,14 @@ module "organization" {
   # Billing CUR Reports
   billing_data_bucket_name = lookup(var.organization, "billing_data_bucket_name", null)
   cur_report_frequency     = lookup(var.organization, "cur_report_frequency", "NONE")
+  budget_defaults          = lookup(var.organization, "budget_defaults", null)
 
   # Security Stuff
   security_services              = lookup(var.organization, "security_services", {})
   vpc_flowlogs_bucket_name       = lookup(var.organization, "vpc_flowlogs_bucket_name", null)
   macie_bucket_name              = lookup(var.organization, "macie_bucket_name", null)
   declarative_policy_bucket_name = lookup(var.organization, "declarative_policy_bucket_name", null)
+  datatrail                      = lookup(var.organization, "datatrail", null)
 }
 
 variable "organization" {}

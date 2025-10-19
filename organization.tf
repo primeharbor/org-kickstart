@@ -22,16 +22,20 @@ locals {
   default_aws_service_access_principals = [
     "access-analyzer.amazonaws.com",
     "account.amazonaws.com",
+    "aws-artifact-account-sync.amazonaws.com",
     "backup.amazonaws.com",
     "cloudtrail.amazonaws.com",
+    "compute-optimizer.amazonaws.com",
     "config-multiaccountsetup.amazonaws.com",
     "config.amazonaws.com",
+    "cost-optimization-hub.bcm.amazonaws.com",
     "ec2.amazonaws.com",
     "fms.amazonaws.com",
     "guardduty.amazonaws.com",
     "health.amazonaws.com",
     "iam.amazonaws.com",
     "inspector2.amazonaws.com",
+    "ipam.amazonaws.com",
     "license-management.marketplace.amazonaws.com",
     "license-manager.amazonaws.com",
     "license-manager.member-account.amazonaws.com",
@@ -41,29 +45,50 @@ locals {
     "notifications.amazonaws.com",
     "ram.amazonaws.com",
     "reporting.trustedadvisor.amazonaws.com",
+    "resource-explorer-2.amazonaws.com",
     "securityhub.amazonaws.com",
+    "servicequotas.amazonaws.com",
     "ssm.amazonaws.com",
     "sso.amazonaws.com",
+    "storage-lens.s3.amazonaws.com",
+    "tagpolicies.tag.amazonaws.com",
   ]
 
   default_enabled_policy_types = [
     "AISERVICES_OPT_OUT_POLICY",
     "BACKUP_POLICY",
+    "CHATBOT_POLICY",
     "DECLARATIVE_POLICY_EC2",
     "RESOURCE_CONTROL_POLICY",
+    "SECURITYHUB_POLICY",
     "SERVICE_CONTROL_POLICY",
     "TAG_POLICY"
+  ]
+
+  merged_aws_service_access_principals = distinct(
+    concat(
+      local.default_aws_service_access_principals,
+      var.aws_service_access_principals_to_enable
+    )
+  )
+
+  filtered_aws_service_access_principals = [
+    for principal in local.merged_aws_service_access_principals :
+    principal if !(contains(var.aws_service_access_principals_to_exclude, principal))
+  ]
+
+  filtered_enabled_policy_types = [
+    for policy in local.default_enabled_policy_types :
+    policy if !(contains(var.organization_policy_types_to_exclude, policy))
   ]
 }
 
 
 # Create the organization
 resource "aws_organizations_organization" "org" {
-  aws_service_access_principals = var.aws_service_access_principals != null ? var.aws_service_access_principals : local.default_aws_service_access_principals
-
-  enabled_policy_types = var.enabled_policy_types != null ? var.enabled_policy_types : local.default_enabled_policy_types
-
-  feature_set = "ALL"
+  aws_service_access_principals = local.filtered_aws_service_access_principals
+  enabled_policy_types          = local.filtered_enabled_policy_types
+  feature_set                   = "ALL"
 }
 
 # Enable management of root credentials
