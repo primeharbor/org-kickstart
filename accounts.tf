@@ -27,7 +27,7 @@ module "accounts" {
   admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
   admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
   billing_contact           = var.global_billing_contact
-  budget_alert_recipients   = concat(lookup(each.value, "budget_alert_recipients", []), lookup(var.budget_defaults, "alert_recipients", []))
+  budget_alert_recipients   = concat(lookup(each.value, "budget_alert_recipients", []), var.budget_defaults.alert_recipients)
   default_close_on_deletion = var.default_close_on_deletion
   delegated_admin           = each.value.delegated_admin
   disable_sso_management    = var.disable_sso_management

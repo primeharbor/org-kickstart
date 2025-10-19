@@ -15,20 +15,20 @@
 
 # Explicitly create the detectors in the parent and security account
 resource "aws_guardduty_detector" "payer_detector" {
-  count    = local.security_services["disable_guardduty"] ? 0 : 1
+  count    = var.security_services["disable_guardduty"] ? 0 : 1
   provider = aws.payer_account
   enable   = true
 }
 
 resource "aws_guardduty_detector" "security_detector" {
-  count    = local.security_services["disable_guardduty"] ? 0 : 1
+  count    = var.security_services["disable_guardduty"] ? 0 : 1
   provider = aws.security_account
   enable   = true
 }
 
 # Assign delegated admin to the security account via GuardDuty APIs
 resource "aws_guardduty_organization_admin_account" "guardduty" {
-  count    = local.security_services["disable_guardduty"] ? 0 : 1
+  count    = var.security_services["disable_guardduty"] ? 0 : 1
   provider = aws.payer_account
   depends_on = [
     aws_guardduty_detector.payer_detector,
@@ -39,7 +39,7 @@ resource "aws_guardduty_organization_admin_account" "guardduty" {
 
 # This sets up the default settings
 resource "aws_guardduty_organization_configuration" "organization" {
-  count                            = local.security_services["disable_guardduty"] ? 0 : 1
+  count                            = var.security_services["disable_guardduty"] ? 0 : 1
   depends_on                       = [aws_guardduty_organization_admin_account.guardduty]
   provider                         = aws.security_account
   auto_enable_organization_members = "ALL"
