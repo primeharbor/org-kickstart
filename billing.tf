@@ -112,7 +112,7 @@ resource "aws_cur_report_definition" "cur_report_definition" {
   additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
   s3_bucket                  = aws_s3_bucket.billing_logs[0].id
   s3_prefix                  = "athena-cur-report"
-  s3_region                  = data.aws_region.current.name
+  s3_region                  = data.aws_region.current.region
   additional_artifacts       = ["ATHENA"]
   report_versioning          = "OVERWRITE_REPORT"
 }
