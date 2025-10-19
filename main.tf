@@ -43,9 +43,9 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias  = "security-account"
+  alias = "security-account"
   assume_role {
-    role_arn = "arn:aws:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
+    role_arn = "arn:${data.aws_partition.current.partition}:iam::${module.security_account.account_id}:role/OrganizationAccountAccessRole"
   }
   default_tags {
     tags = local.default_tags
@@ -53,3 +53,5 @@ provider "aws" {
 }
 
 data "aws_region" "current" {}
+
+data "aws_partition" "current" {}

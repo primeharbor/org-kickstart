@@ -114,7 +114,7 @@ resource "aws_kms_key_policy" "macie_key" {
         Action = "kms:*"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${module.security_account.account_id}:root"
+          AWS = "arn:${data.aws_partition.current.partition}:iam::${module.security_account.account_id}:root"
         }
         Resource = "*"
       },

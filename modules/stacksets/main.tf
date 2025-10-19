@@ -25,7 +25,7 @@ resource "aws_cloudformation_stack_set" "stack_set" {
   # Bug with provider https://github.com/hashicorp/terraform-provider-aws/issues/23464
   # TF attempts to remove the administration_role_arn, even though it's added as part of a tf refresh
   # Workaround is the lifecycle block
-  # administration_role_arn = "arn:aws:iam::${local.payer_account_id}:role/aws-service-role/stacksets.cloudformation.amazonaws.com/AWSServiceRoleForCloudFormationStackSetsOrgAdmin"
+  # administration_role_arn = "arn:${data.aws_partition.current.partition}:iam::${local.payer_account_id}:role/aws-service-role/stacksets.cloudformation.amazonaws.com/AWSServiceRoleForCloudFormationStackSetsOrgAdmin"
   lifecycle {
     ignore_changes = [
       administration_role_arn

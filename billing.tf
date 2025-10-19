@@ -86,7 +86,7 @@ data "aws_iam_policy_document" "allow_billing_logging" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceArn"
-      values   = ["arn:aws:cur:${data.aws_region.current.name}:${aws_organizations_account.payer.id}:definition/*"]
+      values   = ["arn:${data.aws_partition.current.partition}:cur:${data.aws_region.current.region}:${aws_organizations_account.payer.id}:definition/*"]
     }
 
   }
