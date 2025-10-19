@@ -93,7 +93,7 @@ data "aws_iam_policy_document" "datatrail_bucket" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceArn"
-      values   = ["arn:${data.aws_partition.payer.partition}:cloudtrail:${data.aws_region.payer.name}:${data.aws_caller_identity.payer.account_id}:trail/${var.trail_name}"]
+      values   = ["arn:${data.aws_partition.payer.partition}:cloudtrail:${data.aws_region.payer.region}:${data.aws_caller_identity.payer.account_id}:trail/${var.trail_name}"]
     }
   }
 
@@ -117,7 +117,7 @@ data "aws_iam_policy_document" "datatrail_bucket" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceArn"
-      values   = ["arn:${data.aws_partition.payer.partition}:cloudtrail:${data.aws_region.payer.name}:${data.aws_caller_identity.payer.account_id}:trail/${var.trail_name}"]
+      values   = ["arn:${data.aws_partition.payer.partition}:cloudtrail:${data.aws_region.payer.region}:${data.aws_caller_identity.payer.account_id}:trail/${var.trail_name}"]
     }
   }
 }

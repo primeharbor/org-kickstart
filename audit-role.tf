@@ -61,12 +61,12 @@ resource "aws_cloudformation_stack_set" "audit_role" {
 }
 
 resource "aws_cloudformation_stack_set_instance" "audit_role" {
-  count          = var.deploy_audit_role == true ? 1 : 0
-  provider       = aws.security-account
-  region         = "us-east-1"
-  call_as        = "DELEGATED_ADMIN"
-  retain_stack   = true
-  stack_set_name = aws_cloudformation_stack_set.audit_role[0].name
+  count                     = var.deploy_audit_role == true ? 1 : 0
+  provider                  = aws.security-account
+  stack_set_instance_region = "us-east-1"
+  call_as                   = "DELEGATED_ADMIN"
+  retain_stack              = true
+  stack_set_name            = aws_cloudformation_stack_set.audit_role[0].name
   deployment_targets {
     organizational_unit_ids = [aws_organizations_organization.org.roots[0].id]
   }
