@@ -34,7 +34,7 @@ resource "aws_cloudtrail" "datatrail" {
     field_selector {
       field = "resources.ARN"
       # Exclude the passed in list, and always exclude the data trail bucket itself to prevent recursion
-      not_starts_with = [for bucket in concat(var.excluded_buckets, [var.bucket_name]) : "arn:aws:s3:::${bucket}/"]
+      not_starts_with = [for bucket in concat(var.excluded_buckets, [var.bucket_name]) : "arn:${data.aws_partition.payer.partition}:s3:::${bucket}/"]
     }
 
     field_selector {

@@ -12,5 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# See documentation for implementation details
+# https://developer.hashicorp.com/terraform/language/backend#partial-configuration
+
 bucket="org-kickstart-13456789012"
 key="org-kickstart.tfstate"
+region = "us-east-1"

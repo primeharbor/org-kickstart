@@ -21,9 +21,9 @@ terraform {
   }
   required_version = ">= 0.14.9"
 
-  # This is configured in the $env.backend file
+  # This is configured in the $env.tfbackend file, see sample.tfbackend
   backend "s3" {
-    region = "us-east-1"
+
   }
 }
 
@@ -59,6 +59,7 @@ module "organization" {
   admin_permission_set_name = lookup(var.organization, "admin_permission_set_name", "AdministratorAccess")
   admin_group_name          = lookup(var.organization, "admin_group_name", "AllAdmins")
   disable_sso_management    = lookup(var.organization, "disable_sso_management", false)
+  sso_instance_region       = lookup(var.organization, "sso_instance_region", "us-east-1")
 
   # Audit Role
   deploy_audit_role                 = lookup(var.organization, "deploy_audit_role", true)

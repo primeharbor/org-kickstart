@@ -49,10 +49,10 @@ Resources:
     Properties:
       RoleName: !Ref RoleName
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/SecurityAudit
-      - arn:aws:iam::aws:policy/ReadOnlyAccess
-      - arn:aws:iam::aws:policy/AWSAccountManagementReadOnlyAccess
-      - arn:aws:iam::aws:policy/AWSSSOReadOnly
+      - !Sub arn:${AWS::Partition}:iam::aws:policy/SecurityAudit
+      - !Sub arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess
+      - !Sub arn:${AWS::Partition}:iam::aws:policy/AWSAccountManagementReadOnlyAccess
+      - !Sub arn:${AWS::Partition}:iam::aws:policy/AWSSSOReadOnly
       Path: /
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -61,7 +61,7 @@ Resources:
           Sid: ''
           Effect: Allow
           Principal:
-            AWS: !Sub "arn:aws:iam::${TrustedAccountNumber}:root"
+            AWS: !Sub "arn:${AWS::Partition}:iam::${TrustedAccountNumber}:root"
       Policies:
         - PolicyName: MissingPermissions
           PolicyDocument:

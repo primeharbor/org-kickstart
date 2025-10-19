@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "declarative_policy_bucket_policy" {
     condition {
       test     = "StringLike"
       variable = "aws:SourceArn"
-      values   = ["arn:aws:declarative-policies-ec2:*:${aws_organizations_account.payer.id}:*"]
+      values   = ["arn:${data.aws_partition.current.partition}:declarative-policies-ec2:*:${aws_organizations_account.payer.id}:*"]
     }
   }
 }

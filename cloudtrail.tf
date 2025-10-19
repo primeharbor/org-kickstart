@@ -106,7 +106,7 @@ data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
     condition {
       test     = "StringLike"
       variable = "aws:PrincipalArn"
-      values   = ["arn:aws:iam::&{aws:PrincipalAccount}:role/service-role/AccessAnalyzerMonitorServiceRole*"]
+      values   = ["arn:${data.aws_partition.current.partition}:iam::&{aws:PrincipalAccount}:role/service-role/AccessAnalyzerMonitorServiceRole*"]
     }
   }
 }
@@ -125,7 +125,7 @@ data "aws_iam_policy_document" "cloudtrail_s3_notification_topic" {
     }
 
     actions   = ["SNS:Publish"]
-    resources = ["arn:aws:sns:*:*:cloudtrail-s3-event-notification-topic"]
+    resources = ["arn:${data.aws_partition.current.partition}:sns:*:*:cloudtrail-s3-event-notification-topic"]
 
     condition {
       test     = "ArnLike"

@@ -17,7 +17,9 @@
 #
 # This allows terraform to reference attributes of the AWS SSO Identity Storey
 #
-data "aws_ssoadmin_instances" "identity_store" {}
+data "aws_ssoadmin_instances" "identity_store" {
+  region = var.sso_instance_region
+}
 
 locals {
   identity_store_id = tolist(data.aws_ssoadmin_instances.identity_store.identity_store_ids)[0]
