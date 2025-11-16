@@ -29,21 +29,41 @@ variable "tag_set" {
 variable "security_account_root_email" {
   description = "Root Email address for the security account"
   type        = string
+
+  validation {
+    condition     = can(regex("^[^@]+@[^@]+\\.[^@]+$", var.security_account_root_email))
+    error_message = "Must be a valid email address format"
+  }
 }
 variable "security_account_name" {
   description = "Name of the Security Account"
   type        = string
   default     = "Security Account"
+
+  validation {
+    condition     = length(var.security_account_name) >= 1 && length(var.security_account_name) <= 50
+    error_message = "Account name must be between 1 and 50 characters"
+  }
 }
 
 variable "payer_email" {
   description = "Root Email address for the Organization Management account"
   type        = string
+
+  validation {
+    condition     = can(regex("^[^@]+@[^@]+\\.[^@]+$", var.payer_email))
+    error_message = "Must be a valid email address format"
+  }
 }
 variable "payer_name" {
   description = "Name of the Organization Management account"
   type        = string
   default     = "AWS Payer"
+
+  validation {
+    condition     = length(var.payer_name) >= 1 && length(var.payer_name) <= 50
+    error_message = "Account name must be between 1 and 50 characters"
+  }
 }
 
 

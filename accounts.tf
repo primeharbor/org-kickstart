@@ -22,26 +22,26 @@ module "accounts" {
   for_each = var.accounts
   source   = "./modules/account"
 
-  account_email             = each.value["account_email"]
-  account_name              = each.value["account_name"]
+  account_email             = each.value.account_email
+  account_name              = each.value.account_name
   admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
   admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
   billing_contact           = var.global_billing_contact
-  budget_alert_recipients   = concat(lookup(each.value, "budget_alert_recipients", []), var.budget_defaults.alert_recipients)
-  declarative_policies_ec2  = lookup(each.value, "declarative_policies_ec2", [])
+  budget_alert_recipients   = concat(each.value.budget_alert_recipients, var.budget_defaults.alert_recipients)
+  declarative_policies_ec2  = each.value.declarative_policies_ec2
   default_close_on_deletion = var.default_close_on_deletion
   delegated_admin           = each.value.delegated_admin
   disable_sso_management    = var.disable_sso_management
   dp_ec2_name_to_id_map     = local.dp_ec2_name_to_id
-  monthly_budget_amount     = lookup(each.value, "monthly_budget_amount", 0)
-  operations_contact        = lookup(each.value, "operations_contact", null) == null ? var.global_operations_contact : each.value.operations_contact
-  parent_ou_id              = lookup(each.value, "parent_ou_id", null) == null ? local.ou_name_to_id[each.value.parent_ou_name] : each.value.parent_ou_id
-  primary_contact           = lookup(each.value, "primary_contact", null) == null ? var.global_primary_contact : each.value.primary_contact
+  monthly_budget_amount     = each.value.monthly_budget_amount
+  operations_contact        = each.value.operations_contact != null ? each.value.operations_contact : var.global_operations_contact
+  parent_ou_id              = each.value.parent_ou_id != null ? each.value.parent_ou_id : local.ou_name_to_id[each.value.parent_ou_name]
+  primary_contact           = each.value.primary_contact != null ? each.value.primary_contact : var.global_primary_contact
   rcp_name_to_id_map        = local.rcp_name_to_id
-  resource_control_policies = lookup(each.value, "resource_control_policies", [])
+  resource_control_policies = each.value.resource_control_policies
   scp_name_to_id_map        = local.scp_name_to_id
   security_contact          = var.global_security_contact
-  service_control_policies  = lookup(each.value, "service_control_policies", [])
+  service_control_policies  = each.value.service_control_policies
   sso_instance_region       = var.sso_instance_region
 }
 

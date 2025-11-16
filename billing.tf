@@ -38,6 +38,26 @@ resource "aws_s3_bucket_public_access_block" "billing_logs" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "billing_logs" {
+  count  = var.billing_data_bucket_name != null ? 1 : 0
+  bucket = aws_s3_bucket.billing_logs[0].id
+
+  rule {
+    id     = "archive-old-billing-reports"
+    status = "Enabled"
+
+    transition {
+      days          = 90
+      storage_class = "GLACIER_IR"
+    }
+
+    transition {
+      days          = 180
+      storage_class = "DEEP_ARCHIVE"
+    }
+  }
+}
+
 data "aws_iam_policy_document" "allow_billing_logging" {
   count = var.billing_data_bucket_name != null ? 1 : 0
   statement {
