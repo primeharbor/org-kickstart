@@ -57,13 +57,17 @@ locals {
   default_enabled_policy_types = [
     "AISERVICES_OPT_OUT_POLICY",
     "BACKUP_POLICY",
+    "BEDROCK_POLICY",
     "CHATBOT_POLICY",
     "DECLARATIVE_POLICY_EC2",
+    "INSPECTOR_POLICY",
+    "NETWORK_SECURITY_DIRECTOR_POLICY",
     "RESOURCE_CONTROL_POLICY",
+    "S3_POLICY",
     "SECURITYHUB_POLICY",
     "SERVICE_CONTROL_POLICY",
-    "S3_POLICY",
-    "TAG_POLICY"
+    "TAG_POLICY",
+    "UPGRADE_ROLLOUT_POLICY"
   ]
 
   merged_aws_service_access_principals = distinct(
