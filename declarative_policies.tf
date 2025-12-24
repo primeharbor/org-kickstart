@@ -80,7 +80,7 @@ module "declarative_policies" {
   for_each = var.declarative_policies
 
   source             = "./modules/org_policies"
-  policy_type        = "DECLARATIVE_POLICY_EC2"
+  policy_type        = each.value.policy_type
   policy_name        = each.value.policy_name
   policy_description = each.value.policy_description
   policy_json        = templatefile(fileexists(each.value.policy_json_file) ? each.value.policy_json_file : "${path.module}/${each.value.policy_json_file}", each.value.policy_vars)

@@ -1,0 +1,7 @@
+{
+    "s3_attributes": {
+        "public_access_block_configuration": {
+            "@@assign": "all"
+        }
+    }
+}

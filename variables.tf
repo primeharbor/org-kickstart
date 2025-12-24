@@ -370,6 +370,7 @@ variable "declarative_policies" {
   default     = {}
   type = map(object({
     policy_name        = string
+    policy_type        = string
     policy_description = string
     policy_json_file   = string
     policy_targets     = optional(list(string), ["Root"])
