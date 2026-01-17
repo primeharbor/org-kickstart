@@ -16,14 +16,13 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.99.1"
+      version = ">= 6.28.0"
     }
   }
-  required_version = ">= 0.14.9"
+  required_version = ">= 1.14.3"
 
   # This is configured in the $env.tfbackend file, see sample.tfbackend
   backend "s3" {
-
   }
 }
 

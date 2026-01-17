@@ -28,19 +28,20 @@ module "security_account" {
 
   account_email             = var.security_account_root_email
   account_name              = var.security_account_name
-  admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
-  admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
+  admin_group_id            = null
+  admin_permission_set_arn  = null
   billing_contact           = var.global_billing_contact
   budget_alert_recipients   = concat(lookup(var.security_account, "budget_alert_recipients", []), lookup(var.budget_defaults, "alert_recipients", []))
   default_close_on_deletion = false
+  default_currency          = var.security_account.currency != null ? var.security_account.currency : var.budget_defaults.currency
   delegated_admin           = lookup(var.security_account, "delegated_admin", [])
   disable_sso_management    = var.disable_sso_management
-  dp_ec2_name_to_id_map     = local.dp_ec2_name_to_id
+  dp_ec2_name_to_id_map     = null
   monthly_budget_amount     = lookup(var.security_account, "monthly_budget_amount", 0)
   operations_contact        = var.global_operations_contact
   parent_ou_id              = aws_organizations_organizational_unit.governance_ou.id
   primary_contact           = var.global_primary_contact
-  rcp_name_to_id_map        = local.rcp_name_to_id
+  rcp_name_to_id_map        = null
   scp_name_to_id_map        = local.scp_name_to_id
   security_contact          = var.global_security_contact
   sso_instance_region       = var.sso_instance_region

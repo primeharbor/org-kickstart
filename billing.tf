@@ -25,6 +25,7 @@ data "aws_billing_service_account" "main" {}
 resource "aws_s3_bucket" "billing_logs" {
   count  = var.billing_data_bucket_name != null ? 1 : 0
   bucket = var.billing_data_bucket_name
+  region = "eusc-de-east-1"
 }
 
 resource "aws_s3_bucket_public_access_block" "billing_logs" {
@@ -60,28 +61,28 @@ resource "aws_s3_bucket_lifecycle_configuration" "billing_logs" {
 
 data "aws_iam_policy_document" "allow_billing_logging" {
   count = var.billing_data_bucket_name != null ? 1 : 0
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = [data.aws_billing_service_account.main.arn]
-    }
-    actions = [
-      "s3:GetBucketAcl",
-      "s3:GetBucketPolicy",
-    ]
-    resources = [aws_s3_bucket.billing_logs[0].arn]
-  }
+  # statement {
+  #   effect = "Allow"
+  #   principals {
+  #     type        = "AWS"
+  #     identifiers = [data.aws_billing_service_account.main.arn]
+  #   }
+  #   actions = [
+  #     "s3:GetBucketAcl",
+  #     "s3:GetBucketPolicy",
+  #   ]
+  #   resources = [aws_s3_bucket.billing_logs[0].arn]
+  # }
 
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = [data.aws_billing_service_account.main.arn]
-    }
-    actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.billing_logs[0].arn}/*"]
-  }
+  # statement {
+  #   effect = "Allow"
+  #   principals {
+  #     type        = "AWS"
+  #     identifiers = [data.aws_billing_service_account.main.arn]
+  #   }
+  #   actions   = ["s3:PutObject"]
+  #   resources = ["${aws_s3_bucket.billing_logs[0].arn}/*"]
+  # }
 
   statement {
     effect = "Allow"
@@ -123,19 +124,19 @@ resource "aws_s3_bucket_policy" "allow_billing_logging" {
 #
 # These recommendations are from Mike Julian @ the Duckbill Group
 #
-resource "aws_cur_report_definition" "cur_report_definition" {
-  count                      = var.cur_report_frequency != "NONE" ? 1 : 0
-  report_name                = "athena-cur-report"
-  time_unit                  = var.cur_report_frequency
-  format                     = "Parquet"
-  compression                = "Parquet"
-  additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
-  s3_bucket                  = aws_s3_bucket.billing_logs[0].id
-  s3_prefix                  = "athena-cur-report"
-  s3_region                  = data.aws_region.current.region
-  additional_artifacts       = ["ATHENA"]
-  report_versioning          = "OVERWRITE_REPORT"
-}
+# resource "aws_cur_report_definition" "cur_report_definition" {
+#   count                      = var.cur_report_frequency != "NONE" ? 1 : 0
+#   report_name                = "athena-cur-report"
+#   time_unit                  = var.cur_report_frequency
+#   format                     = "Parquet"
+#   compression                = "Parquet"
+#   additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
+#   s3_bucket                  = aws_s3_bucket.billing_logs[0].id
+#   s3_prefix                  = "athena-cur-report"
+#   s3_region                  = data.aws_region.current.region
+#   additional_artifacts       = ["ATHENA"]
+#   report_versioning          = "OVERWRITE_REPORT"
+# }
 
 resource "aws_budgets_budget" "organization" {
   count        = var.budget_defaults.organizational_budget != 0 ? 1 : 0

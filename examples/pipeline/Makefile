@@ -32,6 +32,9 @@ update: tf-init tf-execute
 tf-init:
 	terraform init -backend-config=$(env).tfbackend -reconfigure
 
+tf-force-init:
+	terraform init -backend-config=$(env).tfbackend -reconfigure -upgrade
+
 tf-update:
 	terraform get -update
 

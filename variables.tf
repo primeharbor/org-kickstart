@@ -167,6 +167,7 @@ variable "accounts" {
       parent_ou_name            = optional(string, "Workloads")
       parent_ou_id              = optional(string, null)
       monthly_budget_amount     = optional(number, 0)
+      currency                  = optional(string, null)
       budget_alert_recipients   = optional(list(string), [])
       service_control_policies  = optional(list(string), [])
       resource_control_policies = optional(list(string), [])
@@ -204,6 +205,7 @@ variable "security_account" {
     }))
     monthly_budget_amount   = optional(number, 0)
     budget_alert_recipients = optional(list(string), [])
+    currency                = optional(string, null)
   })
 
 }
@@ -307,7 +309,7 @@ variable "budget_defaults" {
   description = "Default values for AWS Budgets. Some settings can be overridden in the account definition."
   type = object({
     alert_recipients      = optional(list(string), [])
-    currency              = optional(string, "USD")
+    currency              = optional(string, null)
     warning_percentage    = optional(number, 85)
     organizational_budget = optional(number, 0)
   })

@@ -24,21 +24,22 @@ module "accounts" {
 
   account_email             = each.value.account_email
   account_name              = each.value.account_name
-  admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
-  admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
+  admin_group_id            = null
+  admin_permission_set_arn  = null
   billing_contact           = var.global_billing_contact
   budget_alert_recipients   = concat(each.value.budget_alert_recipients, var.budget_defaults.alert_recipients)
-  declarative_policies_ec2  = each.value.declarative_policies_ec2
+  declarative_policies_ec2  = []
   default_close_on_deletion = var.default_close_on_deletion
+  default_currency          = each.value.currency != null ? each.value.currency : var.budget_defaults.currency
   delegated_admin           = each.value.delegated_admin
   disable_sso_management    = var.disable_sso_management
-  dp_ec2_name_to_id_map     = local.dp_ec2_name_to_id
+  dp_ec2_name_to_id_map     = null
   monthly_budget_amount     = each.value.monthly_budget_amount
   operations_contact        = each.value.operations_contact != null ? each.value.operations_contact : var.global_operations_contact
   parent_ou_id              = each.value.parent_ou_id != null ? each.value.parent_ou_id : local.ou_name_to_id[each.value.parent_ou_name]
   primary_contact           = each.value.primary_contact != null ? each.value.primary_contact : var.global_primary_contact
-  rcp_name_to_id_map        = local.rcp_name_to_id
-  resource_control_policies = each.value.resource_control_policies
+  rcp_name_to_id_map        = null
+  resource_control_policies = []
   scp_name_to_id_map        = local.scp_name_to_id
   security_contact          = var.global_security_contact
   service_control_policies  = each.value.service_control_policies
@@ -50,25 +51,25 @@ module "accounts" {
 data "aws_organizations_policies" "scps" {
   filter = "SERVICE_CONTROL_POLICY"
 }
-data "aws_organizations_policies" "rcps" {
-  filter = "RESOURCE_CONTROL_POLICY"
-}
-data "aws_organizations_policies" "dp_ec2" {
-  filter = "DECLARATIVE_POLICY_EC2"
-}
+# data "aws_organizations_policies" "rcps" {
+#   filter = "RESOURCE_CONTROL_POLICY"
+# }
+# data "aws_organizations_policies" "dp_ec2" {
+#   filter = "DECLARATIVE_POLICY_EC2"
+# }
 
 data "aws_organizations_policy" "scps" {
   for_each  = toset(data.aws_organizations_policies.scps.ids)
   policy_id = each.value
 }
-data "aws_organizations_policy" "rcps" {
-  for_each  = toset(data.aws_organizations_policies.rcps.ids)
-  policy_id = each.value
-}
-data "aws_organizations_policy" "dp_ec2" {
-  for_each  = toset(data.aws_organizations_policies.dp_ec2.ids)
-  policy_id = each.value
-}
+# data "aws_organizations_policy" "rcps" {
+#   for_each  = toset(data.aws_organizations_policies.rcps.ids)
+#   policy_id = each.value
+# }
+# data "aws_organizations_policy" "dp_ec2" {
+#   for_each  = toset(data.aws_organizations_policies.dp_ec2.ids)
+#   policy_id = each.value
+# }
 
 # Create a map to look up OU IDs by name. Thanks ChatGPT for almost getting there with what I needed.
 locals {
@@ -76,12 +77,12 @@ locals {
     for scp in data.aws_organizations_policy.scps :
     scp.name => scp.policy_id
   }
-  rcp_name_to_id = {
-    for rcp in data.aws_organizations_policy.rcps :
-    rcp.name => rcp.policy_id
-  }
-  dp_ec2_name_to_id = {
-    for dp in data.aws_organizations_policy.dp_ec2 :
-    dp.name => dp.policy_id
-  }
+  # rcp_name_to_id = {
+  #   for rcp in data.aws_organizations_policy.rcps :
+  #   rcp.name => rcp.policy_id
+  # }
+  # dp_ec2_name_to_id = {
+  #   for dp in data.aws_organizations_policy.dp_ec2 :
+  #   dp.name => dp.policy_id
+  # }
 }

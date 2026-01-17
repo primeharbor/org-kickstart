@@ -128,17 +128,9 @@ organization = {
     # website_url     = "Optional"
   }
 
-  aws_service_access_principals_to_exclude = [
-    "ipam.amazonaws.com"
-  ]
-
-  aws_service_access_principals_to_enable = [
-    "securitylake.amazonaws.com",
-  ]
-
-  organization_policy_types_to_exclude = [
-    "TAG_POLICY"
-  ]
+  aws_service_access_principals_to_exclude = []
+  aws_service_access_principals_to_enable  = []
+  organization_policy_types_to_exclude     = []
 
   service_control_policies = {
     deny_root = {

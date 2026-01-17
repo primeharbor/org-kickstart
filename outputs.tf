@@ -20,10 +20,10 @@ output "accounts" {
   )
 }
 
-output "declarative_policy_bucket" {
-  description = "S3 Bucket used to store declarative policies"
-  value       = var.declarative_policy_bucket_name != null ? aws_s3_bucket.declarative_policy_bucket[0].id : null
-}
+# output "declarative_policy_bucket" {
+#   description = "S3 Bucket used to store declarative policies"
+#   value       = var.declarative_policy_bucket_name != null ? aws_s3_bucket.declarative_policy_bucket[0].id : null
+# }
 
 output "macie_key_arn" {
   description = "ARN of the KMS Key used by Macie"
@@ -50,8 +50,7 @@ output "security_account_id" {
   value       = module.security_account.account_id
 }
 
-output "sso_instance_arn" {
-  description = "AWS Identity Center Instance ARN managed by org-kickstart"
-  value       = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
-
-}
+# output "sso_instance_arn" {
+#   description = "AWS Identity Center Instance ARN managed by org-kickstart"
+#   value       = tolist(data.aws_ssoadmin_instances.identity_store.arns)[0]
+# }
