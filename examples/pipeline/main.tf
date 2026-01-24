@@ -72,9 +72,9 @@ module "organization" {
 
   # Map Objects
   accounts                                 = lookup(var.organization, "accounts", {})
-  organization_policy_types_to_exclude     = lookup(var.organization, "organization_policy_types_to_exclude", null)
-  aws_service_access_principals_to_exclude = lookup(var.organization, "aws_service_access_principals_to_exclude", null)
-  aws_service_access_principals_to_enable  = lookup(var.organization, "aws_service_access_principals_to_enable", null)
+  organization_policy_types_to_exclude     = lookup(var.organization, "organization_policy_types_to_exclude", [])
+  aws_service_access_principals_to_exclude = lookup(var.organization, "aws_service_access_principals_to_exclude", [])
+  aws_service_access_principals_to_enable  = lookup(var.organization, "aws_service_access_principals_to_enable", [])
   service_control_policies                 = lookup(var.organization, "service_control_policies", {})
   resource_control_policies                = lookup(var.organization, "resource_control_policies", {})
   declarative_policies                     = lookup(var.organization, "declarative_policies", {})
