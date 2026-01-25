@@ -1,4 +1,4 @@
-# Copyright 2023 Chris Farris <chris@primeharbor.com>
+# Copyright 2023-2026 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@ terraform {
 }
 
 variable "security_account_id" {}
+
+variable "region" {
+  type        = string
+  description = "Region to Deploy Services into"
+}
 
 # Create a bucket and stuff if this is defined
 variable "macie_bucket_name" {
