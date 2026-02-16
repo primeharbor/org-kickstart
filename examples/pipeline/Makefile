@@ -82,6 +82,9 @@ clean:
 account-configurator:
 	cd pht-account-configurator ; $(MAKE) package
 
+granted:
+	./scripts/generate_granted_config.sh output-$(env).json
+
 checkov:
 	@terraform show -json $(env)-terraform.tfplan | jq > $(env)-tfplan.json
 	checkov -s -f $(env)-tfplan.json --repo-root-for-plan-enrichment . --quiet --compact \

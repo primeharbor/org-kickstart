@@ -101,6 +101,15 @@ variable "sso_instance_region" {
   default     = "us-east-1"
   description = "Region where the AWS SSO instance is configured"
 }
+variable "sso_start_url" {
+  type        = string
+  description = "AWS SSO start URL (e.g., https://yourorg.awsapps.com/start)"
+
+  validation {
+    condition     = can(regex("^https://[a-zA-Z0-9.-]+\\.awsapps\\.com/start$", var.sso_start_url))
+    error_message = "SSO start URL must be in the format: https://yourorg.awsapps.com/start"
+  }
+}
 
 
 #

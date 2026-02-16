@@ -27,6 +27,7 @@ organization = {
   admin_group_name                  = "AllAdmins"
   disable_sso_management            = false
   sso_instance_region               = "us-east-1"
+  sso_start_url                     = "https://yourorg.awsapps.com/start"
   deploy_audit_role                 = true
   audit_role_name                   = "security-audit"
   audit_role_stack_set_template_url = "https://s3.amazonaws.com/pht-cloudformation/aws-account-automation/AuditRole-Template.yaml"
