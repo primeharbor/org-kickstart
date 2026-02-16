@@ -104,6 +104,7 @@ variable "sso_instance_region" {
 variable "sso_start_url" {
   type        = string
   description = "AWS SSO start URL (e.g., https://yourorg.awsapps.com/start)"
+  default     = "https://NOT-PROVIDED.awsapps.com/start"
 
   validation {
     condition     = can(regex("^https://[a-zA-Z0-9.-]+\\.awsapps\\.com/start$", var.sso_start_url))
