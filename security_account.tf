@@ -28,8 +28,8 @@ module "security_account" {
 
   account_email             = var.security_account_root_email
   account_name              = var.security_account_name
-  admin_group_id            = null
-  admin_permission_set_arn  = null
+  admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
+  admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
   billing_contact           = var.global_billing_contact
   budget_alert_recipients   = concat(lookup(var.security_account, "budget_alert_recipients", []), lookup(var.budget_defaults, "alert_recipients", []))
   default_close_on_deletion = false

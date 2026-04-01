@@ -24,15 +24,15 @@ resource "aws_organizations_account" "payer" {
   }
 }
 
-# resource "aws_ssoadmin_account_assignment" "payer_account_group_assignment" {
-#   count              = var.disable_sso_management == true ? 0 : 1
-#   instance_arn       = local.instance_arn
-#   permission_set_arn = aws_ssoadmin_permission_set.admin_permission_set[0].arn
-#   principal_id       = aws_identitystore_group.admin_group[0].group_id
-#   principal_type     = "GROUP"
-#   target_id          = aws_organizations_account.payer.id
-#   target_type        = "AWS_ACCOUNT"
-# }
+resource "aws_ssoadmin_account_assignment" "payer_account_group_assignment" {
+  count              = var.disable_sso_management == true ? 0 : 1
+  instance_arn       = local.instance_arn
+  permission_set_arn = aws_ssoadmin_permission_set.admin_permission_set[0].arn
+  principal_id       = aws_identitystore_group.admin_group[0].group_id
+  principal_type     = "GROUP"
+  target_id          = aws_organizations_account.payer.id
+  target_type        = "AWS_ACCOUNT"
+}
 
 resource "aws_account_primary_contact" "primary" {
   count              = var.global_primary_contact != null ? 1 : 0

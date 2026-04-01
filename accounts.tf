@@ -24,8 +24,8 @@ module "accounts" {
 
   account_email             = each.value.account_email
   account_name              = each.value.account_name
-  admin_group_id            = null
-  admin_permission_set_arn  = null
+  admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
+  admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
   billing_contact           = var.global_billing_contact
   budget_alert_recipients   = concat(each.value.budget_alert_recipients, var.budget_defaults.alert_recipients)
   declarative_policies_ec2  = []
