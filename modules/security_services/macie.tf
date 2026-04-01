@@ -1,4 +1,4 @@
-# Copyright 2023 Chris Farris <chris@primeharbor.com>
+# Copyright 2023-2026 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 resource "aws_macie2_account" "payer_account" {
   count                        = var.security_services["disable_macie"] ? 0 : 1
   provider                     = aws.payer_account
+  region                       = var.region
   finding_publishing_frequency = "FIFTEEN_MINUTES"
   status                       = "ENABLED"
 }
@@ -24,6 +25,7 @@ resource "aws_macie2_account" "payer_account" {
 resource "aws_macie2_account" "security_account" {
   count                        = var.security_services["disable_macie"] ? 0 : 1
   provider                     = aws.security_account
+  region                       = var.region
   finding_publishing_frequency = "FIFTEEN_MINUTES"
   status                       = "ENABLED"
 }
@@ -32,6 +34,7 @@ resource "aws_macie2_account" "security_account" {
 resource "aws_macie2_organization_admin_account" "macie" {
   count    = var.security_services["disable_macie"] ? 0 : 1
   provider = aws.payer_account
+  region   = var.region
   depends_on = [
     aws_macie2_account.payer_account,
     aws_macie2_account.security_account,
@@ -42,6 +45,7 @@ resource "aws_macie2_organization_admin_account" "macie" {
 resource "aws_macie2_classification_export_configuration" "export_config" {
   count    = var.security_services["disable_macie"] || var.macie_bucket_name == null || var.macie_key_arn == null ? 0 : 1
   provider = aws.security_account
+  region   = var.region
   depends_on = [
     aws_macie2_account.security_account
   ]
@@ -55,6 +59,7 @@ resource "aws_macie2_classification_export_configuration" "export_config" {
 # This adds all the existing accounts to the delegated admin
 resource "aws_macie2_member" "member" {
   provider   = aws.security_account
+  region     = var.region
   depends_on = [aws_macie2_organization_admin_account.macie]
   account_id = each.key
   email      = each.value["email"]

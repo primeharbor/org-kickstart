@@ -127,3 +127,7 @@ resource "aws_organizations_delegated_administrator" "delegated_admin" {
 output "account_id" {
   value = aws_organizations_account.account.id
 }
+
+output "account_name" {
+  value = aws_organizations_account.account.name
+}

@@ -17,6 +17,7 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = ">= 6.28.0"
+
     }
   }
   required_version = ">= 1.14.3"
@@ -59,6 +60,7 @@ module "organization" {
   admin_group_name          = lookup(var.organization, "admin_group_name", "AllAdmins")
   disable_sso_management    = lookup(var.organization, "disable_sso_management", false)
   sso_instance_region       = lookup(var.organization, "sso_instance_region", "us-east-1")
+  sso_start_url             = lookup(var.organization, "sso_start_url", "https://NOT-PROVIDED.awsapps.com/start")
 
   # Audit Role
   deploy_audit_role                 = lookup(var.organization, "deploy_audit_role", true)
@@ -71,9 +73,9 @@ module "organization" {
 
   # Map Objects
   accounts                                 = lookup(var.organization, "accounts", {})
-  organization_policy_types_to_exclude     = lookup(var.organization, "organization_policy_types_to_exclude", null)
-  aws_service_access_principals_to_exclude = lookup(var.organization, "aws_service_access_principals_to_exclude", null)
-  aws_service_access_principals_to_enable  = lookup(var.organization, "aws_service_access_principals_to_enable", null)
+  organization_policy_types_to_exclude     = lookup(var.organization, "organization_policy_types_to_exclude", [])
+  aws_service_access_principals_to_exclude = lookup(var.organization, "aws_service_access_principals_to_exclude", [])
+  aws_service_access_principals_to_enable  = lookup(var.organization, "aws_service_access_principals_to_enable", [])
   service_control_policies                 = lookup(var.organization, "service_control_policies", {})
   resource_control_policies                = lookup(var.organization, "resource_control_policies", {})
   declarative_policies                     = lookup(var.organization, "declarative_policies", {})
@@ -125,4 +127,24 @@ output "declarative_policy_bucket" {
 
 output "account_list" {
   value = module.organization.accounts
+}
+
+output "account_map" {
+  description = "Map of account names to account IDs"
+  value       = module.organization.account_map
+}
+
+output "sso_role_name" {
+  description = "Name of the SSO Permission Set (role name) for admin access"
+  value       = module.organization.sso_role_name
+}
+
+output "sso_region" {
+  description = "AWS Region where SSO Identity Center is configured"
+  value       = module.organization.sso_region
+}
+
+output "sso_start_url" {
+  description = "AWS SSO start URL"
+  value       = module.organization.sso_start_url
 }

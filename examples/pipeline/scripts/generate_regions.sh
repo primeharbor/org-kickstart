@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo "This script has be deprecated in v1.0, and remains only if needed for migration forward"
+exit 1
+
 VERSION=$1
 
 if [[ -z "$VERSION" ]] ; then

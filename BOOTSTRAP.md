@@ -15,6 +15,9 @@ These is the list of tasks that need to be done via ClickOps in a new AWS Accoun
 
 Log out of root and never use it again.
 
+**Note:** As of 2026 Jan 18, terraform doesn't support the `aws login` capability. So an Identity Center or IAM User still needs to be created. 
+
+
 
 ## On your machine
 1. Check Email and create your IAM Identity Center account.

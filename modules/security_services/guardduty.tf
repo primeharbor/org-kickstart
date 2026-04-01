@@ -1,4 +1,4 @@
-# Copyright 2023 Chris Farris <chris@primeharbor.com>
+# Copyright 2023-2026 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,18 +17,21 @@
 resource "aws_guardduty_detector" "payer_detector" {
   count    = var.security_services["disable_guardduty"] ? 0 : 1
   provider = aws.payer_account
+  region   = var.region
   enable   = true
 }
 
 resource "aws_guardduty_detector" "security_detector" {
   count    = var.security_services["disable_guardduty"] ? 0 : 1
   provider = aws.security_account
+  region   = var.region
   enable   = true
 }
 
 # Assign delegated admin to the security account via GuardDuty APIs
 resource "aws_guardduty_organization_admin_account" "guardduty" {
   count    = var.security_services["disable_guardduty"] ? 0 : 1
+  region   = var.region
   provider = aws.payer_account
   depends_on = [
     aws_guardduty_detector.payer_detector,
@@ -42,6 +45,7 @@ resource "aws_guardduty_organization_configuration" "organization" {
   count                            = var.security_services["disable_guardduty"] ? 0 : 1
   depends_on                       = [aws_guardduty_organization_admin_account.guardduty]
   provider                         = aws.security_account
+  region                           = var.region
   auto_enable_organization_members = "ALL"
   detector_id                      = aws_guardduty_detector.security_detector[0].id
 }

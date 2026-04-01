@@ -50,21 +50,6 @@ Overview
   ```bash
   make tf-apply
   ```
-9. Generate the multi-region files and re-run the plan:
-  ```bash
-  ./scripts/generate_regions.sh
-  make tf-init
-  make tf-plan
-  ```
-
-
-
-If you see the following error:
-```
-Error: listing Organizations Accounts for parent (r-117h) and descendants: AccessDeniedException: You don't have permissions to access this resource.
-```
-You need to delete the `security_services.tf`, apply the changes, then re-generate the file from the `generate_regions.sh` script. The Security Account _must_ have delegated admin enabled before this resources can be plan'ed or apply'd
-
 
 ## Post Deploy
 
