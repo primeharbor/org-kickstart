@@ -106,10 +106,6 @@ variable "sso_start_url" {
   description = "AWS SSO start URL (e.g., https://yourorg.awsapps.com/start)"
   default     = "https://NOT-PROVIDED.awsapps.com/start"
 
-  validation {
-    condition     = can(regex("^https://[a-zA-Z0-9.-]+\\.awsapps\\.com/start$", var.sso_start_url))
-    error_message = "SSO start URL must be in the format: https://yourorg.awsapps.com/start"
-  }
 }
 
 
@@ -296,7 +292,7 @@ variable "billing_data_bucket_name" {
 }
 
 variable "cur_report_frequency" {
-  description = "Frequency CUR reports should be delivered (DAILY, HOURLY, MONTHLY). Set to NONE to disable"
+  description = "Time granularity for CUR 2.0 Data Exports (DAILY, HOURLY, MONTHLY). Set to NONE to disable."
   type        = string
   default     = "NONE"
 
