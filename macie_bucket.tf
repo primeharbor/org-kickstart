@@ -141,6 +141,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "macie_bucket" {
   bucket   = aws_s3_bucket.macie_bucket[0].id
 
   rule {
+    blocked_encryption_types = ["SSE-C"]
     apply_server_side_encryption_by_default {
       kms_master_key_id = aws_kms_key.macie_key[0].arn
       sse_algorithm     = "aws:kms"
