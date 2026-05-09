@@ -83,7 +83,7 @@ account-configurator:
 	cd pht-account-configurator ; $(MAKE) package
 
 granted:
-	./scripts/generate_granted_config.sh output-$(env).json
+	@./scripts/generate_granted_config.sh output-$(env).json
 
 checkov:
 	@terraform show -json $(env)-terraform.tfplan | jq > $(env)-tfplan.json
