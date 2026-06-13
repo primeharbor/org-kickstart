@@ -226,6 +226,58 @@ variable "account_configurator" {
     template                    = string
   })
 }
+
+variable "payer_cloudformation_stacks" {
+  description = "Map of CloudFormation stacks to deploy into the payer account. Exactly one of template_file (local path relative to path.root) or template_url (S3/HTTPS URL) must be set per stack. If regions is omitted, the stack is deployed only in the base org-kickstart region."
+  default     = {}
+  type = map(
+    object({
+      stack_name         = string
+      template_file      = optional(string)
+      template_url       = optional(string)
+      regions            = optional(list(string))
+      parameters         = optional(map(string), {})
+      timeout_in_minutes = optional(number, 15)
+      on_failure         = optional(string, "DO_NOTHING")
+    })
+  )
+
+  validation {
+    condition     = alltrue([for k, v in var.payer_cloudformation_stacks : (v.template_file == null) != (v.template_url == null)])
+    error_message = "Each payer_cloudformation_stacks entry must specify exactly one of template_file or template_url."
+  }
+
+  validation {
+    condition     = alltrue([for k, v in var.payer_cloudformation_stacks : contains(["DO_NOTHING", "ROLLBACK", "DELETE"], v.on_failure)])
+    error_message = "on_failure must be one of DO_NOTHING, ROLLBACK, DELETE."
+  }
+}
+
+variable "security_account_stacks" {
+  description = "Map of CloudFormation stacks to deploy into the security account. Exactly one of template_file (local path relative to path.root) or template_url (S3/HTTPS URL) must be set per stack. If regions is omitted, the stack is deployed only in the base org-kickstart region."
+  default     = {}
+  type = map(
+    object({
+      stack_name         = string
+      template_file      = optional(string)
+      template_url       = optional(string)
+      regions            = optional(list(string))
+      parameters         = optional(map(string), {})
+      timeout_in_minutes = optional(number, 15)
+      on_failure         = optional(string, "DO_NOTHING")
+    })
+  )
+
+  validation {
+    condition     = alltrue([for k, v in var.security_account_stacks : (v.template_file == null) != (v.template_url == null)])
+    error_message = "Each security_account_stacks entry must specify exactly one of template_file or template_url."
+  }
+
+  validation {
+    condition     = alltrue([for k, v in var.security_account_stacks : contains(["DO_NOTHING", "ROLLBACK", "DELETE"], v.on_failure)])
+    error_message = "on_failure must be one of DO_NOTHING, ROLLBACK, DELETE."
+  }
+}
 variable "backend_bucket" {
   description = "Name of the S3 bucket used for the CloudFormation stacks and Terraform state backend"
   type        = string

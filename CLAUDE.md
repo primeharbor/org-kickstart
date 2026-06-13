@@ -117,6 +117,8 @@ terraform import -var-file="<env>.tfvars" <resource_address> <resource_id>
 
 **Managing account contacts**: Use `global_billing_contact`, `global_security_contact`, `global_operations_contact`, and `global_primary_contact` for organization-wide defaults. Override per-account in account definition.
 
+**Adding a new top-level variable / feature**: When introducing a new variable in [variables.tf](variables.tf) that callers should be able to set via tfvars, also wire it through [examples/pipeline/main.tf](examples/pipeline/main.tf). Callers consume this module by passing a single `organization` object, so each variable must be re-exposed in the example module block with a `lookup(var.organization, "<var_name>", <default>)` pass-through. Skipping this step means callers can put the value in their tfvars but it will be silently ignored. Also update [examples/pipeline/sample.tfvars](examples/pipeline/sample.tfvars) so the feature is discoverable.
+
 ## Important Conventions
 
 ### Partition Awareness

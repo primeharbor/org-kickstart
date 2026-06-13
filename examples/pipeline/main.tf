@@ -79,6 +79,8 @@ module "organization" {
   declarative_policies                     = lookup(var.organization, "declarative_policies", {})
   organization_units                       = lookup(var.organization, "organization_units", {})
   account_configurator                     = lookup(var.organization, "account_configurator", null)
+  payer_cloudformation_stacks              = lookup(var.organization, "payer_cloudformation_stacks", {})
+  security_account_stacks                  = lookup(var.organization, "security_account_stacks", {})
   billing_alerts                           = lookup(var.organization, "billing_alerts", null)
 
   # Global Alternate Contacts

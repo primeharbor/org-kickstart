@@ -249,6 +249,47 @@ organization = {
     account_factory_config_file = "account-config.yaml"
   }
 
+
+  # These stacks are automatically deployed to the AWS Payer Account.
+  # Set exactly one of template_file (local path, relative to path.root) or
+  # template_url (S3/HTTPS URL). Optional: regions (defaults to the base
+  # org-kickstart region), timeout_in_minutes (default 15), on_failure
+  # (DO_NOTHING|ROLLBACK|DELETE, default DO_NOTHING).
+  payer_cloudformation_stacks = {
+    billing_alerts = {
+      stack_name    = "slack_billing_alerts"
+      template_file = "cloudformation/slack-Template.yaml"
+      regions       = ["us-east-1"]
+      parameters = {
+        pExecutionRate      = "cron(0 09 * * ? *)"
+        pEventInput         = <<-EOT
+          {
+            "threshold": "10",
+            "alert_percent": "20"
+          }
+        EOT
+        pSlackWebhookSecret = "SlackWebHook"
+        pRuleState          = "ENABLED"
+        pAccountDescription = "My-Payer"
+      }
+    }
+  }
+
+  # These stacks are automatically deployed to the Security Account using the
+  # OrganizationAccountAccessRole. Same schema as payer_cloudformation_stacks.
+  security_account_stacks = {
+    findings_processor = {
+      stack_name    = "security-findings-processor"
+      template_file = "cloudformation/findings-processor-Template.yaml"
+      regions       = ["us-east-1"]
+      parameters = {
+        pSlackWebhookSecret = "SlackWebHook"
+        pSeverityThreshold  = "MEDIUM"
+      }
+    }
+  }
+
+
   billing_alerts = {
     levels = {
       level1  = 10
