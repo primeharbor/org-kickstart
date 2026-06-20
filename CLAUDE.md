@@ -119,6 +119,11 @@ terraform import -var-file="<env>.tfvars" <resource_address> <resource_id>
 
 **Adding a new top-level variable / feature**: When introducing a new variable in [variables.tf](variables.tf) that callers should be able to set via tfvars, also wire it through [examples/pipeline/main.tf](examples/pipeline/main.tf). Callers consume this module by passing a single `organization` object, so each variable must be re-exposed in the example module block with a `lookup(var.organization, "<var_name>", <default>)` pass-through. Skipping this step means callers can put the value in their tfvars but it will be silently ignored. Also update [examples/pipeline/sample.tfvars](examples/pipeline/sample.tfvars) so the feature is discoverable.
 
+  **Keep the site docs in sync** (the docs live in the `org-kickstart-site` repo, published at https://aws-kickstart.org). For every variable added, changed, or removed in [variables.tf](variables.tf):
+  - Update the **parameter reference** at `content/en/docs/reference/parameter-reference.md` — add/edit the row (or block, for object-typed variables) in the matching section, with the correct type, default, and description. The parameter reference is hand-maintained, so it does not update itself; treat a missing/stale entry the same as a missing release note.
+  - Regenerate the **module documentation** at `content/en/docs/reference/module-docs/_index.md` by running `make generate-module-docs` in the `org-kickstart-site` repo (it runs `terraform-docs` against the module source). This page is auto-generated — do not hand-edit it.
+  - Significant features should also get their own page or section under `content/en/docs/` (see the Granted Support and Account Configurator pages as examples).
+
 ## Important Conventions
 
 ### Release Notes (do this on every commit)
