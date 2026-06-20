@@ -14,6 +14,11 @@
 
 
 resource "aws_organizations_policy" "ai_policy" {
+  # The org enables the AISERVICES_OPT_OUT_POLICY type and must exist before any policy is
+  # created; this resource doesn't otherwise reference the org, so depend on it explicitly to
+  # avoid an "account is not a member of an organization" race on first apply.
+  depends_on = [aws_organizations_organization.org]
+
   name    = "ai_policy"
   type    = "AISERVICES_OPT_OUT_POLICY"
   content = <<EOF

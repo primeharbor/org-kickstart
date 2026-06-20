@@ -124,6 +124,11 @@ resource "aws_s3_bucket_policy" "allow_billing_logging" {
 # These recommendations are from Mike Julian @ the Duckbill Group
 #
 resource "aws_cur_report_definition" "cur_report_definition" {
+  # CUR verifies it can read/write the bucket at create time, so the bucket policy granting the
+  # billingreports.amazonaws.com principal must be in place first. The s3_bucket reference only
+  # orders against the bucket itself, not its policy.
+  depends_on = [aws_s3_bucket_policy.allow_billing_logging]
+
   count                      = var.cur_report_frequency != "NONE" ? 1 : 0
   report_name                = "athena-cur-report"
   time_unit                  = var.cur_report_frequency
