@@ -86,7 +86,8 @@ account-configurator:
 # alongside it; otherwise make would see the directory and report "granted is up to date".
 .PHONY: granted
 granted:
-	@./scripts/generate_granted_config.sh output-$(env).json
+	@mkdir -p granted
+	@./scripts/generate_granted_config.sh output-$(env).json > granted/aws-config
 
 checkov:
 	@terraform show -json $(env)-terraform.tfplan | jq > $(env)-tfplan.json
