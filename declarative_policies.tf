@@ -77,6 +77,10 @@ data "aws_iam_policy_document" "declarative_policy_bucket_policy" {
 # Declarative Policies
 #
 module "declarative_policies" {
+  # The created policy resource doesn't reference the org directly (only its attachment does),
+  # so depend on the org explicitly to avoid racing org creation / policy-type enablement.
+  depends_on = [aws_organizations_organization.org]
+
   for_each = var.declarative_policies
 
   source             = "./modules/org_policies"

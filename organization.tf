@@ -108,4 +108,7 @@ resource "aws_iam_organizations_features" "org" {
 data "aws_organizations_organization" "org" {}
 
 # Enable resource sharing within the org without the need for invites.
-resource "aws_ram_sharing_with_organization" "enable" {}
+# Depends on the org explicitly so it doesn't race org creation on first apply.
+resource "aws_ram_sharing_with_organization" "enable" {
+  depends_on = [aws_organizations_organization.org]
+}
