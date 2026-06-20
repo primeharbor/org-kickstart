@@ -26,6 +26,7 @@ resource "aws_organizations_account" "payer" {
 
 resource "aws_ssoadmin_account_assignment" "payer_account_group_assignment" {
   count              = var.disable_sso_management == true ? 0 : 1
+  region             = var.sso_instance_region
   instance_arn       = local.instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.admin_permission_set[0].arn
   principal_id       = aws_identitystore_group.admin_group[0].group_id
