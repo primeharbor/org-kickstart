@@ -82,6 +82,9 @@ clean:
 account-configurator:
 	cd pht-account-configurator ; $(MAKE) package
 
+# .PHONY so the target always runs even if a granted/ directory is later created
+# alongside it; otherwise make would see the directory and report "granted is up to date".
+.PHONY: granted
 granted:
 	@./scripts/generate_granted_config.sh output-$(env).json
 
