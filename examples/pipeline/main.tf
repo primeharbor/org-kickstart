@@ -103,14 +103,7 @@ module "organization" {
   datatrail                      = lookup(var.organization, "datatrail", null)
 }
 
-# Adopt the existing Terraform state bucket into management when manage_state_bucket is true.
-# This import block lives here in the root module on purpose: Terraform ignores import blocks
-# declared inside child modules, so it cannot live in org-kickstart's state_bucket.tf.
-import {
-  for_each = lookup(var.organization, "manage_state_bucket", true) ? toset([var.backend_bucket]) : toset([])
-  to       = module.organization.aws_s3_bucket.state_bucket[each.key]
-  id       = each.value
-}
+# Foundational resource imports (org, payer account, state bucket) live in import.tf.
 
 variable "organization" {}
 variable "backend_bucket" {}

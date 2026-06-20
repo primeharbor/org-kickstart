@@ -18,7 +18,7 @@
 # The bucket has to exist before Terraform can run (the S3 backend lives in it), so it is *adopted*
 # rather than created. The `import` block that adopts it MUST live in the root/calling module --
 # Terraform silently ignores import blocks declared inside a child module, and org-kickstart is
-# almost always consumed as a module. See examples/pipeline/main.tf for the import block; copy it
+# almost always consumed as a module. See examples/pipeline/import.tf for the import block; copy it
 # into your own root module when you enable manage_state_bucket.
 #
 # Set manage_state_bucket = false to leave the bucket entirely outside Terraform.
