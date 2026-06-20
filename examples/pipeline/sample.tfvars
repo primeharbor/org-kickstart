@@ -14,6 +14,9 @@
 
 organization = {
   organization_name                 = "org-kickstart"
+  # Manage the Terraform state bucket (backend_bucket) with Terraform. The bucket must already
+  # exist; it is adopted via the import block in main.tf. Set false to leave it unmanaged.
+  manage_state_bucket = true
   payer_name                        = "Example Test Payer"
   payer_email                       = "aws+kickstart-payer@example.com"
   security_account_name             = "example-kickstart-security"

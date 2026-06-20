@@ -40,8 +40,9 @@ module "organization" {
   # Pin to a specific release
   source = "github.com/primeharbor/org-kickstart?ref=0.3.0"
 
-  tag_set        = local.default_tags
-  backend_bucket = var.backend_bucket
+  tag_set             = local.default_tags
+  backend_bucket      = var.backend_bucket
+  manage_state_bucket = lookup(var.organization, "manage_state_bucket", true)
 
   # Organization Names
   organization_name           = var.organization["organization_name"]
@@ -100,6 +101,15 @@ module "organization" {
   macie_bucket_name              = lookup(var.organization, "macie_bucket_name", null)
   declarative_policy_bucket_name = lookup(var.organization, "declarative_policy_bucket_name", null)
   datatrail                      = lookup(var.organization, "datatrail", null)
+}
+
+# Adopt the existing Terraform state bucket into management when manage_state_bucket is true.
+# This import block lives here in the root module on purpose: Terraform ignores import blocks
+# declared inside child modules, so it cannot live in org-kickstart's state_bucket.tf.
+import {
+  for_each = lookup(var.organization, "manage_state_bucket", true) ? toset([var.backend_bucket]) : toset([])
+  to       = module.organization.aws_s3_bucket.state_bucket[each.key]
+  id       = each.value
 }
 
 variable "organization" {}

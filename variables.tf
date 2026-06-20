@@ -283,6 +283,18 @@ variable "backend_bucket" {
   type        = string
 }
 
+variable "manage_state_bucket" {
+  description = <<-EOT
+    Manage the S3 bucket named by backend_bucket (the bucket that holds this Terraform state) with
+    Terraform. The bucket must already exist (it has to, in order to run Terraform at all), so it is
+    adopted via an import block in the calling module rather than created. When true, Terraform
+    enforces versioning, public-access-block, and encryption on it. Set to false to leave the bucket
+    entirely outside Terraform's management.
+  EOT
+  type        = bool
+  default     = true
+}
+
 
 #
 # Account Contacts
