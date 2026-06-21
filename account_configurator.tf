@@ -36,5 +36,6 @@ resource "aws_s3_object" "account_factory_config" {
   bucket = var.backend_bucket
   key    = var.account_configurator["account_factory_config_file"]
   source = "${path.root}/${var.account_configurator["account_factory_config_file"]}"
+  etag = filemd5("${path.root}/${var.account_configurator["account_factory_config_file"]}")
 }
 
