@@ -65,4 +65,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "state_bucket" {
       sse_algorithm = "AES256"
     }
   }
+  # AWS injects extra rule attributes (blocked_encryption_types, bucket_key_enabled) after apply;
+  # ignore them to prevent perpetual drift.
+  lifecycle {
+    ignore_changes = [rule]
+  }
 }

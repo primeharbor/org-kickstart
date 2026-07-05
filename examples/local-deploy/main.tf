@@ -101,6 +101,7 @@ module "organization" {
   macie_bucket_name              = lookup(var.organization, "macie_bucket_name", null)
   declarative_policy_bucket_name = lookup(var.organization, "declarative_policy_bucket_name", null)
   datatrail                      = lookup(var.organization, "datatrail", null)
+  security_hub_configuration     = lookup(var.organization, "security_hub_configuration", null)
 }
 
 # Foundational resource imports (org, payer account, state bucket) live in import.tf.

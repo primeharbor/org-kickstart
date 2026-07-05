@@ -320,6 +320,17 @@ organization = {
     ]
   }
 
+  # Security Hub 2.0 configuration. Omit this block entirely to skip all Security Hub 2.0 setup.
+  # When the block is present, create_cost_estimation_role, create_org_delegation_policy, and
+  # enable_threat_detection all default to true if not explicitly set.
+  security_hub_configuration = {
+    enable_security_hub_2        = true   # Create the Security Hub 2.0 configuration
+    create_cost_estimation_role  = true   # IAM role in payer account for cost estimator cross-account access
+    create_org_delegation_policy = true   # Organization resource policy granting security account org-wide delegation
+    enable_threat_detection      = true   # Enable Security Hub threat detection (future use)
+    aggregation_region           = "us-east-1"
+  }
+
 }
 
 backend_bucket = "org-kickstart-example"

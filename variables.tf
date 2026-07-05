@@ -522,3 +522,15 @@ variable "datatrail" {
     excluded_buckets = list(string)
   })
 }
+
+variable "security_hub_configuration" {
+  description = "Security Hub 2.0 configuration. Omit or set to null to disable all Security Hub 2.0 management. When present, create_cost_estimation_role, create_org_delegation_policy, and enable_threat_detection default to true."
+  default     = null
+  type = object({
+    enable_security_hub_2        = optional(bool, false)
+    create_cost_estimation_role  = optional(bool, true)
+    create_org_delegation_policy = optional(bool, true)
+    enable_threat_detection      = optional(bool, true)
+    aggregation_region           = optional(string, "us-east-1")
+  })
+}
