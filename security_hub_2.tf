@@ -21,8 +21,14 @@ data "aws_caller_identity" "current" {}
 
 locals {
   securityhub2_enabled = var.security_hub_configuration != null
+  enable_securityhub2  = local.securityhub2_enabled && try(var.security_hub_configuration.enable_security_hub_2, false)
   create_cost_role     = local.securityhub2_enabled && try(var.security_hub_configuration.create_cost_estimation_role, true)
   create_org_policy    = local.securityhub2_enabled && try(var.security_hub_configuration.create_org_delegation_policy, true)
+
+  # Only create the org admin delegation here if Security Hub v1 hasn't already done it.
+  # v1 creates aws_securityhub_organization_admin_account when disable_securityhub = false.
+  securityhub_v1_managing_org_admin = !try(var.security_services.disable_securityhub, true)
+  create_securityhub2_org_admin     = local.enable_securityhub2 && !local.securityhub_v1_managing_org_admin
 
   payer_account_id   = data.aws_caller_identity.current.account_id
   security_account_id = module.security_account.account_id
@@ -175,5 +181,39 @@ resource "aws_iam_role_policy" "securityhub_cost_estimator" {
       Resource = "*"
     }]
   })
+}
+
+# Delegate the security account as the Security Hub 2.0 org administrator.
+# Skipped when Security Hub v1 is also enabled (v1's security_hub.tf owns the delegation).
+resource "aws_securityhub_organization_admin_account" "securityhub_v2" {
+  count            = local.create_securityhub2_org_admin ? 1 : 0
+  admin_account_id = local.security_account_id
+}
+
+# Enable Security Hub 2.0 in the security (delegated admin) account.
+resource "aws_securityhub_account_v2" "security_account" {
+  count    = local.enable_securityhub2 ? 1 : 0
+  provider = aws.security-account
+  depends_on = [aws_securityhub_organization_admin_account.securityhub_v2]
+}
+
+# Enable Security Hub 2.0 in the payer account.
+resource "aws_securityhub_account_v2" "payer_account" {
+  count    = local.enable_securityhub2 ? 1 : 0
+  depends_on = [aws_securityhub_organization_admin_account.securityhub_v2]
+}
+
+# Aggregate findings from all enabled regions into the security account.
+# ALL_REGIONS mode is documented but currently rejected by the AWS API; use
+# SPECIFIED_REGIONS with the full list of enabled regions minus the aggregation region.
+resource "aws_securityhub_aggregator_v2" "security_account" {
+  count               = local.enable_securityhub2 ? 1 : 0
+  provider            = aws.security-account
+  region_linking_mode = "SPECIFIED_REGIONS"
+  linked_regions = [
+    for r in data.aws_regions.available.names :
+    r if r != data.aws_region.current.region
+  ]
+  depends_on = [aws_securityhub_account_v2.security_account]
 }
 
