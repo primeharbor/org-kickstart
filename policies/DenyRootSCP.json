@@ -4,7 +4,9 @@
     {
       "Sid": "DenyRootUsage",
       "Effect": "Deny",
-      "Action": "*",
+      "NotAction": [
+        "iam:GetAccountSummary"
+      ],
       "Resource": "*",
       "Condition": {
         "StringLike": {
