@@ -324,11 +324,16 @@ organization = {
   # When the block is present, create_cost_estimation_role, create_org_delegation_policy, and
   # enable_threat_detection all default to true if not explicitly set.
   security_hub_configuration = {
-    enable_security_hub_2        = true   # Create the Security Hub 2.0 configuration
-    create_cost_estimation_role  = true   # IAM role in payer account for cost estimator cross-account access
-    create_org_delegation_policy = true   # Organization resource policy granting security account org-wide delegation
-    enable_threat_detection      = true   # Enable Security Hub threat detection (future use)
-    aggregation_region           = "us-east-1"
+    enable_security_hub_2                = true   # Enable SH2 in the payer + security accounts, delegate admin, set up aggregator
+    # Tri-state (true / false / omit): true attaches EnableSecurityHubV2 at Root,
+    # false attaches DisableSecurityHubV2 at Root, omit leaves Root attachment unmanaged.
+    # (SH2 / Inspector org policies are one-shot — detaching enable doesn't disable.)
+    enable_security_hub_for_all_accounts = true
+    enable_inspector_for_all_accounts    = true
+    create_cost_estimation_role          = true   # IAM role in payer account for cost estimator cross-account access
+    create_org_delegation_policy         = true   # Organization resource policy granting security account org-wide delegation
+    enable_threat_detection              = true   # Enable Security Hub threat detection (future use)
+    aggregation_region                   = "us-east-1"
   }
 
 }

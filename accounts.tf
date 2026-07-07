@@ -42,7 +42,7 @@ module "accounts" {
   scp_name_to_id_map        = local.scp_name_to_id
   security_contact          = var.global_security_contact
   service_control_policies  = each.value.service_control_policies
-  sso_instance_region       = var.sso_instance_region
+  sso_instance_region = var.sso_instance_region
 }
 
 

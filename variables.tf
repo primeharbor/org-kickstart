@@ -181,6 +181,8 @@ variable "accounts" {
       service_control_policies  = optional(list(string), [])
       resource_control_policies = optional(list(string), [])
       declarative_policies_ec2  = optional(list(string), [])
+      security_hubv2_optout     = optional(bool, false)
+      inspector_optout          = optional(bool, false)
     })
   )
 }
@@ -527,10 +529,24 @@ variable "security_hub_configuration" {
   description = "Security Hub 2.0 configuration. Omit or set to null to disable all Security Hub 2.0 management. When present, create_cost_estimation_role, create_org_delegation_policy, and enable_threat_detection default to true."
   default     = null
   type = object({
-    enable_security_hub_2        = optional(bool, false)
-    create_cost_estimation_role  = optional(bool, true)
-    create_org_delegation_policy = optional(bool, true)
-    enable_threat_detection      = optional(bool, true)
-    aggregation_region           = optional(string, "us-east-1")
+    enable_security_hub_2                = optional(bool, false)
+    enable_security_hub_for_all_accounts = optional(bool)
+    enable_inspector_for_all_accounts    = optional(bool)
+    create_cost_estimation_role          = optional(bool, true)
+    create_org_delegation_policy         = optional(bool, true)
+    enable_threat_detection              = optional(bool, true)
+    aggregation_region                   = optional(string, "us-east-1")
   })
+
+  validation {
+    # Attaching the SECURITYHUB_POLICY (EnableSecurityHubV2) at Root requires the org
+    # delegated admin and per-region v2 hubs to be up first — otherwise EnableSecurityHubV2
+    # in the security account races with the policy propagation and loses.
+    condition = (
+      var.security_hub_configuration == null
+      || !coalesce(var.security_hub_configuration.enable_security_hub_for_all_accounts, false)
+      || coalesce(var.security_hub_configuration.enable_security_hub_2, false)
+    )
+    error_message = "security_hub_configuration.enable_security_hub_2 must be true when enable_security_hub_for_all_accounts is true. The SECURITYHUB_POLICY at Root requires the delegated admin and per-region v2 hubs to be created first."
+  }
 }

@@ -128,9 +128,14 @@ terraform import -var-file="<env>.tfvars" <resource_address> <resource_id>
 
 ### Release Notes (do this on every commit)
 
-Every change MUST be recorded in the release-notes file for the version it targets:
-`docs/v<MAJOR>.<MINOR>.<PATCH>-notes.md` (e.g. [docs/v0.3.0-notes.md](docs/v0.3.0-notes.md)). When
-preparing a commit, add a bullet to the appropriate section of that file describing the change:
+Every change MUST be recorded in [docs/latest-changes.md](docs/latest-changes.md). This is the
+rolling working copy of the next release's notes — add a bullet to the appropriate section
+describing the change. Do **not** create a `docs/v<MAJOR>.<MINOR>.<PATCH>-notes.md` file for
+unreleased changes; when a release is cut, `latest-changes.md` gets renamed to
+`v<version>-notes.md` (see [prior releases](docs/v0.3.0-notes.md) for the finished shape) and a
+fresh empty `latest-changes.md` is created for the next cycle.
+
+Sections in `latest-changes.md`:
 
 - **New Features** — new variables, resources, or capabilities
 - **Major / Minor Breaking Change** — anything requiring a `terraform state mv`, recreation, or a
@@ -139,8 +144,8 @@ preparing a commit, add a bullet to the appropriate section of that file describ
 - **Bug Fixes** — corrected behavior (e.g. `depends_on` ordering, validation fixes)
 - **Known Bugs** — anything still broken that users should be aware of
 
-If the target version doesn't have a notes file yet, create it. Treat a missing release-notes entry
-the same as a missing test: the change isn't done until it's documented.
+Treat a missing release-notes entry the same as a missing test: the change isn't done until
+it's documented.
 
 ### Partition Awareness
 
