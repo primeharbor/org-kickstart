@@ -69,6 +69,25 @@ locals {
     if try(var.security_hub_configuration.threat_detection_features[tfvar_key], false)
   ] : []
 
+  # Some GuardDuty features have `additional_configuration` sub-blocks that AWS
+  # populates by default (agent-management for the various runtime monitoring
+  # targets, currently all AutoEnable = NONE). If we don't declare them in
+  # Terraform, AWS still returns them from describe calls and Terraform sees
+  # drift — with additional_configuration being a `forces replacement` field,
+  # every apply would destroy + recreate the parent resource. Match AWS state
+  # by declaring the sub-blocks (all NONE) for the features that have them.
+  # Add entries here when new features are released with sub-config.
+  threat_detection_additional_config = {
+    RUNTIME_MONITORING = [
+      "ECS_FARGATE_AGENT_MANAGEMENT",
+      "EC2_AGENT_MANAGEMENT",
+      "EKS_ADDON_MANAGEMENT",
+    ]
+    EKS_RUNTIME_MONITORING = [
+      "EKS_ADDON_MANAGEMENT",
+    ]
+  }
+
   # Only create the org admin delegation here if Security Hub v1 hasn't already done it.
   # v1 creates aws_securityhub_organization_admin_account when disable_securityhub = false.
   securityhub_v1_managing_org_admin = !try(var.security_services.disable_securityhub, true)
@@ -352,6 +371,18 @@ resource "aws_guardduty_organization_configuration_feature" "security_account" {
   detector_id = aws_guardduty_detector.security_account[each.value.region].id
   name        = each.value.feature
   auto_enable = "ALL"
+
+  # AWS populates additional_configuration sub-blocks by default for features that
+  # have them (currently only the two runtime-monitoring flavors). Declare them
+  # here — all AutoEnable = NONE — so Terraform's view matches AWS's and doesn't
+  # attempt to remove them on every plan (which would force replacement).
+  dynamic "additional_configuration" {
+    for_each = lookup(local.threat_detection_additional_config, each.value.feature, [])
+    content {
+      name        = additional_configuration.value
+      auto_enable = "NONE"
+    }
+  }
 
   depends_on = [aws_guardduty_organization_configuration.security_account]
 }
