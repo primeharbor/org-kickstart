@@ -526,7 +526,7 @@ variable "datatrail" {
 }
 
 variable "security_hub_configuration" {
-  description = "Security Hub 2.0 configuration. Omit or set to null to disable all Security Hub 2.0 management. When present, create_cost_estimation_role, create_org_delegation_policy, and enable_threat_detection default to true."
+  description = "Security Hub 2.0 configuration. Omit or set to null to disable all Security Hub 2.0 management. When present, create_cost_estimation_role and create_org_delegation_policy default to true; enable_threat_detection defaults to false."
   default     = null
   type = object({
     enable_security_hub_2                = optional(bool, false)
@@ -534,8 +534,18 @@ variable "security_hub_configuration" {
     enable_inspector_for_all_accounts    = optional(bool)
     create_cost_estimation_role          = optional(bool, true)
     create_org_delegation_policy         = optional(bool, true)
-    enable_threat_detection              = optional(bool, true)
+    enable_threat_detection              = optional(bool, false)
     aggregation_region                   = optional(string, "us-east-1")
+    threat_detection_features = optional(object({
+      enable_ebs_malware_scanning   = optional(bool, false)
+      enable_eks_protection         = optional(bool, false)
+      enable_s3_protection          = optional(bool, false)
+      enable_lambda_protection      = optional(bool, false)
+      enable_rds_protection         = optional(bool, false)
+      enable_runtime_monitoring     = optional(bool, false)
+      enable_eks_runtime_monitoring = optional(bool, false)
+      enable_ai_analyst             = optional(bool, false)
+    }), {})
   })
 
   validation {
@@ -548,5 +558,18 @@ variable "security_hub_configuration" {
       || coalesce(var.security_hub_configuration.enable_security_hub_2, false)
     )
     error_message = "security_hub_configuration.enable_security_hub_2 must be true when enable_security_hub_for_all_accounts is true. The SECURITYHUB_POLICY at Root requires the delegated admin and per-region v2 hubs to be created first."
+  }
+
+  validation {
+    # Prevent double-managing GuardDuty. The new resources in security_hub_2.tf create
+    # the GD detector, delegated admin, and org config directly; the deprecated
+    # modules/security_services/guardduty.tf does the same thing. If both fire, they
+    # fight each other on every apply.
+    condition = (
+      var.security_hub_configuration == null
+      || !coalesce(var.security_hub_configuration.enable_threat_detection, false)
+      || try(var.security_services.disable_guardduty, true)
+    )
+    error_message = "security_hub_configuration.enable_threat_detection = true requires security_services.disable_guardduty = true (or the security_services block to be absent). Otherwise the deprecated modules/security_services/guardduty.tf and the new resources in security_hub_2.tf both try to manage GuardDuty and fight each other."
   }
 }

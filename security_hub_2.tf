@@ -36,6 +36,39 @@ locals {
   sechub_root_action    = local.securityhub2_enabled ? try(var.security_hub_configuration.enable_security_hub_for_all_accounts, null) : null
   inspector_root_action = local.securityhub2_enabled ? try(var.security_hub_configuration.enable_inspector_for_all_accounts, null) : null
 
+  # GuardDuty ("foundational threat detection") is enabled when
+  # security_hub_configuration.enable_threat_detection is explicitly true. Absent OR
+  # false → GuardDuty is not managed by this module. The SH v2 console UX calls the
+  # equivalent action a "deployment" and warns that new accounts won't be auto-enrolled —
+  # we sidestep that by creating aws_guardduty_organization_configuration with
+  # auto_enable_organization_members = "ALL", so every new org account gets a detector
+  # automatically going forward.
+  enable_guardduty = local.securityhub2_enabled && try(var.security_hub_configuration.enable_threat_detection, false)
+
+  # Extended GuardDuty features. threat_detection_features uses friendly snake_case
+  # names on the tfvars side; we translate to the AWS API's UPPER_SNAKE_CASE feature
+  # names for the aws_guardduty_organization_configuration_feature resource.
+  # Add new features to both sides of this map as AWS releases them.
+  threat_detection_feature_map = {
+    enable_ebs_malware_scanning   = "EBS_MALWARE_PROTECTION"
+    enable_eks_protection         = "EKS_AUDIT_LOGS"
+    enable_s3_protection          = "S3_DATA_EVENTS"
+    enable_lambda_protection      = "LAMBDA_NETWORK_LOGS"
+    enable_rds_protection         = "RDS_LOGIN_EVENTS"
+    enable_runtime_monitoring     = "RUNTIME_MONITORING"
+    enable_eks_runtime_monitoring = "EKS_RUNTIME_MONITORING"
+    enable_ai_analyst             = "AI_ANALYST"
+  }
+
+  # List of the AWS-side feature names the operator has enabled via
+  # security_hub_configuration.threat_detection_features. Absent / false flags
+  # produce no entry, so no resource is created for that feature.
+  enabled_threat_detection_features = local.enable_guardduty ? [
+    for tfvar_key, aws_name in local.threat_detection_feature_map :
+    aws_name
+    if try(var.security_hub_configuration.threat_detection_features[tfvar_key], false)
+  ] : []
+
   # Only create the org admin delegation here if Security Hub v1 hasn't already done it.
   # v1 creates aws_securityhub_organization_admin_account when disable_securityhub = false.
   securityhub_v1_managing_org_admin = !try(var.security_services.disable_securityhub, true)
@@ -261,6 +294,66 @@ resource "aws_securityhub_aggregator_v2" "security_account" {
     r if r != data.aws_region.current.region
   ]
   depends_on = [aws_securityhub_account_v2.security_account]
+}
+
+# ─── GuardDuty (foundational threat detection) ────────────────────────────────
+# Enabled when security_hub_configuration.enable_threat_detection = true. Wired here
+# rather than in modules/security_services/ because that module is being deprecated —
+# it was a pre-provider-6 workaround for multi-region resources that the AWS provider
+# now handles natively via the `region` argument.
+#
+# Three resources per region:
+#   1. Detector in the security account (delegated admin needs a local hub in each
+#      region to receive findings).
+#   2. GuardDuty delegated admin registration from the payer (designates the security
+#      account as the org GD admin in that region).
+#   3. Organization configuration on the security account, with auto_enable = "ALL" so
+#      every existing and future org account gets a detector automatically. This is
+#      the piece the SH v2 console "deployment" flow does NOT do — hence the console's
+#      infuriating "will not turn on the capability for future accounts" warning.
+
+resource "aws_guardduty_detector" "security_account" {
+  for_each = local.enable_guardduty ? toset(data.aws_regions.available.names) : toset([])
+  provider = aws.security-account
+  region   = each.value
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "security_account" {
+  for_each         = local.enable_guardduty ? toset(data.aws_regions.available.names) : toset([])
+  region           = each.value
+  admin_account_id = local.security_account_id
+  depends_on       = [aws_guardduty_detector.security_account]
+}
+
+resource "aws_guardduty_organization_configuration" "security_account" {
+  for_each                         = local.enable_guardduty ? toset(data.aws_regions.available.names) : toset([])
+  provider                         = aws.security-account
+  region                           = each.value
+  auto_enable_organization_members = "ALL"
+  detector_id                      = aws_guardduty_detector.security_account[each.key].id
+  depends_on                       = [aws_guardduty_organization_admin_account.security_account]
+}
+
+# Extended GuardDuty features (S3 protection, EKS audit logs, RDS login events, etc.).
+# One resource per (feature × region). Each feature the operator sets to true in
+# security_hub_configuration.threat_detection_features gets an AutoEnable = ALL org
+# configuration entry, so new members get the feature turned on automatically.
+# Existing members that were previously disassociated still need the one-shot enrollment
+# helper — see scripts/enroll_guardduty_members.py (pending).
+resource "aws_guardduty_organization_configuration_feature" "security_account" {
+  for_each = {
+    for pair in setproduct(local.enabled_threat_detection_features, tolist(toset(data.aws_regions.available.names))) :
+    "${pair[0]}:${pair[1]}" => { feature = pair[0], region = pair[1] }
+  }
+
+  provider    = aws.security-account
+  region      = each.value.region
+  detector_id = aws_guardduty_detector.security_account[each.value.region].id
+  name        = each.value.feature
+  auto_enable = "ALL"
+
+  depends_on = [aws_guardduty_organization_configuration.security_account]
 }
 
 # Security Hub and Inspector org policies are one-shot: detaching an "enable" policy does

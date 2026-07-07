@@ -6,20 +6,29 @@ A new optional `security_hub_configuration` block enables Security Hub 2.0 org-w
 When the block is absent, no action is taken.
 
 ```hcl
-security_hub_configuration = {
-  enable_security_hub_2                = true
-  enable_security_hub_for_all_accounts = true
-  enable_inspector_for_all_accounts    = true
-  create_cost_estimation_role          = true
-  create_org_delegation_policy         = true
-  enable_threat_detection              = true
-  aggregation_region                   = "us-east-1"
-}
+  security_hub_configuration = {
+    enable_security_hub_2                = true
+    enable_security_hub_for_all_accounts = true
+    enable_inspector_for_all_accounts    = true
+    create_cost_estimation_role  = true
+    create_org_delegation_policy = true
+    aggregation_region           = "us-east-1"
+    enable_threat_detection      = true
+    threat_detection_features = {
+      enable_ebs_malware_scanning = true
+      enable_eks_protection       = true
+      enable_s3_protection        = true
+      enable_lambda_protection    = true
+      enable_rds_protection       = true
+      enable_runtime_monitoring   = true
+    }
+
+  }
 ```
 
-`create_cost_estimation_role`, `create_org_delegation_policy`, and `enable_threat_detection`
-default to `true` when the block is present but the field is omitted. `enable_security_hub_2`
-defaults to `false`.
+`create_cost_estimation_role` and `create_org_delegation_policy` default to `true` when the
+block is present but the field is omitted. `enable_security_hub_2` and
+`enable_threat_detection` both default to `false` — you must explicitly opt in.
 
 `enable_security_hub_for_all_accounts` and `enable_inspector_for_all_accounts` are
 **tri-state** (`true` / `false` / absent). The `SECURITYHUB_POLICY` and `INSPECTOR_POLICY`
@@ -91,6 +100,69 @@ Controls which `INSPECTOR_POLICY` (if any) is attached to the Root OU. `true` at
 `EnableInspector` (Lambda standard, Lambda code, EC2, ECR, and code repository scanning
 enabled in all current and future regions). `false` attaches `DisableInspector`. Absent
 leaves the Root attachment unmanaged.
+
+### `enable_threat_detection` (GuardDuty)
+
+**Default changed to `false`** — previously defaulted to `true` when the block was
+present, but the flag now has real behavior instead of being reserved, so absent-in-tfvars
+must mean "not enabled." Set to `true` explicitly to opt in.
+
+When `true`, Org Kickstart creates in every enabled region (via `for_each`):
+
+- `aws_guardduty_detector.security_account[<region>]` — the delegated admin's detector
+- `aws_guardduty_organization_admin_account.security_account[<region>]` — designates the
+  security account as the GuardDuty delegated admin
+- `aws_guardduty_organization_configuration.security_account[<region>]` — sets
+  `auto_enable_organization_members = "ALL"` so every FUTURE org account gets a detector
+  automatically (see the enrollment caveat below for existing accounts).
+
+The Security Hub 2.0 console's "deployment" action does not turn on auto-enroll for
+future accounts (it explicitly says so in the console UI); the Terraform-managed org
+config does.
+
+**Extended features** — `threat_detection_features` sub-object with per-feature enable
+flags. Each `enable_*` = `true` creates one `aws_guardduty_organization_configuration_feature`
+resource per enabled region with `auto_enable = "ALL"`:
+
+- `enable_ebs_malware_scanning` → `EBS_MALWARE_PROTECTION`
+- `enable_eks_protection` → `EKS_AUDIT_LOGS`
+- `enable_s3_protection` → `S3_DATA_EVENTS`
+- `enable_lambda_protection` → `LAMBDA_NETWORK_LOGS`
+- `enable_rds_protection` → `RDS_LOGIN_EVENTS`
+- `enable_runtime_monitoring` → `RUNTIME_MONITORING`
+- `enable_eks_runtime_monitoring` → `EKS_RUNTIME_MONITORING` (legacy, being deprecated)
+- `enable_ai_analyst` → `AI_ANALYST` (preview)
+
+All fields default to `false`.
+
+**Caveat — existing accounts don't auto-enroll.** `auto_enable_organization_members = "ALL"`
+in `aws_guardduty_organization_configuration` reads like it will enroll every existing
+org account plus every future one. Empirically it only fires for future accounts.
+Existing accounts that were never members (or were disassociated via `DeleteMembers` —
+including the ones cleaned up by `wipe_sechub_v2.py` / `wipe_sechub_cspm.py`) stay as
+"Not a member" in the console. The fix is a one-shot `CreateMembers` call from the
+delegated admin for each existing account in each region.
+
+Ship the fix as a helper script rather than Terraform resources — per-account-per-region
+`aws_guardduty_member` resources don't scale to orgs with hundreds of accounts:
+
+**`examples/local-deploy/scripts/enable_existing_guardduty_accounts.sh`** (new). Bash
+one-shot that discovers the GD delegated admin from the payer, assumes
+`OrganizationAccountAccessRole` into it, and calls `CreateMembers` in every enabled
+region with the full non-admin account list (batched in groups of 50). Safe to re-run;
+already-enrolled accounts come back in `UnprocessedAccounts` as warnings. Run once per
+fresh setup or wipe-and-restore. Once every account has been enrolled the first time,
+`auto_enable_organization_members = "ALL"` handles future accounts automatically.
+
+**Note:** `modules/security_services/guardduty.tf` still exists but should be considered
+deprecated. It was a pre-provider-6 workaround for multi-region resources that the AWS
+provider now handles natively via the `region` argument.
+
+**Constraint:** `enable_threat_detection = true` requires `security_services.disable_guardduty = true`
+(or the `security_services` block to be absent). A variable validation enforces this at
+plan time — otherwise both `modules/security_services/guardduty.tf` and the new
+resources in `security_hub_2.tf` would try to manage GuardDuty simultaneously and fight
+each other on every apply.
 
 ### Per-account opt-outs (`security_hubv2_optout`, `inspector_optout`)
 
