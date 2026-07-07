@@ -529,13 +529,15 @@ variable "security_hub_configuration" {
   description = "Security Hub 2.0 configuration. Omit or set to null to disable all Security Hub 2.0 management. When present, create_cost_estimation_role and create_org_delegation_policy default to true; enable_threat_detection defaults to false."
   default     = null
   type = object({
-    enable_security_hub_2                = optional(bool, false)
-    enable_security_hub_for_all_accounts = optional(bool)
-    enable_inspector_for_all_accounts    = optional(bool)
-    create_cost_estimation_role          = optional(bool, true)
-    create_org_delegation_policy         = optional(bool, true)
-    enable_threat_detection              = optional(bool, false)
-    aggregation_region                   = optional(string, "us-east-1")
+    enable_security_hub_2                   = optional(bool, false)
+    enable_security_hub_for_all_accounts    = optional(bool)
+    enable_inspector_for_all_accounts       = optional(bool)
+    create_cost_estimation_role             = optional(bool, true)
+    create_org_delegation_policy            = optional(bool, true)
+    enable_threat_detection                 = optional(bool, false)
+    aggregation_region                      = optional(string, "us-east-1")
+    enable_security_hub_cspm                = optional(bool, false)
+    security_hub_cspm_enabled_standard_arns = optional(list(string), [])
     threat_detection_features = optional(object({
       enable_ebs_malware_scanning   = optional(bool, false)
       enable_eks_protection         = optional(bool, false)
@@ -571,5 +573,30 @@ variable "security_hub_configuration" {
       || try(var.security_services.disable_guardduty, true)
     )
     error_message = "security_hub_configuration.enable_threat_detection = true requires security_services.disable_guardduty = true (or the security_services block to be absent). Otherwise the deprecated modules/security_services/guardduty.tf and the new resources in security_hub_2.tf both try to manage GuardDuty and fight each other."
+  }
+
+  validation {
+    # enable_security_hub_cspm drives v2's central-config + configuration policy
+    # + Root association. All three resources require the v2 delegated admin and
+    # v2 hubs to exist first (enable_security_hub_2 = true).
+    condition = (
+      var.security_hub_configuration == null
+      || !coalesce(var.security_hub_configuration.enable_security_hub_cspm, false)
+      || coalesce(var.security_hub_configuration.enable_security_hub_2, false)
+    )
+    error_message = "security_hub_configuration.enable_security_hub_cspm = true requires enable_security_hub_2 = true. CSPM central configuration is driven from the SH v2 delegated admin, so v2 must be enabled first."
+  }
+
+  validation {
+    # Prevent v1 (security_hub.tf) and v2's CSPM stack (security_hub_2.tf) from
+    # both trying to manage aws_securityhub_organization_configuration — that's a
+    # per-account, per-region singleton in AWS and Terraform state cannot hold two
+    # resources pointing at it.
+    condition = (
+      var.security_hub_configuration == null
+      || !coalesce(var.security_hub_configuration.enable_security_hub_cspm, false)
+      || try(var.security_services.disable_securityhub, true)
+    )
+    error_message = "security_hub_configuration.enable_security_hub_cspm = true requires security_services.disable_securityhub = true (or the security_services block to be absent). Otherwise the legacy security_hub.tf stack and the new CSPM resources in security_hub_2.tf both try to manage aws_securityhub_organization_configuration and collide on the same singleton."
   }
 }

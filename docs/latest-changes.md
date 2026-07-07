@@ -22,7 +22,10 @@ When the block is absent, no action is taken.
       enable_rds_protection       = true
       enable_runtime_monitoring   = true
     }
-
+    enable_security_hub_cspm = true
+    security_hub_cspm_enabled_standard_arns = [
+      "arn:aws:securityhub:us-east-1::standards/aws-foundational-security-best-practices/v/1.0.0",
+    ]
   }
 ```
 
@@ -163,6 +166,48 @@ provider now handles natively via the `region` argument.
 plan time — otherwise both `modules/security_services/guardduty.tf` and the new
 resources in `security_hub_2.tf` would try to manage GuardDuty simultaneously and fight
 each other on every apply.
+
+### `enable_security_hub_cspm` (Security Hub CSPM standards)
+
+Two new fields on `security_hub_configuration` turn on Security Hub CSPM through v2's
+central configuration and set which standards get enabled at Root:
+
+- `enable_security_hub_cspm` (bool, default `false`) — creates four resources on the SH v2
+  delegated admin, in `aggregation_region`:
+  - `aws_securityhub_finding_aggregator.securityhub_cspm` — the v1-style finding aggregator
+    (`linking_mode = "ALL_REGIONS"`). Required by AWS Central Configuration, which returns
+    `ResourceNotFoundException: Finding Aggregator must be created to enable Central
+    Configuration` on `UpdateOrganizationConfiguration` without it. Coexists with
+    `aws_securityhub_aggregator_v2.security_account` — AWS treats them as separate resources.
+  - `aws_securityhub_organization_configuration.securityhub_cspm` — `configuration_type = "CENTRAL"`.
+  - `aws_securityhub_configuration_policy.org_kickstart_standards` — configuration policy
+    carrying the operator-chosen standard ARNs.
+  - `aws_securityhub_configuration_policy_association.org_kickstart_standards_root` —
+    attaches that policy to the Root OU.
+- `security_hub_cspm_enabled_standard_arns` (list(string), default `[]`) — the standard
+  ARNs to enable via the configuration policy. Region-scoped: the region in each ARN
+  must match `aggregation_region`.
+
+AWS recommends enabling the **AWS Foundational Security Best Practices** (FSBP) standard
+when CSPM is turned on:
+
+```
+arn:aws:securityhub:<aggregation-region>::standards/aws-foundational-security-best-practices/v/1.0.0
+```
+
+Discover other standard ARNs (CIS, NIST SP 800-53, NIST SP 800-171, PCI DSS, AI Security
+Best Practices, AWS Resource Tagging, etc.) with, from the delegated admin account:
+
+```bash
+aws securityhub describe-standards --region <aggregation-region>
+```
+
+**Constraints:** `enable_security_hub_cspm = true` requires (a) `enable_security_hub_2 = true`
+(CSPM central config is driven from the v2 delegated admin) and (b)
+`security_services.disable_securityhub = true` (or the `security_services` block absent) —
+otherwise the legacy `security_hub.tf` stack and the new resources in `security_hub_2.tf`
+would both try to manage the same `aws_securityhub_organization_configuration` singleton in
+AWS. Both are enforced by variable validations at plan time.
 
 ### Per-account opt-outs (`security_hubv2_optout`, `inspector_optout`)
 

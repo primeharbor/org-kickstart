@@ -19,6 +19,12 @@
 
 data "aws_caller_identity" "current" {}
 
+# Enabled (non-opt-in and opted-in) regions in the current partition. Used by
+# every per-region resource in this file (v2 hubs, GuardDuty detectors, etc.).
+data "aws_regions" "available" {
+  all_regions = false
+}
+
 locals {
   securityhub2_enabled = var.security_hub_configuration != null
   enable_securityhub2  = local.securityhub2_enabled && try(var.security_hub_configuration.enable_security_hub_2, false)
@@ -44,6 +50,17 @@ locals {
   # auto_enable_organization_members = "ALL", so every new org account gets a detector
   # automatically going forward.
   enable_guardduty = local.securityhub2_enabled && try(var.security_hub_configuration.enable_threat_detection, false)
+
+  # Security Hub CSPM (central-config-driven standards enablement). When true,
+  # v2's delegated admin creates the CENTRAL organization configuration, a
+  # configuration policy carrying the operator's chosen standards, and attaches
+  # that policy to the Root OU. Requires enable_security_hub_2 = true (v2 hubs +
+  # delegated admin). Empty security_hub_cspm_enabled_standard_arns means "no
+  # standards enabled" (central config still switched on with SH enabled but no
+  # standards) — set it to at least the AWS Foundational Security Best Practices
+  # ARN for the recommended baseline.
+  enable_security_hub_cspm                = local.enable_securityhub2 && try(var.security_hub_configuration.enable_security_hub_cspm, false)
+  security_hub_cspm_enabled_standard_arns = try(var.security_hub_configuration.security_hub_cspm_enabled_standard_arns, [])
 
   # Extended GuardDuty features. threat_detection_features uses friendly snake_case
   # names on the tfvars side; we translate to the AWS API's UPPER_SNAKE_CASE feature
@@ -313,6 +330,82 @@ resource "aws_securityhub_aggregator_v2" "security_account" {
     r if r != data.aws_region.current.region
   ]
   depends_on = [aws_securityhub_account_v2.security_account]
+}
+
+# ─── Security Hub CSPM (central config + standards policy) ────────────────────
+# Turned on by security_hub_configuration.enable_security_hub_cspm = true.
+# Deliberately distinct from the legacy resources in security_hub.tf so v1 and
+# v2 CSPM configurations do not share state (variables.tf enforces the mutual
+# exclusion at plan time via security_services.disable_securityhub = true).
+#
+# Standard ARNs are provided by the operator via
+# security_hub_configuration.security_hub_cspm_enabled_standard_arns. Discover
+# the available standards with, from the delegated admin account:
+#
+#     aws securityhub describe-standards --region <aggregation-region>
+#
+# AWS recommends enabling the AWS Foundational Security Best Practices (FSBP)
+# standard when CSPM is turned on:
+#
+#     arn:aws:securityhub:<aggregation-region>::standards/aws-foundational-security-best-practices/v/1.0.0
+
+# AWS Central Configuration requires an aws_securityhub_finding_aggregator (v1
+# resource, different from aws_securityhub_aggregator_v2) — without it,
+# UpdateOrganizationConfiguration returns:
+#     ResourceNotFoundException: Finding Aggregator must be created to enable
+#     Central Configuration
+# Safe alongside the existing aggregator_v2 because AWS treats them as
+# separate resources.
+resource "aws_securityhub_finding_aggregator" "securityhub_cspm" {
+  count        = local.enable_security_hub_cspm ? 1 : 0
+  provider     = aws.security-account
+  linking_mode = "ALL_REGIONS"
+
+  depends_on = [
+    aws_securityhub_account_v2.security_account,
+    aws_securityhub_organization_admin_account.securityhub_v2,
+  ]
+}
+
+resource "aws_securityhub_organization_configuration" "securityhub_cspm" {
+  count                 = local.enable_security_hub_cspm ? 1 : 0
+  provider              = aws.security-account
+  auto_enable           = false
+  auto_enable_standards = "NONE"
+
+  organization_configuration {
+    configuration_type = "CENTRAL"
+  }
+
+  depends_on = [
+    aws_securityhub_account_v2.security_account,
+    aws_securityhub_organization_admin_account.securityhub_v2,
+    aws_securityhub_aggregator_v2.security_account,
+    aws_securityhub_finding_aggregator.securityhub_cspm,
+  ]
+}
+
+resource "aws_securityhub_configuration_policy" "org_kickstart_standards" {
+  count       = local.enable_security_hub_cspm ? 1 : 0
+  provider    = aws.security-account
+  name        = "org_kickstart_standards"
+  description = "Org Kickstart baseline Security Hub CSPM standards"
+  depends_on  = [aws_securityhub_organization_configuration.securityhub_cspm]
+
+  configuration_policy {
+    service_enabled       = true
+    enabled_standard_arns = local.security_hub_cspm_enabled_standard_arns
+    security_controls_configuration {
+      disabled_control_identifiers = []
+    }
+  }
+}
+
+resource "aws_securityhub_configuration_policy_association" "org_kickstart_standards_root" {
+  count     = local.enable_security_hub_cspm ? 1 : 0
+  provider  = aws.security-account
+  target_id = aws_organizations_organization.org.roots[0].id
+  policy_id = aws_securityhub_configuration_policy.org_kickstart_standards[0].id
 }
 
 # ─── GuardDuty (foundational threat detection) ────────────────────────────────

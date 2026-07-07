@@ -325,6 +325,7 @@ organization = {
   # create_org_delegation_policy default to true. enable_security_hub_2 and
   # enable_threat_detection default to false — you must explicitly opt in.
   security_hub_configuration = {
+    enable_security_hub_cspm             = true
     enable_security_hub_2                = true   # Enable SH2 in the payer + security accounts, delegate admin, set up aggregator
     # Tri-state (true / false / omit): true attaches EnableSecurityHubV2 at Root,
     # false attaches DisableSecurityHubV2 at Root, omit leaves Root attachment unmanaged.
@@ -335,6 +336,16 @@ organization = {
     create_org_delegation_policy         = true   # Organization resource policy granting security account org-wide delegation
     enable_threat_detection              = true   # Foundational GuardDuty: delegated admin + auto-enroll for all org accounts
     aggregation_region                   = "us-east-1"
+
+    # Security Hub CSPM: central config + a configuration policy carrying the standards
+    # you want enabled. Requires enable_security_hub_2 = true and
+    # security_services.disable_securityhub = true (variable validations enforce both).
+    # AWS recommends enabling the AWS Foundational Security Best Practices (FSBP) standard.
+    # Discover other standard ARNs with (from the delegated admin account):
+    #   aws securityhub describe-standards --region <aggregation_region>
+    security_hub_cspm_enabled_standard_arns = [
+      "arn:aws:securityhub:us-east-1::standards/aws-foundational-security-best-practices/v/1.0.0",
+    ]
   }
 
 }
