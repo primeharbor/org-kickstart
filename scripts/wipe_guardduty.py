@@ -33,6 +33,7 @@ Replaces the earlier predisable_guardduty_delegation.py + disable_guardduty.py p
 from pht-org-terraform.
 """
 
+import argparse
 import logging
 import sys
 
@@ -65,8 +66,13 @@ def get_all_accounts(session):
     return accounts
 
 
-def assume_role(target_account_id):
-    sts = boto3.client("sts")
+def assume_role(sts, target_account_id):
+    """
+    Assume ROLE_NAME into target_account_id using an already-created STS client
+    (typically the payer's). Reusing one client avoids re-resolving SSO credentials
+    on every call, which — with SSO profiles — hits the token cache once instead of
+    once per member account.
+    """
     role_arn = f"arn:aws:iam::{target_account_id}:role/{ROLE_NAME}"
     try:
         creds = sts.assume_role(RoleArn=role_arn, RoleSessionName="wipe-guardduty")["Credentials"]
@@ -189,23 +195,24 @@ def disable_admin_registration(payer_session, admin_id, regions):
 
 def scrub_account_region(client_factory, name, aid, region):
     """
-    Per region on an account (member, or the former admin after Step 2b):
-      - Best-effort: disassociate from any lingering administrator relationship
-        (idempotent — errors when not a member are silent).
-      - list_detectors → update_detector(Enable=False) → delete_detector.
+    Per region on an account (member, current admin, or former admin whose registration
+    was already destroyed out-of-band, e.g. by `terraform destroy` running the resources
+    out of order relative to AWS-side member associations):
+
+      1. list_detectors — no detector means nothing to do (and no valid DetectorId to
+         pass to the member-side APIs, which AWS requires).
+      2. For each detector:
+         a. list_members. If any exist, this account is or was an admin — disassociate
+            and delete them in batches of 50 before we try to delete the detector,
+            otherwise DeleteDetector fails with "You must first disassociate your member
+            accounts and delete invited member accounts." This step is a no-op on member
+            accounts and idempotent when Step 2 (admin teardown) already ran.
+         b. Best-effort disassociate from any lingering admin relationship (member-side
+            cleanup).
+         c. update_detector(Enable=False) then delete_detector.
     """
     gd = client_factory(region)
     ok = True
-
-    # Unlink from any lingering admin association (member-side cleanup).
-    try:
-        gd.disassociate_from_administrator_account()
-        logger.info(f"[{region}] {name}: disassociated from administrator")
-    except ClientError as e:
-        code = e.response["Error"]["Code"]
-        # BadRequestException typically = "not a member" — silent skip.
-        if code not in ("BadRequestException", "ResourceNotFoundException", "InvalidAccessException"):
-            logger.warning(f"[{region}] {name}: disassociate_from_administrator_account: {e}")
 
     try:
         detectors = gd.list_detectors().get("DetectorIds", [])
@@ -218,6 +225,45 @@ def scrub_account_region(client_factory, name, aid, region):
         return True
 
     for detector_id in detectors:
+        # If this detector has members, this account is (or was) an admin. Disassociate
+        # and delete them before trying to delete the detector, in batches of 50 to fit
+        # the DisassociateMembers / DeleteMembers API limits.
+        member_ids = []
+        try:
+            paginator = gd.get_paginator("list_members")
+            for page in paginator.paginate(DetectorId=detector_id, OnlyAssociated="false"):
+                for m in page.get("Members", []):
+                    member_ids.append(m["AccountId"])
+        except ClientError as e:
+            # BadRequestException here typically means "this account is not an admin"
+            # and list_members isn't callable — no members to clean up.
+            code = e.response["Error"]["Code"]
+            if code not in ("BadRequestException", "ResourceNotFoundException", "InvalidAccessException"):
+                logger.warning(f"[{region}] {name}: list_members failed: {e}")
+
+        if member_ids:
+            logger.info(f"[{region}] {name}: detector {detector_id} has {len(member_ids)} member(s) — cleaning up")
+            for i in range(0, len(member_ids), 50):
+                batch = member_ids[i:i + 50]
+                try:
+                    gd.disassociate_members(DetectorId=detector_id, AccountIds=batch)
+                    gd.delete_members(DetectorId=detector_id, AccountIds=batch)
+                    logger.info(f"[{region}] {name}: removed batch of {len(batch)} member(s)")
+                except ClientError as e:
+                    logger.error(f"[{region}] {name}: batch removal failed: {e}")
+                    ok = False
+
+        # Unlink from any lingering admin association (member-side cleanup).
+        # DisassociateFromAdministratorAccount requires the member's own DetectorId.
+        try:
+            gd.disassociate_from_administrator_account(DetectorId=detector_id)
+            logger.info(f"[{region}] {name}: disassociated from administrator")
+        except ClientError as e:
+            code = e.response["Error"]["Code"]
+            # BadRequestException typically = "not a member" — silent skip.
+            if code not in ("BadRequestException", "ResourceNotFoundException", "InvalidAccessException"):
+                logger.warning(f"[{region}] {name}: disassociate_from_administrator_account: {e}")
+
         try:
             gd.update_detector(DetectorId=detector_id, Enable=False)
             gd.delete_detector(DetectorId=detector_id)
@@ -229,9 +275,35 @@ def scrub_account_region(client_factory, name, aid, region):
     return ok
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Fully disable Amazon GuardDuty across an AWS Organization, or scrub a "
+            "single account when --account-id is supplied."
+        ),
+    )
+    parser.add_argument(
+        "--account-id",
+        metavar="ACCOUNT_ID",
+        help=(
+            "Limit the wipe to a single account ID. Skips the org-wide admin teardown "
+            "(steps 1, 2, 2b) and only scrubs the specified account in every enabled "
+            "region. Useful for reclaiming a single stuck account without touching the "
+            "rest of the org."
+        ),
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+
     payer_session = boto3.Session()
-    payer_id = payer_session.client("sts").get_caller_identity()["Account"]
+    # Create the STS client once and reuse it across every assume_role call so SSO
+    # profile credentials only get resolved once per run instead of once per member
+    # account (~N × faster when running with SSO).
+    sts = payer_session.client("sts")
+    payer_id = sts.get_caller_identity()["Account"]
     logger.info(f"Payer: {payer_id}")
 
     regions = get_enabled_regions(payer_session)
@@ -240,37 +312,54 @@ def main():
     accounts = get_all_accounts(payer_session)
     logger.info(f"Active org accounts: {len(accounts)}")
 
-    total_ok = True
-
-    # --- Step 1: discover the delegated admin (per-region scan) ---
-    admin_id = find_current_admin(payer_session, regions)
-    if admin_id:
-        logger.info(f"Current GD delegated admin: {admin_id}")
-        admin_creds = assume_role(admin_id)
-        if admin_creds is None:
+    # --- Single-account mode: skip the org-wide admin teardown and scrub only the
+    # target account. The admin registration and other members are left alone. ---
+    if args.account_id:
+        target = next((a for a in accounts if a["Id"] == args.account_id), None)
+        if target is None:
             logger.error(
-                f"Could not assume {ROLE_NAME} in delegated admin account {admin_id}. "
-                f"Check that the role exists and trusts the payer."
+                f"Account {args.account_id} not found among {len(accounts)} ACTIVE org accounts. "
+                f"Verify the account ID and that it is a current member of the organization."
             )
             sys.exit(1)
-        admin_session = boto3.Session(**admin_creds)
+        logger.info(
+            f"--account-id set: skipping steps 1/2/2b; scrubbing only "
+            f"{target['Name']} ({target['Id']})"
+        )
+        accounts = [target]
 
-        # --- Step 2: admin teardown ---
-        logger.info("=" * 70)
-        logger.info("Step 2: teardown on delegated admin (auto-enable off, remove members)")
-        logger.info("=" * 70)
-        for region in regions:
-            if not teardown_admin_region(admin_session, region):
+    total_ok = True
+
+    if not args.account_id:
+        # --- Step 1: discover the delegated admin (per-region scan) ---
+        admin_id = find_current_admin(payer_session, regions)
+        if admin_id:
+            logger.info(f"Current GD delegated admin: {admin_id}")
+            admin_creds = assume_role(sts, admin_id)
+            if admin_creds is None:
+                logger.error(
+                    f"Could not assume {ROLE_NAME} in delegated admin account {admin_id}. "
+                    f"Check that the role exists and trusts the payer."
+                )
+                sys.exit(1)
+            admin_session = boto3.Session(**admin_creds)
+
+            # --- Step 2: admin teardown ---
+            logger.info("=" * 70)
+            logger.info("Step 2: teardown on delegated admin (auto-enable off, remove members)")
+            logger.info("=" * 70)
+            for region in regions:
+                if not teardown_admin_region(admin_session, region):
+                    total_ok = False
+
+            # --- Step 2b: remove admin registration from payer ---
+            logger.info("=" * 70)
+            logger.info("Step 2b: disable_organization_admin_account on payer")
+            logger.info("=" * 70)
+            if not disable_admin_registration(payer_session, admin_id, regions):
                 total_ok = False
-
-        # --- Step 2b: remove admin registration from payer ---
-        logger.info("=" * 70)
-        logger.info("Step 2b: disable_organization_admin_account on payer")
-        logger.info("=" * 70)
-        if not disable_admin_registration(payer_session, admin_id, regions):
-            total_ok = False
-    else:
-        logger.info("No GD delegated admin currently registered — skipping admin teardown steps")
+        else:
+            logger.info("No GD delegated admin currently registered — skipping admin teardown steps")
 
     # --- Step 3: scrub every account × every region ---
     logger.info("=" * 70)
@@ -286,7 +375,7 @@ def main():
             def factory(region, s=payer_session):
                 return s.client("guardduty", region_name=region)
         else:
-            creds = assume_role(aid)
+            creds = assume_role(sts, aid)
             if creds is None:
                 logger.error(f"Skipping {name} ({aid}) — unable to assume role")
                 total_ok = False
