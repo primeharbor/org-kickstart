@@ -100,9 +100,27 @@ future regions for every account, including newly created ones). `false` attache
 ### `enable_inspector_for_all_accounts`
 
 Controls which `INSPECTOR_POLICY` (if any) is attached to the Root OU. `true` attaches
-`EnableInspector` (Lambda standard, Lambda code, EC2, ECR, and code repository scanning
-enabled in all current and future regions). `false` attaches `DisableInspector`. Absent
+`EnableInspector` (Lambda standard, EC2, ECR, and code repository scanning enabled in
+all current and future regions; Lambda **code** scanning gated on
+`enable_inspector_lambda_code_scanning`). `false` attaches `DisableInspector`. Absent
 leaves the Root attachment unmanaged.
+
+### `enable_inspector_lambda_code_scanning`
+
+New sub-flag on `security_hub_configuration`, default `false`. Controls whether the
+`EnableInspector` policy activates Amazon Inspector **Lambda code scanning** (source-code
+CVE scans — [billed separately](https://aws.amazon.com/inspector/pricing/) from Lambda
+standard/dependency scanning). Only meaningful when `enable_inspector_for_all_accounts =
+true`. When `false`, the policy sets `lambda_code_scanning.enable_in_regions = []` and
+`disable_in_regions = ["ALL_SUPPORTED"]`. Lambda standard scanning stays on regardless.
+
+Refactor as part of this change: the `EnableInspector` policy body moved from
+`policies/SecHubEnableInspector_OrgPolicy.json` (deleted) to an inline `jsonencode(...)`
+call on the `aws_organizations_policy.inspector_enable` resource, matching the pattern
+already used by `DisableSecurityHubV2` / `DisableInspector`. The `@@append` inheritance
+operator + `@@operators_allowed_for_child_policies = ["@@all"]` on every node are
+preserved from the original file so child INSPECTOR_POLICYs attached at OUs or individual
+accounts can extend or override any scan type with any operator.
 
 ### `enable_threat_detection` (GuardDuty)
 
@@ -247,6 +265,17 @@ accounts = {
 
 ## Minor Breaking Change
 
+* **Amazon Inspector Lambda code scanning is now off by default.** The `EnableInspector`
+  `INSPECTOR_POLICY` used to enable all five Inspector scan types (Lambda standard, Lambda
+  code, EC2, ECR, code repository) unconditionally. It now gates `lambda_code_scanning`
+  on a new sub-flag `enable_inspector_lambda_code_scanning` (default `false`) because
+  Lambda code scanning is billed separately from Lambda standard scanning and was
+  quietly adding cost.
+
+  **Migration:** if you currently rely on Lambda code scanning, add
+  `enable_inspector_lambda_code_scanning = true` to your `security_hub_configuration`
+  block. Otherwise the next apply will actively disable code scanning across the org.
+  Lambda standard (dependency) scanning is unaffected.
 
 ## Bug Fixes
 * adding md5/etag checksum to the account_configurator config yaml to force terraform update when the file changes

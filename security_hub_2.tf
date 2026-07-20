@@ -42,6 +42,13 @@ locals {
   sechub_root_action    = local.securityhub2_enabled ? try(var.security_hub_configuration.enable_security_hub_for_all_accounts, null) : null
   inspector_root_action = local.securityhub2_enabled ? try(var.security_hub_configuration.enable_inspector_for_all_accounts, null) : null
 
+  # Lambda code scanning is billed separately by Amazon Inspector and defaults to OFF here
+  # so the EnableInspector policy doesn't quietly rack up code-scan charges. Set to true
+  # in tfvars to include it. Note per AWS docs: code scanning requires standard scanning,
+  # which the EnableInspector policy always turns on when enable_inspector_for_all_accounts
+  # is true.
+  enable_inspector_lambda_code_scanning = try(var.security_hub_configuration.enable_inspector_lambda_code_scanning, false)
+
   # GuardDuty ("foundational threat detection") is enabled when
   # security_hub_configuration.enable_threat_detection is explicitly true. Absent OR
   # false → GuardDuty is not managed by this module. The SH v2 console UX calls the
@@ -269,9 +276,9 @@ resource "aws_iam_role" "securityhub_cost_estimator" {
 }
 
 resource "aws_iam_role_policy" "securityhub_cost_estimator" {
-  count  = local.create_cost_role ? 1 : 0
-  name   = "SecurityHubCostEstimatorPolicy"
-  role   = aws_iam_role.securityhub_cost_estimator[0].id
+  count = local.create_cost_role ? 1 : 0
+  name  = "SecurityHubCostEstimatorPolicy"
+  role  = aws_iam_role.securityhub_cost_estimator[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -521,14 +528,75 @@ resource "aws_organizations_policy_attachment" "securityhub_enable_root" {
   ]
 }
 
-# INSPECTOR_POLICY enable — Amazon Inspector scanning (Lambda standard, Lambda code, EC2,
-# ECR, code repository) in all regions for all accounts.
+# INSPECTOR_POLICY enable — Amazon Inspector scanning in all regions for all accounts.
+# EC2, ECR, code repository scanning, and Lambda standard scanning are always on when
+# the policy is attached; Lambda code scanning is gated on
+# enable_inspector_lambda_code_scanning (default false — billed separately by AWS).
 resource "aws_organizations_policy" "inspector_enable" {
   count       = local.securityhub2_enabled ? 1 : 0
   name        = "EnableInspector"
   description = "Enable Amazon Inspector scanning in all regions for all accounts"
   type        = "INSPECTOR_POLICY"
-  content     = file("${path.module}/policies/SecHubEnableInspector_OrgPolicy.json")
+  # Uses @@append + @@operators_allowed_for_child_policies=["@@all"] on every node so
+  # child INSPECTOR_POLICY attachments at OUs or individual accounts can extend or
+  # override any scan type with any operator. Matches the shape of the original
+  # policies/SecHubEnableInspector_OrgPolicy.json file that this jsonencode() replaces.
+  content = jsonencode({
+    inspector = {
+      enablement = {
+        lambda_standard_scanning = {
+          enable_in_regions = {
+            "@@append"                               = ["ALL_SUPPORTED"]
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+          disable_in_regions = {
+            "@@append"                               = []
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+          lambda_code_scanning = {
+            enable_in_regions = {
+              "@@append"                               = local.enable_inspector_lambda_code_scanning ? ["ALL_SUPPORTED"] : []
+              "@@operators_allowed_for_child_policies" = ["@@all"]
+            }
+            disable_in_regions = {
+              "@@append"                               = local.enable_inspector_lambda_code_scanning ? [] : ["ALL_SUPPORTED"]
+              "@@operators_allowed_for_child_policies" = ["@@all"]
+            }
+          }
+        }
+        ec2_scanning = {
+          enable_in_regions = {
+            "@@append"                               = ["ALL_SUPPORTED"]
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+          disable_in_regions = {
+            "@@append"                               = []
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+        }
+        ecr_scanning = {
+          enable_in_regions = {
+            "@@append"                               = ["ALL_SUPPORTED"]
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+          disable_in_regions = {
+            "@@append"                               = []
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+        }
+        code_repository_scanning = {
+          enable_in_regions = {
+            "@@append"                               = ["ALL_SUPPORTED"]
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+          disable_in_regions = {
+            "@@append"                               = []
+            "@@operators_allowed_for_child_policies" = ["@@all"]
+          }
+        }
+      }
+    }
+  })
   lifecycle {
     ignore_changes = [tags_all]
   }

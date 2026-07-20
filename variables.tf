@@ -532,6 +532,7 @@ variable "security_hub_configuration" {
     enable_security_hub_2                   = optional(bool, false)
     enable_security_hub_for_all_accounts    = optional(bool)
     enable_inspector_for_all_accounts       = optional(bool)
+    enable_inspector_lambda_code_scanning   = optional(bool, false)
     create_cost_estimation_role             = optional(bool, true)
     create_org_delegation_policy            = optional(bool, true)
     enable_threat_detection                 = optional(bool, false)

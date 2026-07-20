@@ -332,6 +332,11 @@ organization = {
     # (SH2 / Inspector org policies are one-shot — detaching enable doesn't disable.)
     enable_security_hub_for_all_accounts = true
     enable_inspector_for_all_accounts    = true
+    # Amazon Inspector Lambda *code* scanning is billed separately from Lambda standard
+    # (dependency) scanning. Default false — set true to opt in. When false, the
+    # EnableInspector policy explicitly disables lambda_code_scanning in ALL_SUPPORTED
+    # regions. Lambda standard scanning stays on regardless.
+    enable_inspector_lambda_code_scanning = false
     create_cost_estimation_role          = true   # IAM role in payer account for cost estimator cross-account access
     create_org_delegation_policy         = true   # Organization resource policy granting security account org-wide delegation
     enable_threat_detection              = true   # Foundational GuardDuty: delegated admin + auto-enroll for all org accounts
