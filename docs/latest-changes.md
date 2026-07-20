@@ -238,27 +238,38 @@ otherwise the legacy `security_hub.tf` stack and the new resources in `security_
 would both try to manage the same `aws_securityhub_organization_configuration` singleton in
 AWS. Both are enforced by variable validations at plan time.
 
-### Per-account opt-outs (`security_hubv2_optout`, `inspector_optout`)
+### Per-account opt-outs (`security_hubv2_optout`, `security_hub_cspm_optout`, `inspector_optout`)
 
-Individual accounts can be explicitly opted out by setting `security_hubv2_optout = true`
-or `inspector_optout = true` in their account definition (both default to `false`). When
-`true`, the pre-created disable policy is attached directly to that account. When `false`
-or omitted, Org Kickstart does nothing for that account and inheritance from the Root
-attachment (if any) takes its course.
+Individual accounts can be explicitly opted out by setting any of three per-account flags
+(all default to `false`) in their account definition:
 
-The direct attachment fires regardless of what is attached at Root, so a single account can
-be disabled even when Root has no `enable_security_hub_for_all_accounts` /
-`enable_inspector_for_all_accounts` flag set. There is currently no symmetric per-account
-opt-in.
+- `security_hubv2_optout = true` — attaches `DisableSecurityHubV2` `SECURITYHUB_POLICY`.
+- `security_hub_cspm_optout = true` — attaches a new `org_kickstart_no_standards` CSPM
+  configuration policy (created whenever `enable_security_hub_cspm = true`, with
+  `service_enabled = true` + empty `enabled_standard_arns`). The more-specific
+  configuration policy association supersedes the Root-level `org_kickstart_standards`
+  inheritance for that account only. Note: **disabling Security Hub v2 does NOT disable
+  CSPM** — SH v2 enablement and CSPM configuration are separately-governed per-account
+  states, so if the goal is "no findings from this account" you generally want both
+  `security_hubv2_optout` and `security_hub_cspm_optout` set to `true`.
+- `inspector_optout = true` — attaches `DisableInspector` `INSPECTOR_POLICY`.
+
+When any flag is `true`, the pre-created policy is attached directly to that account.
+When `false` or omitted, Org Kickstart does nothing for that account and inheritance from
+the Root attachment (if any) takes its course. The direct attachment fires regardless of
+what is attached at Root, so a single account can be disabled even when Root has no
+enable policy set. There is currently no symmetric per-account opt-in.
 
 ```hcl
 accounts = {
   dev = {
-    account_name          = "my-dev"
-    account_email         = "aws+dev@example.com"
-    parent_ou_name        = "Workloads"
-    monthly_budget_amount = 5
-    security_hubv2_optout = true   # attach DisableSecurityHubV2 to this account
+    account_name             = "my-dev"
+    account_email            = "aws+dev@example.com"
+    parent_ou_name           = "Workloads"
+    monthly_budget_amount    = 5
+    security_hubv2_optout    = true   # DisableSecurityHubV2 attached
+    security_hub_cspm_optout = true   # org_kickstart_no_standards attached
+    inspector_optout         = true   # DisableInspector attached
   }
 }
 ```

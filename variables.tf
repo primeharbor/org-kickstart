@@ -182,6 +182,7 @@ variable "accounts" {
       resource_control_policies = optional(list(string), [])
       declarative_policies_ec2  = optional(list(string), [])
       security_hubv2_optout     = optional(bool, false)
+      security_hub_cspm_optout  = optional(bool, false)
       inspector_optout          = optional(bool, false)
     })
   )

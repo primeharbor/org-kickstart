@@ -142,6 +142,19 @@ locals {
     if try(v.inspector_optout, false)
   } : {}
 
+  # Accounts explicitly opted out of the CSPM standards policy via
+  # security_hub_cspm_optout = true. Disabling Security Hub v2 (via security_hubv2_optout)
+  # does NOT disable CSPM in the same account — SH v2 and CSPM are separately-governed
+  # per-account states. To stop CSPM standards from running in an account, we attach a
+  # dedicated "no standards" CSPM configuration policy directly to that account, which
+  # supersedes the Root-level org_kickstart_standards inheritance. Only meaningful when
+  # enable_security_hub_cspm = true.
+  securityhub_cspm_opted_out_accounts = local.enable_security_hub_cspm ? {
+    for k, v in var.accounts :
+    k => module.accounts[k].account_id
+    if try(v.security_hub_cspm_optout, false)
+  } : {}
+
   # Statements for the Organization resource policy granting the security (delegated admin)
   # account permission to manage Security Hub 2.0 org-wide. Add more statement objects here
   # as additional services require org-level delegation.
@@ -414,6 +427,37 @@ resource "aws_securityhub_configuration_policy_association" "org_kickstart_stand
   provider  = aws.security-account
   target_id = aws_organizations_organization.org.roots[0].id
   policy_id = aws_securityhub_configuration_policy.org_kickstart_standards[0].id
+}
+
+# CSPM per-account opt-out policy. Always created when enable_security_hub_cspm = true so
+# it is available to attach on demand — same pattern the SH v2 / Inspector disable
+# policies use. Empty enabled_standard_arns means no standards run in accounts this
+# policy governs (Security Hub itself stays enabled — service_enabled = true — so v2
+# hubs and findings from other sources still work).
+resource "aws_securityhub_configuration_policy" "org_kickstart_no_standards" {
+  count       = local.enable_security_hub_cspm ? 1 : 0
+  provider    = aws.security-account
+  name        = "org_kickstart_no_standards"
+  description = "Org Kickstart CSPM opt-out - no standards enabled. Attach to specific accounts to exempt them from org_kickstart_standards."
+  depends_on  = [aws_securityhub_organization_configuration.securityhub_cspm]
+
+  configuration_policy {
+    service_enabled       = true
+    enabled_standard_arns = []
+    security_controls_configuration {
+      disabled_control_identifiers = []
+    }
+  }
+}
+
+# Per-account opt-out attachments. A more-specific configuration policy association on
+# an individual account supersedes the Root-level org_kickstart_standards inheritance
+# for just that account. Driven by security_hub_cspm_optout = true on the account.
+resource "aws_securityhub_configuration_policy_association" "org_kickstart_no_standards_account" {
+  for_each  = local.securityhub_cspm_opted_out_accounts
+  provider  = aws.security-account
+  target_id = each.value
+  policy_id = aws_securityhub_configuration_policy.org_kickstart_no_standards[0].id
 }
 
 # ─── GuardDuty (foundational threat detection) ────────────────────────────────
