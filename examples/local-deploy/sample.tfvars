@@ -351,6 +351,12 @@ organization = {
     security_hub_cspm_enabled_standard_arns = [
       "arn:aws:securityhub:us-east-1::standards/aws-foundational-security-best-practices/v/1.0.0",
     ]
+
+    # Optional: opt individual controls out of every enabled standard. IDs use
+    # the Security Hub CSPM console/API form (e.g. "IAM.6", "EC2.9", "SSM.7").
+    # Discover them via:
+    #   aws securityhub list-security-controls --region <aggregation-region>
+    security_hub_cspm_disabled_control_identifiers = []
   }
 
 }

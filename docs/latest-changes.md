@@ -205,6 +205,17 @@ central configuration and set which standards get enabled at Root:
 - `security_hub_cspm_enabled_standard_arns` (list(string), default `[]`) — the standard
   ARNs to enable via the configuration policy. Region-scoped: the region in each ARN
   must match `aggregation_region`.
+- `security_hub_cspm_disabled_control_identifiers` (list(string), default `[]`) —
+  individual control identifiers (`SSM.7`, `IAM.6`, `EC2.9`, etc.) to opt out of within
+  the enabled standards. Wired into the `org_kickstart_standards` policy's
+  `security_controls_configuration.disabled_control_identifiers`. Discover IDs with:
+
+  ```bash
+  aws securityhub list-security-controls --region <aggregation-region>
+  ```
+
+  Applied org-wide across every account inheriting the Root OU association. There is
+  currently no per-OU or per-account override plumbed through the module.
 
 AWS recommends enabling the **AWS Foundational Security Best Practices** (FSBP) standard
 when CSPM is turned on:

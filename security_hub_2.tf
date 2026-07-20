@@ -66,8 +66,9 @@ locals {
   # standards enabled" (central config still switched on with SH enabled but no
   # standards) — set it to at least the AWS Foundational Security Best Practices
   # ARN for the recommended baseline.
-  enable_security_hub_cspm                = local.enable_securityhub2 && try(var.security_hub_configuration.enable_security_hub_cspm, false)
-  security_hub_cspm_enabled_standard_arns = try(var.security_hub_configuration.security_hub_cspm_enabled_standard_arns, [])
+  enable_security_hub_cspm                       = local.enable_securityhub2 && try(var.security_hub_configuration.enable_security_hub_cspm, false)
+  security_hub_cspm_enabled_standard_arns        = try(var.security_hub_configuration.security_hub_cspm_enabled_standard_arns, [])
+  security_hub_cspm_disabled_control_identifiers = try(var.security_hub_configuration.security_hub_cspm_disabled_control_identifiers, [])
 
   # Extended GuardDuty features. threat_detection_features uses friendly snake_case
   # names on the tfvars side; we translate to the AWS API's UPPER_SNAKE_CASE feature
@@ -403,7 +404,7 @@ resource "aws_securityhub_configuration_policy" "org_kickstart_standards" {
     service_enabled       = true
     enabled_standard_arns = local.security_hub_cspm_enabled_standard_arns
     security_controls_configuration {
-      disabled_control_identifiers = []
+      disabled_control_identifiers = local.security_hub_cspm_disabled_control_identifiers
     }
   }
 }

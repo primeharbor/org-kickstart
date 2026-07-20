@@ -539,6 +539,7 @@ variable "security_hub_configuration" {
     aggregation_region                      = optional(string, "us-east-1")
     enable_security_hub_cspm                = optional(bool, false)
     security_hub_cspm_enabled_standard_arns = optional(list(string), [])
+    security_hub_cspm_disabled_control_identifiers = optional(list(string), [])
     threat_detection_features = optional(object({
       enable_ebs_malware_scanning   = optional(bool, false)
       enable_eks_protection         = optional(bool, false)
