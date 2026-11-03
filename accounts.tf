@@ -24,12 +24,13 @@ module "accounts" {
 
   account_email             = each.value.account_email
   account_name              = each.value.account_name
+  account_delete_timeout    = var.account_delete_timeout
   admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
   admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
   billing_contact           = var.global_billing_contact
   budget_alert_recipients   = concat(each.value.budget_alert_recipients, var.budget_defaults.alert_recipients)
   declarative_policies_ec2  = each.value.declarative_policies_ec2
-  default_close_on_deletion = var.default_close_on_deletion
+  default_close_on_deletion = each.value.close_on_deletion != null ? each.value.close_on_deletion : var.default_close_on_deletion
   delegated_admin           = each.value.delegated_admin
   disable_sso_management    = var.disable_sso_management
   dp_ec2_name_to_id_map     = local.dp_ec2_name_to_id
