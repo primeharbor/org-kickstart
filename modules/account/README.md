@@ -39,6 +39,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_account_delete_timeout"></a> [account\_delete\_timeout](#input\_account\_delete\_timeout) | Deletion timeout for this account (for example, 30m). Null uses the AWS provider default. | `string` | `null` | no |
 | <a name="input_account_email"></a> [account\_email](#input\_account\_email) | Root Email Address to Create | `string` | n/a | yes |
 | <a name="input_account_name"></a> [account\_name](#input\_account\_name) | Name of the AWS Account to Create | `string` | n/a | yes |
 | <a name="input_admin_group_id"></a> [admin\_group\_id](#input\_admin\_group\_id) | ID of the Identity Center Admin Group | `string` | n/a | yes |

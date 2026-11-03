@@ -176,6 +176,7 @@ variable "accounts" {
       # parent_ou_id takes precedence over parent_ou_name
       parent_ou_name            = optional(string, "Workloads")
       parent_ou_id              = optional(string, null)
+      close_on_deletion         = optional(bool)
       monthly_budget_amount     = optional(number, 0)
       budget_alert_recipients   = optional(list(string), [])
       service_control_policies  = optional(list(string), [])
@@ -510,6 +511,12 @@ variable "default_close_on_deletion" {
   description = "If set, the AWS Account will be closed when it's removed from org-kickstart. Set this with caution."
   default     = false
   type        = bool
+}
+
+variable "account_delete_timeout" {
+  description = "Deletion timeout for managed member accounts, including the security account (for example, 30m). Null uses the AWS provider default."
+  type        = string
+  default     = null
 }
 
 variable "datatrail" {
