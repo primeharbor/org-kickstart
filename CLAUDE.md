@@ -20,20 +20,14 @@ org-kickstart is a Terraform module for bootstrapping and managing AWS Organizat
 - `Sandbox` - Development accounts with more service freedom
 - `Suspended` - Accounts pending closure
 
-### Multi-Provider Architecture
+### Multi-Region Resources
 
-Terraform doesn't handle multi-region well. This module uses pre-defined AWS providers for all default (non-opt-in) regions for both payer and security accounts to enable regional security services. The `scripts/generate_regionblocks.sh` script generates provider configurations dynamically.
-
-**Important**: When adding regional resources, you must:
-1. Add provider blocks for each region in both payer and security accounts
-2. Use the `generate_regionblocks.sh` script to regenerate provider configurations
-3. Run `terraform init` after generating new region blocks
+Regional resources use the AWS provider 6.x `region` argument with `for_each` over `data.aws_regions.available` (declared in `security_hub_2.tf`). Avoid adding new per-region × per-account resources: plan cost grows with services × regions × accounts. Prefer org-wide mechanisms (organization policies, delegated-admin auto-enable). This is why the old `modules/security_services/` was removed (see `removed.tf`).
 
 ### Module Structure
 
 - `modules/account/` - Manages individual AWS accounts with budgets, contacts, SSO assignments
 - `modules/org_policies/` - Generic module for SCPs, RCPs, and Declarative Policies
-- `modules/security_services/` - Enables GuardDuty, Macie, SecurityHub, Inspector per region
 - `modules/stacksets/` - Deploys CloudFormation StackSets (audit role deployment)
 - `modules/billing_alerts/` - SNS-based billing alerts
 - `modules/datatrail/` - Advanced CloudTrail with S3 data events
@@ -65,9 +59,7 @@ See [examples/local-deploy/README.md](examples/local-deploy/README.md) for detai
 4. Import organization and payer account using provided scripts
 5. Create security account first with targeted apply: `terraform apply -target module.security_account`
 6. Disable accounts and SCPs in tfvars for first apply
-7. Run `scripts/generate_regionblocks.sh` to create multi-region provider blocks
-8. Re-run `terraform init` after generating region blocks
-9. Enable additional features incrementally
+7. Enable additional features incrementally
 
 ### Importing Existing Organizations
 
@@ -128,9 +120,14 @@ terraform import -var-file="<env>.tfvars" <resource_address> <resource_id>
 
 ### Release Notes (do this on every commit)
 
-Every change MUST be recorded in the release-notes file for the version it targets:
-`docs/v<MAJOR>.<MINOR>.<PATCH>-notes.md` (e.g. [docs/v0.3.0-notes.md](docs/v0.3.0-notes.md)). When
-preparing a commit, add a bullet to the appropriate section of that file describing the change:
+Every change MUST be recorded in [docs/latest-changes.md](docs/latest-changes.md). This is the
+rolling working copy of the next release's notes — add a bullet to the appropriate section
+describing the change. Do **not** create a `docs/v<MAJOR>.<MINOR>.<PATCH>-notes.md` file for
+unreleased changes; when a release is cut, `latest-changes.md` gets renamed to
+`v<version>-notes.md` (see [prior releases](docs/v0.3.0-notes.md) for the finished shape) and a
+fresh empty `latest-changes.md` is created for the next cycle.
+
+Sections in `latest-changes.md`:
 
 - **New Features** — new variables, resources, or capabilities
 - **Major / Minor Breaking Change** — anything requiring a `terraform state mv`, recreation, or a
@@ -139,8 +136,8 @@ preparing a commit, add a bullet to the appropriate section of that file describ
 - **Bug Fixes** — corrected behavior (e.g. `depends_on` ordering, validation fixes)
 - **Known Bugs** — anything still broken that users should be aware of
 
-If the target version doesn't have a notes file yet, create it. Treat a missing release-notes entry
-the same as a missing test: the change isn't done until it's documented.
+Treat a missing release-notes entry the same as a missing test: the change isn't done until
+it's documented.
 
 ### Partition Awareness
 
@@ -164,7 +161,8 @@ Policies can target OUs by name or ID. The `local.ou_name_to_id` map (defined in
 - CloudTrail management: Set `cloudtrail_bucket_name = null`
 - SSO management: Set `disable_sso_management = true`
 - Audit role StackSet: Set `deploy_audit_role = false`
-- Security services: Use `security_services` object with `disable_*` flags
+- Legacy Security Hub v1 / StackSets: `security_services.disable_securityhub` / `disable_stacksets`
+- Security Hub 2.0, GuardDuty, Inspector: omit `security_hub_configuration`
 - CUR reports: Set `cur_report_frequency = "NONE"`
 - Alternate contacts: Omit contact blocks from tfvars
 
@@ -187,8 +185,6 @@ The account module is instantiated for each account in the `accounts` variable. 
 **Resource import failures**: If importing a resource that doesn't exist (typically delegated_administrator), the error can be ignored - org-kickstart will create it.
 
 **Policy attachment issues**: Ensure OUs exist before attaching policies. Use `depends_on` if creating both OU and policy in same apply.
-
-**Multi-region provider errors**: After adding new regional resources, always run `generate_regionblocks.sh` and `terraform init`.
 
 ## Testing
 

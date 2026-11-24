@@ -29,8 +29,8 @@ The Org Kickstart is intended to be a landing zone for the rest of us. Deployed 
 org-kickstart is indented to support all the basic things needed to setup a properly governed and secure AWS organization from scratch. It will:
 
 1. Create a Security Account (required)
-    1. Delegate access for GuardDuty, Macie, Inspector, Security Hub, SSO, and CloudFormation to the Security Account
-    2. Configure GuardDuty, Macie, Inspector, Security Hub in every default region for all accounts.
+    1. Delegate access for GuardDuty, Inspector, Security Hub, SSO, and CloudFormation to the Security Account
+    2. Optionally enable Security Hub 2.0, GuardDuty, and Inspector org-wide via `security_hub_configuration`.
 2. Create a CloudTrail bucket in the Security Account, and enable an Organizations CloudTrail in the Management (Payer) Account
 3. Set the alternate contacts for Billing, Operations, and Security for all AWS accounts.
 4. Create four default Organizational Units (OUs), along with any custom OUs defined in tfvars:
