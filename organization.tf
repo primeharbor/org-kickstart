@@ -112,3 +112,21 @@ data "aws_organizations_organization" "org" {}
 resource "aws_ram_sharing_with_organization" "enable" {
   depends_on = [aws_organizations_organization.org]
 }
+
+# Organization resource policy. Delegated admin accounts need explicit permission to
+# read and manage org-level resources. Each service that requires org-level delegation
+# contributes statements via locals defined in its own .tf file (e.g. security_hub_2.tf).
+# The resource is created only when at least one set of delegation statements is present.
+resource "aws_organizations_resource_policy" "organization_resource_policy" {
+  count = local.create_org_policy ? 1 : 0
+
+  content = jsonencode({
+    Version   = "2012-10-17"
+    Statement = local.org_delegation_statements
+  })
+
+  # The Organizations API rejects tag updates on existing resource policies.
+  lifecycle {
+    ignore_changes = [tags_all]
+  }
+}

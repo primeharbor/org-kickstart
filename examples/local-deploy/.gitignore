@@ -21,7 +21,6 @@ import_accounts.sh
 import-org.tf
 payer_regions.tf
 security_account_regions.tf
-security_services.tf
 
 *.tfplan
 *tfplan.json

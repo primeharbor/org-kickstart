@@ -18,7 +18,7 @@ limitations under the License.
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0, < 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7, < 2.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.80.0 |
 
 ## Providers
@@ -165,7 +165,7 @@ limitations under the License.
 | <a name="input_security_account"></a> [security\_account](#input\_security\_account) | Settings for the Security Account. | <pre>object({<br/>    # These will move from the main module to here at some point.<br/>    # account_name    = string<br/>    # account_email   = string<br/>    delegated_admin = optional(list(string), [])<br/>    operations_contact = optional(object({<br/>      name          = string<br/>      title         = string<br/>      email_address = string<br/>      phone_number  = string<br/>    }))<br/>    primary_contact = optional(object({<br/>      full_name          = string<br/>      company_name       = optional(string)<br/>      address_line_1     = string<br/>      address_line_2     = optional(string)<br/>      address_line_3     = optional(string)<br/>      city               = string<br/>      district_or_county = optional(string)<br/>      state_or_region    = optional(string)<br/>      postal_code        = string<br/>      country_code       = string<br/>      phone_number       = string<br/>      website_url        = optional(string)<br/>    }))<br/>    monthly_budget_amount   = optional(number, 0)<br/>    budget_alert_recipients = optional(list(string), [])<br/>  })</pre> | n/a | yes |
 | <a name="input_security_account_name"></a> [security\_account\_name](#input\_security\_account\_name) | Name of the Security Account | `string` | `"Security Account"` | no |
 | <a name="input_security_account_root_email"></a> [security\_account\_root\_email](#input\_security\_account\_root\_email) | Root Email address for the security account | `string` | n/a | yes |
-| <a name="input_security_services"></a> [security\_services](#input\_security\_services) | Explicitly disable or not manage a security service | `map(string)` | <pre>{<br/>  "disable_guardduty": "false",<br/>  "disable_inspector": "false",<br/>  "disable_macie": "false",<br/>  "disable_securityhub": "false"<br/>}</pre> | no |
+| <a name="input_security_services"></a> [security\_services](#input\_security\_services) | Explicitly disable or not manage a legacy security service. GuardDuty, Macie, and Inspector are no longer managed here; use security_hub_configuration. | <pre>object({<br/>    disable_securityhub = optional(bool, false)<br/>    disable_stacksets   = optional(bool, false)<br/>  })</pre> | n/a | yes |
 | <a name="input_service_control_policies"></a> [service\_control\_policies](#input\_service\_control\_policies) | Map of SCPs to create and attach. | <pre>map(<br/>    object({<br/>      policy_name        = string<br/>      policy_description = string<br/>      policy_json_file   = string<br/>      policy_targets     = optional(list(string), ["Root"])<br/>      policy_vars        = optional(map(string), {})<br/>      do_not_attach      = optional(bool, false)<br/>    })<br/>  )</pre> | `{}` | no |
 | <a name="input_session_duration"></a> [session\_duration](#input\_session\_duration) | Admin Permission Set Session Duration | `string` | `"PT8H"` | no |
 | <a name="input_tag_set"></a> [tag\_set](#input\_tag\_set) | Default map of tags to be applied to all resources via all providers | `map(string)` | `{}` | no |

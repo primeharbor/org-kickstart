@@ -1,0 +1,24 @@
+{
+  "securityhub": {
+    "enable_in_regions": {
+      "@@assign": ["ALL_SUPPORTED"],
+      "@@operators_allowed_for_child_policies": ["@@all"]
+    },
+    "disable_in_regions": {
+      "@@assign": [],
+      "@@operators_allowed_for_child_policies": ["@@all"]
+    },
+    "features": {
+      "network_scanning": {
+        "enable_in_regions": {
+          "@@assign": ["ALL_SUPPORTED"],
+          "@@operators_allowed_for_child_policies": ["@@all"]
+        },
+        "disable_in_regions": {
+          "@@assign": [],
+          "@@operators_allowed_for_child_policies": ["@@all"]
+        }
+      }
+    }
+  }
+}

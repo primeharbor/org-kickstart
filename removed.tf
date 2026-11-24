@@ -1,4 +1,4 @@
-# Copyright 2023 Chris Farris <chris@primeharbor.com>
+# Copyright 2026 Chris Farris <chris@primeharbor.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Module: security_services
-# Version: 1.0.0
-#
-# Purpose: Enables regional security services across the organization
-#
-# Managed Services:
-# - AWS GuardDuty
-# - Amazon Macie
-# - AWS Security Hub
-# - Amazon Inspector v2
-#
-# Features:
-# - Multi-region deployment
-# - Automatic member account association
-# - Security account as delegated administrator
-# - Per-service enable/disable flags
+# The per-region security-services module (GuardDuty + Macie) was removed. Forget
+# anything it created rather than destroying it, so the upgrade doesn't silently
+# disable GuardDuty or Macie across the org. Use the wipe_*.py scripts to tear them
+# down, or security_hub_configuration.enable_threat_detection to manage GuardDuty.
+removed {
+  from = module.security-services
+
+  lifecycle {
+    destroy = false
+  }
+}
