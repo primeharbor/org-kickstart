@@ -39,5 +39,5 @@ The version / location of the module is in `main.tf`
   # source = "github.com/primeharbor/org-kickstart"
 
   # Pin to a specific release
-  # source = "github.com/primeharbor/org-kickstart?ref=0.3.0"
+  # source = "github.com/primeharbor/org-kickstart?ref=0.4.0"
 ```

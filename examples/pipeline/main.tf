@@ -38,7 +38,7 @@ module "organization" {
   # source = "github.com/primeharbor/org-kickstart"
 
   # Pin to a specific release
-  source = "github.com/primeharbor/org-kickstart?ref=0.3.0"
+  source = "github.com/primeharbor/org-kickstart?ref=0.4.0"
 
   tag_set             = local.default_tags
   backend_bucket      = var.backend_bucket

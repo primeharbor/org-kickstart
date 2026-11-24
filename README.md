@@ -10,7 +10,7 @@ The default branch is **`latest`** and always holds the most recent changes. Eac
 **frozen, tagged version** (e.g. `0.3.0`).
 
 - Track the newest code: `source = "github.com/primeharbor/org-kickstart"`
-- Pin to a release: `source = "github.com/primeharbor/org-kickstart?ref=0.3.0"`
+- Pin to a release: `source = "github.com/primeharbor/org-kickstart?ref=0.4.0"`
 
 We target **quarterly releases**, but may cut a new version sooner when significant new AWS
 organization-management features warrant it. See the
