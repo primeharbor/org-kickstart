@@ -51,9 +51,26 @@ resource "aws_s3_bucket_lifecycle_configuration" "billing_logs" {
       storage_class = "GLACIER_IR"
     }
 
-    transition {
-      days          = 180
-      storage_class = "DEEP_ARCHIVE"
+    dynamic "transition" {
+      for_each = var.billing_data_deep_archive_days != null ? [1] : []
+      content {
+        days          = var.billing_data_deep_archive_days
+        storage_class = "DEEP_ARCHIVE"
+      }
+    }
+
+    dynamic "expiration" {
+      for_each = var.billing_data_expiration_days != null ? [1] : []
+      content {
+        days = var.billing_data_expiration_days
+      }
+    }
+
+    dynamic "noncurrent_version_expiration" {
+      for_each = var.billing_data_noncurrent_expiration_days != null ? [1] : []
+      content {
+        noncurrent_days = var.billing_data_noncurrent_expiration_days
+      }
     }
   }
 }

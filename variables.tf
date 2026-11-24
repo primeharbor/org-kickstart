@@ -360,6 +360,24 @@ variable "billing_data_bucket_name" {
   default     = null
 }
 
+variable "billing_data_deep_archive_days" {
+  description = "Days after which CUR reports transition to DEEP_ARCHIVE. Set to null to skip the DEEP_ARCHIVE transition."
+  type        = number
+  default     = 180
+}
+
+variable "billing_data_expiration_days" {
+  description = "Days after which CUR reports are deleted. Set to null to keep reports forever."
+  type        = number
+  default     = null
+}
+
+variable "billing_data_noncurrent_expiration_days" {
+  description = "Days after which noncurrent versions of CUR reports are deleted. Set to null to keep noncurrent versions."
+  type        = number
+  default     = null
+}
+
 variable "cur_report_frequency" {
   description = "Frequency CUR reports should be delivered (DAILY, HOURLY, MONTHLY). Set to NONE to disable"
   type        = string
