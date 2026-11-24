@@ -283,6 +283,11 @@ accounts = {
   a wipe (or a `security_hub_configuration = null` / `disable_*` apply) to confirm
   nothing billable was left behind. By default prints only what's still enabled/leftover
   (and anything it couldn't check); `--progress` streams per-account/per-region detail.
+- **Configurable billing bucket lifecycle.** The CUR bucket's lifecycle rule (`billing.tf`)
+  is now driven by three optional variables: `billing_data_deep_archive_days` (default
+  `180`; `null` skips the DEEP_ARCHIVE transition), `billing_data_expiration_days`
+  (default `null`), and `billing_data_noncurrent_expiration_days` (default `null`). The
+  defaults preserve the previous behavior. The 90-day GLACIER_IR transition is unchanged.
 
 ## Major Breaking Change
 
