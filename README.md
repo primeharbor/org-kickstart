@@ -79,6 +79,28 @@ Then copy [`examples/local-deploy`](examples/local-deploy) into your own private
 organization. The complete walkthrough — repo setup, an annotated tfvars example, and the full
 parameter reference — lives on **[aws-kickstart.org](https://aws-kickstart.org/docs/getting-started/)**.
 
+## Account lifecycle
+
+`default_close_on_deletion` controls whether managed member accounts close when removed from
+Terraform. Each entry in `accounts` can override it with `close_on_deletion = true` or
+`close_on_deletion = false`; an omitted or `null` override inherits the global setting.
+No OU name changes this behavior automatically. The security account always keeps
+`close_on_deletion = false`, regardless of the global setting.
+
+Setting `close_on_deletion = true` causes Terraform destruction to request
+[AWS account closure](https://docs.aws.amazon.com/organizations/latest/APIReference/API_CloseAccount.html),
+not just removal from the organization. Review account deletion plans carefully.
+
+`account_delete_timeout` optionally sets the deletion timeout for every managed member account,
+including the security account. For example, set it to `"30m"` to allow longer account removal
+or closure operations. Its default is `null`, which leaves the AWS provider's timeout defaults
+unchanged. Creation and update timeouts, the payer account, and Terraform resource addresses
+are unaffected.
+
+Both deployment examples pass through `account_delete_timeout`, and their sample configurations
+demonstrate a per-account closure override. These unreleased inputs require a module source
+revision containing this change; update the examples' pinned source before deploying them.
+
 ## Using with an existing org
 
 org-kickstart can adopt an existing organization. See [IMPORTING.md](IMPORTING.md) and the

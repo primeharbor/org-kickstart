@@ -51,6 +51,7 @@ module "organization" {
   payer_email                 = var.organization["payer_email"]
   payer_name                  = var.organization["payer_name"]
   default_close_on_deletion   = lookup(var.organization, "default_close_on_deletion", false)
+  account_delete_timeout      = lookup(var.organization, "account_delete_timeout", null)
   security_account            = var.organization["security_account"]
 
   # SSO

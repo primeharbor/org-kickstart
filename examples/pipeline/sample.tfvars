@@ -38,6 +38,7 @@ organization = {
   vpc_flowlogs_bucket_name          = "example-kickstart-flowlogs"
   macie_bucket_name                 = "example-kickstart-macie-findings"
   default_close_on_deletion         = true
+  account_delete_timeout            = null
 
   security_account = {
     delegated_admin         = ["fms.amazonaws.com"]
@@ -69,6 +70,7 @@ organization = {
     it = {
       account_name          = "example-kickstart-it"
       account_email         = "aws+kickstart-it@example.com"
+      close_on_deletion     = false
       monthly_budget_amount = 150
     }
 

@@ -28,6 +28,7 @@ module "security_account" {
 
   account_email             = var.security_account_root_email
   account_name              = var.security_account_name
+  account_delete_timeout    = var.account_delete_timeout
   admin_group_id            = var.disable_sso_management ? null : aws_identitystore_group.admin_group[0].group_id
   admin_permission_set_arn  = var.disable_sso_management ? null : aws_ssoadmin_permission_set.admin_permission_set[0].arn
   billing_contact           = var.global_billing_contact

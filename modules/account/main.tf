@@ -72,6 +72,12 @@ variable "default_close_on_deletion" {
   type        = bool
 }
 
+variable "account_delete_timeout" {
+  description = "Deletion timeout for this account (for example, 30m). Null uses the AWS provider default."
+  type        = string
+  default     = null
+}
+
 variable "service_control_policies" {
   description = "List of SCP Names that are directly applied to this AWS Account. Policies must be created before they can be referenced."
   default     = []
@@ -111,6 +117,14 @@ resource "aws_organizations_account" "account" {
   email             = var.account_email
   parent_id         = var.parent_ou_id
   close_on_deletion = var.default_close_on_deletion
+
+  dynamic "timeouts" {
+    for_each = var.account_delete_timeout == null ? [] : [var.account_delete_timeout]
+    content {
+      delete = timeouts.value
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       tags
