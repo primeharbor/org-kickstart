@@ -26,20 +26,42 @@ Constants (edit at the top of the file if your setup differs):
   HOME_REGION — region used for the initial describe_regions / list_accounts calls
                 only; the destructive work spans every enabled region.
 
+Output: by default, only prints actions actually taken (members removed, aggregators
+deleted, hubs disabled, admin registrations removed) plus real problems. Routine
+"nothing to do here" conditions (not enabled, no members, already disabled, not
+currently associated to an admin) are suppressed. Pass --progress to also see
+step-by-step narration of everything the script checks along the way.
+
 Exits 0 if every operation succeeded; 1 if any errors were logged.
 """
 
+import argparse
 import logging
 import sys
 
 import boto3
 from botocore.exceptions import ClientError
 
+# A level between INFO (20, progress narration) and WARNING (30, real problems) for
+# "we actually changed something" lines, so those always print even when progress
+# narration and harmless/expected errors are suppressed.
+ACTION = 25
+logging.addLevelName(ACTION, "ACTION")
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+
+def act(msg):
+    logger.log(ACTION, msg)
+
+
 ROLE_NAME = "OrganizationAccountAccessRole"
 HOME_REGION = "us-east-1"
+
+# Error codes that mean "there was nothing to disassociate/list/delete here" for the
+# various member-side cleanup calls below — expected, not worth a warning.
+NOT_A_MEMBER_CODES = ("InvalidAccessException", "ResourceNotFoundException", "InvalidInputException", "BadRequestException")
 
 
 def get_enabled_regions(session):
@@ -117,7 +139,7 @@ def teardown_admin_region(admin_session, region):
 
     try:
         sh.update_organization_configuration(AutoEnable=False, AutoEnableStandards="NONE")
-        logger.info(f"[{region}] admin: auto_enable=False, auto_enable_standards=NONE")
+        act(f"[{region}] admin: auto_enable=False, auto_enable_standards=NONE")
     except ClientError as e:
         code = e.response["Error"]["Code"]
         if code == "InvalidAccessException":
@@ -146,7 +168,7 @@ def teardown_admin_region(admin_session, region):
             try:
                 sh.disassociate_members(AccountIds=batch)
                 sh.delete_members(AccountIds=batch)
-                logger.info(f"[{region}] admin: removed batch of {len(batch)}")
+                act(f"[{region}] admin: removed batch of {len(batch)} member(s)")
             except ClientError as e:
                 logger.error(f"[{region}] admin: batch removal failed: {e}")
                 ok = False
@@ -160,7 +182,7 @@ def teardown_admin_region(admin_session, region):
             arn = a["FindingAggregatorArn"]
             try:
                 sh.delete_finding_aggregator(FindingAggregatorArn=arn)
-                logger.info(f"[{region}] admin: deleted finding aggregator {arn}")
+                act(f"[{region}] admin: deleted finding aggregator {arn}")
             except ClientError as e:
                 logger.error(f"[{region}] admin: delete_finding_aggregator({arn}) failed: {e}")
                 ok = False
@@ -179,7 +201,7 @@ def disable_admin_registration(payer_session, admin_id, regions):
         sh = payer_session.client("securityhub", region_name=region)
         try:
             sh.disable_organization_admin_account(AdminAccountId=admin_id)
-            logger.info(f"[{region}] payer: disable_organization_admin_account({admin_id}) OK")
+            act(f"[{region}] payer: disable_organization_admin_account({admin_id}) OK")
         except ClientError as e:
             code = e.response["Error"]["Code"]
             if code == "ResourceNotFoundException":
@@ -206,12 +228,12 @@ def scrub_account_region(client_factory, name, aid, region):
     # Step 1: unlink from any lingering admin relationship (member-side cleanup)
     try:
         sh.disassociate_from_administrator_account()
-        logger.info(f"[{region}] {name}: disassociated from administrator")
+        act(f"[{region}] {name}: disassociated from administrator")
     except ClientError as e:
         code = e.response["Error"]["Code"]
-        if code in ("InvalidAccessException", "ResourceNotFoundException", "InvalidInputException"):
+        if code in NOT_A_MEMBER_CODES:
             # Not a member, or SH not enabled — nothing to disassociate
-            pass
+            logger.info(f"[{region}] {name}: not associated to an administrator account — nothing to disassociate")
         else:
             logger.warning(f"[{region}] {name}: disassociate_from_administrator_account: {e}")
 
@@ -229,7 +251,7 @@ def scrub_account_region(client_factory, name, aid, region):
                 try:
                     sh.disassociate_members(AccountIds=batch)
                     sh.delete_members(AccountIds=batch)
-                    logger.info(f"[{region}] {name}: removed batch of {len(batch)} member(s)")
+                    act(f"[{region}] {name}: removed batch of {len(batch)} member(s)")
                 except ClientError as e:
                     logger.error(f"[{region}] {name}: delete_members batch failed: {e}")
                     ok = False
@@ -250,7 +272,7 @@ def scrub_account_region(client_factory, name, aid, region):
                 continue
             try:
                 sh.delete_finding_aggregator(FindingAggregatorArn=arn)
-                logger.info(f"[{region}] {name}: deleted finding aggregator {arn}")
+                act(f"[{region}] {name}: deleted finding aggregator {arn}")
             except ClientError as e:
                 logger.error(f"[{region}] {name}: delete_finding_aggregator({arn}) failed: {e}")
                 ok = False
@@ -262,7 +284,7 @@ def scrub_account_region(client_factory, name, aid, region):
     # Step 3: disable Security Hub
     try:
         sh.disable_security_hub()
-        logger.info(f"[{region}] {name}: disable_security_hub OK")
+        act(f"[{region}] {name}: disable_security_hub OK")
     except ClientError as e:
         code = e.response["Error"]["Code"]
         # Both codes mean "SH is not enabled here" — treat as idempotent success.
@@ -277,7 +299,27 @@ def scrub_account_region(client_factory, name, aid, region):
     return ok
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Fully disable AWS Security Hub CSPM (v1) across an AWS Organization. "
+            "By default prints only actions taken and real errors; pass --progress "
+            "for full step-by-step narration."
+        ),
+    )
+    parser.add_argument(
+        "--progress",
+        action="store_true",
+        help="Show step-by-step progress, including routine no-op conditions that are normally suppressed.",
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+    if not args.progress:
+        logger.setLevel(ACTION)
+
     payer_session = boto3.Session()
     payer_id = payer_session.client("sts").get_caller_identity()["Account"]
     logger.info(f"Payer: {payer_id}")
@@ -347,18 +389,21 @@ def main():
             if not scrub_account_region(factory, name, aid, region):
                 total_ok = False
 
-    logger.info("=" * 70)
+    print("=" * 70)
     if total_ok:
-        logger.info("Done. Security Hub CSPM fully disabled across the org.")
+        print("Done. Security Hub CSPM fully disabled across the org.")
         sys.exit(0)
     else:
-        logger.error("Done with errors. Review the log above.")
+        print("Done with errors. Review the log above.")
         sys.exit(1)
 
 
 if __name__ == "__main__":
     try:
         main()
+    except KeyboardInterrupt:
+        logger.error("Interrupted by user.")
+        sys.exit(130)
     except Exception as e:
         logger.exception(f"Unexpected error: {e}")
         sys.exit(1)

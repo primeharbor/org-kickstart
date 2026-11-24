@@ -400,6 +400,9 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+    except KeyboardInterrupt:
+        logger.error("Interrupted by user.")
+        sys.exit(130)
     except Exception as e:
         logger.exception(f"Unexpected error: {e}")
         sys.exit(1)

@@ -462,9 +462,8 @@ resource "aws_securityhub_configuration_policy_association" "org_kickstart_no_st
 
 # ─── GuardDuty (foundational threat detection) ────────────────────────────────
 # Enabled when security_hub_configuration.enable_threat_detection = true. Wired here
-# rather than in modules/security_services/ because that module is being deprecated —
-# it was a pre-provider-6 workaround for multi-region resources that the AWS provider
-# now handles natively via the `region` argument.
+# rather than in the old per-region security_services module, which has been removed
+# (see removed.tf) because its plan cost grew with services x regions x accounts.
 #
 # Three resources per region:
 #   1. Detector in the security account (delegated admin needs a local hub in each

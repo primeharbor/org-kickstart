@@ -175,15 +175,7 @@ already-enrolled accounts come back in `UnprocessedAccounts` as warnings. Run on
 fresh setup or wipe-and-restore. Once every account has been enrolled the first time,
 `auto_enable_organization_members = "ALL"` handles future accounts automatically.
 
-**Note:** `modules/security_services/guardduty.tf` still exists but should be considered
-deprecated. It was a pre-provider-6 workaround for multi-region resources that the AWS
-provider now handles natively via the `region` argument.
-
-**Constraint:** `enable_threat_detection = true` requires `security_services.disable_guardduty = true`
-(or the `security_services` block to be absent). A variable validation enforces this at
-plan time — otherwise both `modules/security_services/guardduty.tf` and the new
-resources in `security_hub_2.tf` would try to manage GuardDuty simultaneously and fight
-each other on every apply.
+**Note:** `modules/security_services/` has been removed. See **Major Breaking Change** below.
 
 ### `enable_security_hub_cspm` (Security Hub CSPM standards)
 
@@ -284,6 +276,52 @@ accounts = {
 - `state_bucket.tf`: added `lifecycle { ignore_changes = [rule] }` to the SSE configuration
   resource to suppress perpetual drift from AWS-injected `blocked_encryption_types` and
   `bucket_key_enabled` fields.
+- **New script: `scripts/status_security_services.py`.** Read-only sibling to the
+  `wipe_*.py` scripts — reports whether GuardDuty, Security Hub V2, Inspector, or
+  Security Hub CSPM (both the classic v1 hub and the v2 central-configuration policy
+  layer) are still enabled anywhere in the org, without changing anything. Useful after
+  a wipe (or a `security_hub_configuration = null` / `disable_*` apply) to confirm
+  nothing billable was left behind. By default prints only what's still enabled/leftover
+  (and anything it couldn't check); `--progress` streams per-account/per-region detail.
+
+## Major Breaking Change
+
+* **`security_services.tf` and `modules/security_services/` have been removed.** org-kickstart
+  no longer enables GuardDuty or Macie per region through the legacy `security-services`
+  module.
+
+  **Why:** the module was instantiated once per enabled region, and each instance read and
+  managed GuardDuty and Macie in the payer, security, and member accounts. Every
+  `terraform plan` therefore made roughly *N API calls × regions × accounts*, which gets
+  large fast and makes plans slow and prone to throttling. AWS now offers better ways to
+  manage these services org-wide: Security Hub 2.0 and the `SECURITYHUB_POLICY` /
+  `INSPECTOR_POLICY` organization policies, and GuardDuty organization auto-enable
+  configured through `security_hub_configuration`. org-kickstart is opinionated about
+  using those instead.
+
+  **What changed:**
+  - `security_services.tf`, `modules/security_services/` (GuardDuty and Macie), and the
+    `examples/*/scripts/generate_regions.sh` and `import_guardduty.sh` helpers are gone.
+  - A new `removed.tf` holds a `removed { from = module.security-services }` block with
+    `destroy = false`. Anything the module created (GuardDuty detectors, delegated admins
+    and org config, Macie accounts and members) is **dropped from Terraform state, not
+    destroyed**, so upgrading does not silently turn those services off.
+  - `required_version` is now `>= 1.7` (the first Terraform release with `removed` blocks).
+  - `security_services.disable_guardduty`, `disable_macie`, and `disable_inspector` are
+    no longer used and were dropped from the variable type. Existing tfvars that still set
+    them keep working, because Terraform discards extra object attributes.
+    `disable_securityhub` and `disable_stacksets` are unchanged.
+  - The validation that required `security_services.disable_guardduty = true` alongside
+    `security_hub_configuration.enable_threat_detection = true` has been removed.
+
+  **Migration:**
+  - **GuardDuty:** set `security_hub_configuration.enable_threat_detection = true` to have
+    org-kickstart manage it. The detectors and delegated admin already exist, so import
+    them into the new `security_hub_2.tf` addresses, or run `scripts/wipe_guardduty.py`
+    first and let org-kickstart recreate them.
+  - **Macie:** org-kickstart no longer manages Macie. Existing Macie configuration stays
+    as-is. Manage it outside org-kickstart, or disable it in the console.
+  - Run `scripts/status_security_services.py` afterwards to see what is still enabled.
 
 ## Minor Breaking Change
 
@@ -302,5 +340,18 @@ accounts = {
 ## Bug Fixes
 * adding md5/etag checksum to the account_configurator config yaml to force terraform update when the file changes
 * alter DenyRootSCP.json to permit `iam:GetAccountSummary`, which is required to see if root credentials are present.
+* `scripts/wipe_sechub_cspm.py`: `disassociate_from_administrator_account`'s benign
+  "not associated to an administrator account" case (`BadRequestException`) was falling
+  through to `logger.warning` instead of being treated as a no-op, unlike the equivalent
+  check in `wipe_guardduty.py`. The script also now defaults to printing only actions
+  actually taken (members removed, aggregators deleted, hubs disabled, admin
+  registrations removed) plus real errors, suppressing routine "nothing to do here"
+  narration unless a new `--progress` flag is passed.
+* `security_services.tf` declared `data "aws_regions" "available"` a second time (it is
+  also declared in `security_hub_2.tf`), which made `terraform validate` fail. Resolved
+  by removing `security_services.tf`.
+* `scripts/wipe_guardduty.py`, `wipe_sechub_v2.py`, `wipe_sechub_cspm.py`, and
+  `status_security_services.py` now catch `KeyboardInterrupt` and exit cleanly
+  (code 130) instead of printing a full stack trace on Ctrl-C.
 
 ## Known Bugs
