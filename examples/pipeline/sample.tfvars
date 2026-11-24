@@ -243,10 +243,11 @@ organization = {
 
   }
 
+  # Legacy Security Hub v1 (security_hub.tf). Keep this disabled and use
+  # security_hub_configuration below. GuardDuty, Macie and Inspector are no longer
+  # managed through this block.
   security_services = {
-    disable_guardduty   = false
     disable_securityhub = true
-    disable_macie       = true
   }
 
   account_configurator = {
@@ -320,6 +321,45 @@ organization = {
     excluded_buckets = [
       "example-kickstart-cloudtrail"
     ]
+  }
+
+  # Security Hub 2.0 configuration. Omit this block entirely to skip all Security Hub 2.0
+  # setup. When the block is present, create_cost_estimation_role and
+  # create_org_delegation_policy default to true. enable_security_hub_2 and
+  # enable_threat_detection default to false — you must explicitly opt in.
+  security_hub_configuration = {
+    enable_security_hub_cspm             = true
+    enable_security_hub_2                = true   # Enable SH2 in the payer + security accounts, delegate admin, set up aggregator
+    # Tri-state (true / false / omit): true attaches EnableSecurityHubV2 at Root,
+    # false attaches DisableSecurityHubV2 at Root, omit leaves Root attachment unmanaged.
+    # (SH2 / Inspector org policies are one-shot — detaching enable doesn't disable.)
+    enable_security_hub_for_all_accounts = true
+    enable_inspector_for_all_accounts    = true
+    # Amazon Inspector Lambda *code* scanning is billed separately from Lambda standard
+    # (dependency) scanning. Default false — set true to opt in. When false, the
+    # EnableInspector policy explicitly disables lambda_code_scanning in ALL_SUPPORTED
+    # regions. Lambda standard scanning stays on regardless.
+    enable_inspector_lambda_code_scanning = false
+    create_cost_estimation_role          = true   # IAM role in payer account for cost estimator cross-account access
+    create_org_delegation_policy         = true   # Organization resource policy granting security account org-wide delegation
+    enable_threat_detection              = true   # Foundational GuardDuty: delegated admin + auto-enroll for all org accounts
+    aggregation_region                   = "us-east-1"
+
+    # Security Hub CSPM: central config + a configuration policy carrying the standards
+    # you want enabled. Requires enable_security_hub_2 = true and
+    # security_services.disable_securityhub = true (variable validations enforce both).
+    # AWS recommends enabling the AWS Foundational Security Best Practices (FSBP) standard.
+    # Discover other standard ARNs with (from the delegated admin account):
+    #   aws securityhub describe-standards --region <aggregation_region>
+    security_hub_cspm_enabled_standard_arns = [
+      "arn:aws:securityhub:us-east-1::standards/aws-foundational-security-best-practices/v/1.0.0",
+    ]
+
+    # Optional: opt individual controls out of every enabled standard. IDs use
+    # the Security Hub CSPM console/API form (e.g. "IAM.6", "EC2.9", "SSM.7").
+    # Discover them via:
+    #   aws securityhub list-security-controls --region <aggregation-region>
+    security_hub_cspm_disabled_control_identifiers = []
   }
 
 }

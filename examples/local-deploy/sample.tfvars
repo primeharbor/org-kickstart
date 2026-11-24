@@ -243,10 +243,11 @@ organization = {
 
   }
 
+  # Legacy Security Hub v1 (security_hub.tf). Keep this disabled and use
+  # security_hub_configuration below. GuardDuty, Macie and Inspector are no longer
+  # managed through this block.
   security_services = {
-    disable_guardduty   = false
     disable_securityhub = true
-    disable_macie       = true
   }
 
   account_configurator = {
