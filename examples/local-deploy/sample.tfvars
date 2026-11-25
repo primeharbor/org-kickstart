@@ -13,10 +13,10 @@
 # limitations under the License.
 
 organization = {
-  organization_name                 = "org-kickstart"
+  organization_name = "org-kickstart"
   # Manage the Terraform state bucket (backend_bucket) with Terraform. The bucket must already
   # exist; it is adopted via the import block in main.tf. Set false to leave it unmanaged.
-  manage_state_bucket = true
+  manage_state_bucket               = true
   payer_name                        = "Example Test Payer"
   payer_email                       = "aws+kickstart-payer@example.com"
   security_account_name             = "example-kickstart-security"
@@ -328,8 +328,8 @@ organization = {
   # create_org_delegation_policy default to true. enable_security_hub_2 and
   # enable_threat_detection default to false — you must explicitly opt in.
   security_hub_configuration = {
-    enable_security_hub_cspm             = true
-    enable_security_hub_2                = true   # Enable SH2 in the payer + security accounts, delegate admin, set up aggregator
+    enable_security_hub_cspm = true
+    enable_security_hub_2    = true # Enable SH2 in the payer + security accounts, delegate admin, set up aggregator
     # Tri-state (true / false / omit): true attaches EnableSecurityHubV2 at Root,
     # false attaches DisableSecurityHubV2 at Root, omit leaves Root attachment unmanaged.
     # (SH2 / Inspector org policies are one-shot — detaching enable doesn't disable.)
@@ -340,10 +340,10 @@ organization = {
     # EnableInspector policy explicitly disables lambda_code_scanning in ALL_SUPPORTED
     # regions. Lambda standard scanning stays on regardless.
     enable_inspector_lambda_code_scanning = false
-    create_cost_estimation_role          = true   # IAM role in payer account for cost estimator cross-account access
-    create_org_delegation_policy         = true   # Organization resource policy granting security account org-wide delegation
-    enable_threat_detection              = true   # Foundational GuardDuty: delegated admin + auto-enroll for all org accounts
-    aggregation_region                   = "us-east-1"
+    create_cost_estimation_role           = true # IAM role in payer account for cost estimator cross-account access
+    create_org_delegation_policy          = true # Organization resource policy granting security account org-wide delegation
+    enable_threat_detection               = true # Foundational GuardDuty: delegated admin + auto-enroll for all org accounts
+    aggregation_region                    = "us-east-1"
 
     # Security Hub CSPM: central config + a configuration policy carrying the standards
     # you want enabled. Requires enable_security_hub_2 = true and
